@@ -1,0 +1,211 @@
+# Configuration Guide
+
+This guide covers all configuration options for ieeT.
+
+## Configuration Hierarchy
+
+ieeT uses a layered configuration system (later layers override earlier):
+
+1. **Built-in defaults**: `src/ieeet/defaults/config.yaml`
+2. **User config**: `~/.ieeet/config.yaml`
+3. **Project config**: `./ieeet.yaml` (in working directory)
+4. **Command-line flags**: Override any setting
+
+## Creating a Configuration File
+
+### User Configuration
+
+Create `~/.ieeet/config.yaml`:
+
+```yaml
+llm:
+  provider: openai
+  model: gpt-4o-mini
+  api_key_env: OPENAI_API_KEY
+  temperature: 0.1
+  max_tokens: 4000
+
+compilation:
+  engine: xelatex
+  timeout: 120
+  clean_aux: true
+
+paths:
+  output_dir: ~/ieeet-output
+  cache_dir: ~/.ieeet/cache
+```
+
+### Project Configuration
+
+Create `ieeet.yaml` in your project directory for project-specific settings.
+
+## Configuration Options
+
+### LLM Settings
+
+```yaml
+llm:
+  # LLM provider: openai, claude, qwen, doubao
+  provider: openai
+  
+  # Model name (provider-specific)
+  model: gpt-4o-mini
+  
+  # Environment variable containing API key
+  api_key_env: OPENAI_API_KEY
+  
+  # Sampling temperature (0.0-2.0, lower = more deterministic)
+  temperature: 0.1
+  
+  # Maximum tokens in response
+  max_tokens: 4000
+```
+
+#### Provider-Specific Models
+
+| Provider | Available Models | Recommended |
+|----------|------------------|-------------|
+| openai | gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo | gpt-4o-mini |
+| claude | claude-3-opus-20240229, claude-3-sonnet-20240229 | claude-3-sonnet |
+| qwen | qwen-turbo, qwen-plus, qwen-max | qwen-plus |
+| doubao | doubao-pro-4k, doubao-pro-32k, doubao-pro-128k | doubao-pro-32k |
+
+### Compilation Settings
+
+```yaml
+compilation:
+  # LaTeX engine: xelatex, pdflatex, lualatex
+  engine: xelatex
+  
+  # Compilation timeout in seconds
+  timeout: 120
+  
+  # Remove auxiliary files after compilation
+  clean_aux: true
+```
+
+### Path Settings
+
+```yaml
+paths:
+  # Default output directory for translations
+  output_dir: output
+  
+  # Cache directory for downloaded papers
+  cache_dir: .cache
+```
+
+### Translation Settings
+
+```yaml
+translation:
+  # Maximum retries on API failure
+  max_retries: 3
+  
+  # Base delay between retries (seconds, uses exponential backoff)
+  retry_delay: 1.0
+  
+  # Delay between API calls for rate limiting (seconds)
+  rate_limit_delay: 0.5
+  
+  # Save intermediate state for resume capability
+  save_state: true
+```
+
+### Glossary Settings
+
+```yaml
+glossary:
+  # Path to glossary file
+  path: glossary.yaml
+  
+  # Whether to use built-in glossary
+  use_builtin: true
+  
+  # Merge custom glossary with built-in
+  merge: true
+```
+
+## Environment Variables
+
+API keys should be set as environment variables:
+
+```bash
+# OpenAI
+export OPENAI_API_KEY="sk-..."
+
+# Anthropic (Claude)
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# Alibaba Cloud (Qwen/DashScope)
+export DASHSCOPE_API_KEY="sk-..."
+
+# Volcengine (Doubao)
+export VOLCENGINE_API_KEY="..."
+```
+
+## Command-Line Overrides
+
+Most settings can be overridden via command line:
+
+```bash
+# Override provider and model
+ieeet translate paper.tex --provider claude --model claude-3-sonnet-20240229
+
+# Override output directory
+ieeet translate paper.tex --output ./my-output/
+
+# Override temperature
+ieeet translate paper.tex --temperature 0.2
+
+# Use specific config file
+ieeet translate paper.tex --config my-config.yaml
+```
+
+## Complete Example Configuration
+
+```yaml
+# ~/.ieeet/config.yaml - Full example
+
+llm:
+  provider: openai
+  model: gpt-4o-mini
+  api_key_env: OPENAI_API_KEY
+  temperature: 0.1
+  max_tokens: 4000
+
+compilation:
+  engine: xelatex
+  timeout: 120
+  clean_aux: true
+
+paths:
+  output_dir: ~/Documents/translations
+  cache_dir: ~/.ieeet/cache
+
+translation:
+  max_retries: 3
+  retry_delay: 1.0
+  rate_limit_delay: 0.5
+  save_state: true
+
+glossary:
+  path: ~/.ieeet/glossary.yaml
+  use_builtin: true
+  merge: true
+```
+
+## Configuration Validation
+
+ieeT validates configuration on startup. Invalid settings will produce clear error messages:
+
+```
+Error: Invalid configuration
+  llm.provider: 'invalid-provider' is not one of: openai, claude, qwen, doubao
+  llm.temperature: 3.0 is greater than maximum 2.0
+```
+
+## Next Steps
+
+- [Custom Rules & Glossary](custom-rules.md) - Create custom translation rules
+- [Troubleshooting](troubleshooting.md) - Common issues and solutions

@@ -1,0 +1,28 @@
+# Common Computer Science & Machine Learning Terms
+
+# Simple Key-Value Mappings - keep abbreviations as-is for natural reading
+"LLM": "LLM"
+"SOTA": "SOTA"
+"CNN": "CNN"
+"RNN": "RNN"
+"ML": "机器学习"
+"AI": "AI"
+"AIGT": "AI生成文本"
+"NLP": "自然语言处理"
+
+# Structured Mappings
+"Transformer":
+  target: "Transformer"
+  context: "Deep Learning"
+  domain: "NLP"
+  notes: "Architecture based on self-attention"
+
+"Attention":
+  target: "注意力机制"
+  priority: 10
+
+"paraphrase":
+  target: "改写"
+  
+"detector":
+  target: "检测器"

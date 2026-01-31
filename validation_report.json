@@ -1,0 +1,394 @@
+{
+  "summary": {
+    "total_papers": 10,
+    "source_available": 10,
+    "source_available_rate": "10/10",
+    "main_tex_identified": 10,
+    "main_tex_identification_rate": "10/10",
+    "pylatexenc_success": 10,
+    "pylatexenc_success_rate": "10/10",
+    "thresholds": {
+      "source_available_target": "\u22658/10",
+      "main_tex_target": "\u22658/10",
+      "pylatexenc_target": "\u22656/10"
+    },
+    "pass_status": {
+      "source_available": true,
+      "main_tex_identified": true,
+      "pylatexenc_success": true
+    }
+  },
+  "papers": [
+    {
+      "arxiv_id": "2301.07041",
+      "source_available": true,
+      "download_error": null,
+      "archive_type": "tar.gz",
+      "file_count": 18,
+      "tex_files": [
+        "theoremsetup.tex",
+        "acronyms.tex",
+        "main.tex",
+        "commands.tex",
+        "sections/1-introduction.tex",
+        "sections/2-background.tex",
+        "sections/7-conclusion.tex",
+        "sections/6-primitives.tex",
+        "sections/5-constructions.tex",
+        "sections/3-survey.tex",
+        "sections/4-notions.tex",
+        "sections/appendix.tex"
+      ],
+      "main_tex_detected": "main.tex",
+      "main_tex_method": "filename_match:main.tex",
+      "has_documentclass": true,
+      "pylatexenc_parse_success": true,
+      "pylatexenc_error": null,
+      "file_structure": {
+        "total_files": 18,
+        "tex_files": 12,
+        "bib_files": 2,
+        "image_files": 1,
+        "style_files": 1,
+        "other_files": 2,
+        "has_subdirectories": true,
+        "extensions": {
+          ".tex": 12,
+          ".bbl": 1,
+          ".bib": 2,
+          ".thm": 1,
+          ".cls": 1,
+          ".png": 1
+        }
+      }
+    },
+    {
+      "arxiv_id": "1706.03762",
+      "source_available": true,
+      "download_error": null,
+      "archive_type": "tar.gz",
+      "file_count": 23,
+      "tex_files": [
+        "background.tex",
+        "visualizations.tex",
+        "why_self_attention.tex",
+        "parameter_attention.tex",
+        "results.tex",
+        "ms.tex",
+        "introduction.tex",
+        "sqrt_d_trick.tex",
+        "training.tex",
+        "model_architecture.tex"
+      ],
+      "main_tex_detected": "ms.tex",
+      "main_tex_method": "documentclass_search",
+      "has_documentclass": true,
+      "pylatexenc_parse_success": true,
+      "pylatexenc_error": null,
+      "file_structure": {
+        "total_files": 23,
+        "tex_files": 10,
+        "bib_files": 0,
+        "image_files": 12,
+        "style_files": 1,
+        "other_files": 0,
+        "has_subdirectories": true,
+        "extensions": {
+          ".tex": 10,
+          ".sty": 1,
+          ".pdf": 6,
+          ".png": 6
+        }
+      }
+    },
+    {
+      "arxiv_id": "2305.10601",
+      "source_available": true,
+      "download_error": null,
+      "archive_type": "tar.gz",
+      "file_count": 16,
+      "tex_files": [
+        "main.tex"
+      ],
+      "main_tex_detected": "main.tex",
+      "main_tex_method": "filename_match:main.tex",
+      "has_documentclass": true,
+      "pylatexenc_parse_success": true,
+      "pylatexenc_error": null,
+      "file_structure": {
+        "total_files": 16,
+        "tex_files": 1,
+        "bib_files": 0,
+        "image_files": 9,
+        "style_files": 1,
+        "other_files": 5,
+        "has_subdirectories": true,
+        "extensions": {
+          ".synctex": 1,
+          ".bbl": 1,
+          ".tex": 1,
+          ".out": 1,
+          ".fdb_latexmk": 1,
+          ".sty": 1,
+          ".fls": 1,
+          ".pdf": 9
+        }
+      }
+    },
+    {
+      "arxiv_id": "1810.04805",
+      "source_available": true,
+      "download_error": null,
+      "archive_type": "tar.gz",
+      "file_count": 28,
+      "tex_files": [
+        "intro.tex",
+        "experiments_details.tex",
+        "appendix_main.tex",
+        "ablation.tex",
+        "more_ablation.tex",
+        "swag_official_tab.tex",
+        "conclusion.tex",
+        "main.tex",
+        "abstract.tex",
+        "pretrained_embeddings_tab.tex",
+        "squad_tab.tex",
+        "mask_procedure_ablation_tab.tex",
+        "bert_details.tex",
+        "experiment.tex",
+        "size_ablation_tab.tex",
+        "related.tex",
+        "direction_ablation_tab.tex",
+        "steps_ablation_fig.tex",
+        "bert.tex",
+        "glue_official_tab.tex"
+      ],
+      "main_tex_detected": "main.tex",
+      "main_tex_method": "filename_match:main.tex",
+      "has_documentclass": true,
+      "pylatexenc_parse_success": true,
+      "pylatexenc_error": null,
+      "file_structure": {
+        "total_files": 28,
+        "tex_files": 20,
+        "bib_files": 0,
+        "image_files": 4,
+        "style_files": 2,
+        "other_files": 2,
+        "has_subdirectories": false,
+        "extensions": {
+          ".bbl": 2,
+          ".tex": 20,
+          ".pdf": 4,
+          ".bst": 1,
+          ".sty": 1
+        }
+      }
+    },
+    {
+      "arxiv_id": "2203.02155",
+      "source_available": true,
+      "download_error": null,
+      "archive_type": "tar.gz",
+      "file_count": 32,
+      "tex_files": [
+        "usecases-gpt.tex",
+        "neurips_2021.tex",
+        "model-samples.tex",
+        "automatic-eval-prompts.tex",
+        "automatic_evals_table.tex",
+        "usecases-if.tex"
+      ],
+      "main_tex_detected": "neurips_2021.tex",
+      "main_tex_method": "documentclass_search",
+      "has_documentclass": true,
+      "pylatexenc_parse_success": true,
+      "pylatexenc_error": null,
+      "file_structure": {
+        "total_files": 32,
+        "tex_files": 6,
+        "bib_files": 0,
+        "image_files": 24,
+        "style_files": 1,
+        "other_files": 1,
+        "has_subdirectories": true,
+        "extensions": {
+          ".tex": 6,
+          ".bbl": 1,
+          ".sty": 1,
+          ".pdf": 22,
+          ".png": 2
+        }
+      }
+    },
+    {
+      "arxiv_id": "1312.6114",
+      "source_available": true,
+      "download_error": null,
+      "archive_type": "tar.gz",
+      "file_count": 14,
+      "tex_files": [
+        "iclr14_sva.tex",
+        "iclr14_sva_appendix.tex",
+        "tikzlibrarybayesnet.code.tex",
+        "shared/commands.tex"
+      ],
+      "main_tex_detected": "iclr14_sva.tex",
+      "main_tex_method": "documentclass_search",
+      "has_documentclass": true,
+      "pylatexenc_parse_success": true,
+      "pylatexenc_error": null,
+      "file_structure": {
+        "total_files": 14,
+        "tex_files": 4,
+        "bib_files": 0,
+        "image_files": 8,
+        "style_files": 1,
+        "other_files": 1,
+        "has_subdirectories": true,
+        "extensions": {
+          ".bbl": 1,
+          ".tex": 4,
+          ".sty": 1,
+          ".pdf": 8
+        }
+      }
+    },
+    {
+      "arxiv_id": "2006.11239",
+      "source_available": true,
+      "download_error": null,
+      "archive_type": "tar.gz",
+      "file_count": 24,
+      "tex_files": [
+        "main.tex"
+      ],
+      "main_tex_detected": "main.tex",
+      "main_tex_method": "filename_match:main.tex",
+      "has_documentclass": true,
+      "pylatexenc_parse_success": true,
+      "pylatexenc_error": null,
+      "file_structure": {
+        "total_files": 24,
+        "tex_files": 1,
+        "bib_files": 1,
+        "image_files": 18,
+        "style_files": 1,
+        "other_files": 3,
+        "has_subdirectories": true,
+        "extensions": {
+          ".bbl": 1,
+          ".tex": 1,
+          ".bib": 1,
+          ".sty": 1,
+          ".csv": 2,
+          ".jpg": 14,
+          ".png": 2,
+          ".pdf": 2
+        }
+      }
+    },
+    {
+      "arxiv_id": "1409.1556",
+      "source_available": true,
+      "download_error": null,
+      "archive_type": "tar.gz",
+      "file_count": 6,
+      "tex_files": [
+        "ilsvrc14.tex"
+      ],
+      "main_tex_detected": "ilsvrc14.tex",
+      "main_tex_method": "documentclass_search",
+      "has_documentclass": true,
+      "pylatexenc_parse_success": true,
+      "pylatexenc_error": null,
+      "file_structure": {
+        "total_files": 6,
+        "tex_files": 1,
+        "bib_files": 0,
+        "image_files": 0,
+        "style_files": 4,
+        "other_files": 1,
+        "has_subdirectories": false,
+        "extensions": {
+          ".bbl": 1,
+          ".bst": 1,
+          ".tex": 1,
+          ".sty": 3
+        }
+      }
+    },
+    {
+      "arxiv_id": "1512.03385",
+      "source_available": true,
+      "download_error": null,
+      "archive_type": "tar.gz",
+      "file_count": 13,
+      "tex_files": [
+        "residual_v1_arxiv_release.tex"
+      ],
+      "main_tex_detected": "residual_v1_arxiv_release.tex",
+      "main_tex_method": "documentclass_search",
+      "has_documentclass": true,
+      "pylatexenc_parse_success": true,
+      "pylatexenc_error": null,
+      "file_structure": {
+        "total_files": 13,
+        "tex_files": 1,
+        "bib_files": 0,
+        "image_files": 7,
+        "style_files": 4,
+        "other_files": 1,
+        "has_subdirectories": true,
+        "extensions": {
+          ".tex": 1,
+          ".bst": 1,
+          ".sty": 3,
+          ".bbl": 1,
+          ".pdf": 7
+        }
+      }
+    },
+    {
+      "arxiv_id": "2010.11929",
+      "source_available": true,
+      "download_error": null,
+      "archive_type": "tar.gz",
+      "file_count": 38,
+      "tex_files": [
+        "04_experiments.tex",
+        "06_appendix.tex",
+        "01_introduction.tex",
+        "main.tex",
+        "math_commands.tex",
+        "05_conclusion.tex",
+        "vtab_table.tex",
+        "02_related_work.tex",
+        "03_method.tex"
+      ],
+      "main_tex_detected": "main.tex",
+      "main_tex_method": "filename_match:main.tex",
+      "has_documentclass": true,
+      "pylatexenc_parse_success": true,
+      "pylatexenc_error": null,
+      "file_structure": {
+        "total_files": 38,
+        "tex_files": 9,
+        "bib_files": 1,
+        "image_files": 22,
+        "style_files": 5,
+        "other_files": 1,
+        "has_subdirectories": true,
+        "extensions": {
+          ".tex": 9,
+          ".bbl": 1,
+          ".sty": 4,
+          ".bib": 1,
+          ".bst": 1,
+          ".pdf": 20,
+          ".png": 2
+        }
+      }
+    }
+  ]
+}

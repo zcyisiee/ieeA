@@ -1,0 +1,266 @@
+{
+  "completed": [
+    "6ead3d72-3834-41d2-b8d5-c9d0b82e2314",
+    "7a5c686e-d023-4b1f-8d69-f149e52262d2",
+    "e47c9dc7-4644-4dfe-8b3b-cf8ebf97532a",
+    "ee72c75d-84a2-4023-9fd6-ef08bfc1e29d",
+    "4289c6fd-9b87-4888-b57d-86f310778d41",
+    "e391a2f1-6530-473c-ba29-3c8b0eda071c",
+    "2272e46d-e258-43ea-b921-5d56eb6d8a28",
+    "d4c203b2-d5fd-4f90-b48c-5413da48855d",
+    "fac149a5-ec59-4961-85dd-1f9462f4fca9",
+    "43aba906-9f61-44e7-8f2a-6e3ef30da7cc",
+    "037c3b7e-0215-46b4-a43c-2bfcd0b51818",
+    "954ef84a-11b2-45f0-bb5c-92cc041f8331",
+    "5c62aafc-4770-4c72-b707-ce0bdc3a228b",
+    "f4fcc81b-cb53-4762-bfcc-47510419a414",
+    "95f332e2-f2f3-4345-b829-02f614c6b947",
+    "deb4ab8d-23b3-4130-9dd6-453fcaa2040c",
+    "f836abab-b800-4194-b122-7c33a72e066f",
+    "9f086f97-b138-4656-ada3-281a5ef82411",
+    "97a2bb00-e055-4644-b160-4c5a5a4bcbb4",
+    "2102b9c2-91f6-42b6-83c3-24b3cdb0d908",
+    "d9b96175-951a-4d77-ba6e-81cdff30f094",
+    "b1ef56cb-ae8f-4ee9-a960-c595ddc0367b",
+    "d201f256-27cb-4985-a961-59194997b37c",
+    "d350e575-5568-440e-b709-53943a0587de",
+    "521a249b-3661-4f21-8d56-14dde9621da8",
+    "9390a971-3efe-44f6-804c-ac611efcca00"
+  ],
+  "results": [
+    {
+      "source": "[[MACRO_0]]",
+      "translation": "[[MACRO_0]]",
+      "chunk_id": "6ead3d72-3834-41d2-b8d5-c9d0b82e2314",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "While AI-generated text (AIGT) detectors achieve over 90[[MACRO_1]] accuracy on direct LLM outputs, they fail catastrophically against iteratively-paraphrased content. We investigate why iteratively-paraphrased text—itself AI-generated—evades detection systems designed for AIGT identification. Through intrinsic mechanism analysis, we reveal that iterative paraphrasing creates an intermediate laundering region characterized by semantic displacement with preserved generation patterns, which brings up two attack categories: paraphrasing human-authored text (authorship obfuscation) and paraphrasing LLM-generated text (plagiarism evasion). [[MACRO_2]]\nTo address these vulnerabilities, we introduce PADBen, the first benchmark systematically evaluating detector robustness against both paraphrase attack scenarios. PADBen comprises a five-type text taxonomy capturing the full trajectory from original content to deeply laundered text, and five progressive detection tasks across sentence-pair and single-sentence challenges. We evaluate 11 state-of-the-art detectors, revealing critical asymmetry: detectors successfully identify the plagiarism evasion problem but fail for the case of authorship obfuscation. Our findings demonstrate that current detection approaches cannot effectively handle the intermediate laundering region, necessitating fundamental advances in detection architectures beyond existing semantic and stylistic discrimination methods. For detailed code implementation, please see [[REF_3]]https://github.com/JonathanZha47/PadBen-Paraphrase-Attack-Benchmarkhttps://github.com/JonathanZha47/PadBen-Paraphrase-Attack-Benchmark.\n\n% While state-of-the-art AI text detectors achieve high accuracy on direct Large Language Model (LLM) outputs, they show significantly reduced performance against paraphrased content, yet no comprehensive, standardized benchmark exists to evaluate this critical vulnerability. We systematically investigate the mechanism of this failure using dual representation space analysis, revealing an ''intermediate laundering region.'' In this region, iterative paraphrasing induces semantic drift ($\\text{0.035–0.134}$ cosine similarity) while preserving the original generation patterns, creating a fundamental detection blind spot in current binary classification systems.",
+      "translation": "尽管AI生成文本（AI生成文本）检测器在直接LLM输出上达到了超过90[[MACRO_1]]的准确率，但面对迭代改写的内容时却遭遇灾难性失败。我们研究了为什么迭代改写的文本——本身也是AI生成的——能够逃避专为AI生成文本识别设计的检测系统。通过内在机制分析，我们揭示了迭代改写创造了一个中间洗白区域，该区域的特征是语义位移但保留了生成模式，这引发了两类攻击：改写人类撰写的文本（作者身份混淆）和改写LLM生成的文本（规避抄袭检测）。[[MACRO_2]]\n\n为了解决这些漏洞，我们引入了PADBen，这是首个系统性评估检测器对两种改写攻击场景鲁棒性的基准。PADBen包含一个五类文本分类体系，涵盖了从原始内容到深度洗白文本的完整轨迹，以及跨句子对和单句挑战的五个渐进式检测任务。我们评估了11个最先进的检测器，揭示了关键的不对称性：检测器成功识别了规避抄袭检测问题，但在作者身份混淆情况下失效。我们的研究表明，当前的检测方法无法有效处理中间洗白区域，需要在现有语义和风格判别方法之外对检测架构进行根本性改进。详细代码实现请参见[[REF_3]]https://github.com/JonathanZha47/PadBen-Paraphrase-Attack-Benchmarkhttps://github.com/JonathanZha47/PadBen-Paraphrase-Attack-Benchmark。",
+      "chunk_id": "7a5c686e-d023-4b1f-8d69-f149e52262d2",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 17
+      }
+    },
+    {
+      "source": "% To address this gap, we introduce \\textbf{PADBen} (\\textbf{P}araphrase \\textbf{A}ttack \\textbf{D}etection \\textbf{Ben}chmark), the first comprehensive benchmark designed to systematically evaluate detector robustness. PADBen uses a five-type text taxonomy and five progressive detection tasks across two formats to reflect realistic adversarial conditions. We evaluate 11 state-of-the-art detectors and reveal a critical asymmetry: zero-shot methods (e.g., RADAR) successfully detect highly laundered AI text against human baselines ($\\text{AUC} \\text{ } 0.909$) but fail completely when discriminating between different laundering depths ($\\text{AUC} \\text{ } 0.526$). Model-based detectors show severe inconsistency ($\\text{AUC} \\text{0.351–0.691}$).",
+      "translation": "为了填补这一空白，我们提出了\\textbf{PADBen}（\\textbf{P}araphrase \\textbf{A}ttack \\textbf{D}etection \\textbf{Ben}chmark），这是首个专门用于系统性评估检测器鲁棒性的综合基准。PADBen采用五类文本分类体系，并通过两种格式设计了五个渐进式检测任务，以反映真实的对抗条件。我们评估了11个SOTA 检测器，揭示了一个关键的不对称现象：零样本方法（如RADAR）能够成功检测出经过高度改写的AI文本并将其与人类基线区分开（$\\text{AUC} \\text{ } 0.909$），但在区分不同改写深度时却完全失效（$\\text{AUC} \\text{ } 0.526$）。基于模型的检测器则表现出严重的不一致性（$\\text{AUC} \\text{0.351–0.691}$）。",
+      "chunk_id": "e47c9dc7-4644-4dfe-8b3b-cf8ebf97532a",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 4
+      }
+    },
+    {
+      "source": "% This asymmetry reframes the threat landscape: laundering attacks successfully evade depth-based detection but remain vulnerable to origin-based detection. We release PADBen to accelerate research toward dual-capability systems that can distinguish both human-vs-machine origin and the extent of adversarial manipulation.",
+      "translation": "这种不对称性重新定义了威胁格局：洗稿攻击能够成功规避基于深度的检测，但仍然容易被基于来源的检测识别。我们发布PADBen以加速研究，推动开发具有双重能力的系统，既能区分人类与机器的来源，又能判断对抗性操纵的程度。",
+      "chunk_id": "ee72c75d-84a2-4023-9fd6-ef08bfc1e29d",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "% \\section{Introduction}\n% The rapid advancement of Large Language Models (LLMs) like GPT-5, Claude-4, and Gemini-2.5 has achieved near-human quality in text generation \\cite{openai2024gpt4technicalreport,geminiteam2025geminifamilyhighlycapable,kevian2024capabilitieslargelanguagemodels}. While these commercial LLMs enable unprecedented automation across creative and academic domains, AI-generated text (AIGT) poses significant risks through malicious applications, including fabricating plausible misinformation and automating spam production \\cite{leite2023detecting, Yeh2023EvaluatingIL}. This reality has spurred development of robust systems to differentiate between human-authored and machine-generated text \\cite{raid,bhattacharjee2023fightingfirechatgptdetect}.",
+      "translation": "大型语言模型（LLM）如GPT-5、Claude-4和Gemini-2.5的快速发展已经在文本生成方面达到了接近人类的质量水平\\cite{openai2024gpt4technicalreport,geminiteam2025geminifamilyhighlycapable,kevian2024capabilitieslargelanguagemodels}。尽管这些商业LLM在创意和学术领域实现了前所未有的自动化能力，但LLM生成的文本（AIGT）通过恶意应用带来了重大风险，包括制造看似可信的虚假信息和自动化生产垃圾内容\\cite{leite2023detecting, Yeh2023EvaluatingIL}。这一现实促使人们开发强大的系统来区分人类撰写的文本和机器生成的文本\\cite{raid,bhattacharjee2023fightingfirechatgptdetect}。",
+      "chunk_id": "4289c6fd-9b87-4888-b57d-86f310778d41",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 4
+      }
+    },
+    {
+      "source": "% A diverse ecosystem of AI text detectors has emerged in response. These methods fall into two primary categories: zero-shot detectors like FastDetectGPT \\cite{bao2024fastdetectgpt}, DetectGPT \\cite{mitchell2023detectgptzeroshotmachinegeneratedtext}, GLTR \\cite{gehrmann2019gltrstatisticaldetectionvisualization}, and Binoculars \\cite{hans2024spottingllmsbinocularszeroshot}, which identify intrinsic statistical artifacts in synthetic text; and model-based detectors, including RADAR \\cite{hu2023radarrobustaitextdetection} and OpenAI's RoBERTa-based classifier \\cite{solaiman2019release}, which are fine-tuned on large datasets of human and AI content \\cite{rezaei-etal-2024-clulab}. Recent research also indicates that proprietary LLMs themselves, such as GPT-4 and Qwen, can be prompted to serve as effective detectors \\cite{ji2025iknowbetterreally}.",
+      "translation": "为了应对这一挑战，一个多样化的AI生成文本检测器生态系统应运而生。这些方法主要分为两类：零样本检测器，如FastDetectGPT \\cite{bao2024fastdetectgpt}、DetectGPT \\cite{mitchell2023detectgptzeroshotmachinegeneratedtext}、GLTR \\cite{gehrmann2019gltrstatisticaldetectionvisualization}和Binoculars \\cite{hans2024spottingllmsbinocularszeroshot}，它们通过识别合成文本中固有的统计特征来进行检测；以及基于模型的检测器，包括RADAR \\cite{hu2023radarrobustaitextdetection}和OpenAI基于RoBERTa的分类器 \\cite{solaiman2019release}，这些检测器在大规模人类和AI生成内容数据集上进行了微调 \\cite{rezaei-etal-2024-clulab}。最近的研究还表明，专有LLM本身，如GPT-4和Qwen，可以通过提示工程作为有效的检测器使用 \\cite{ji2025iknowbetterreally}。",
+      "chunk_id": "e391a2f1-6530-473c-ba29-3c8b0eda071c",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 8
+      }
+    },
+    {
+      "source": "% Paraphrase attacks have emerged as the most effective strategy for circumventing these detection systems. These attacks involve systematically rewording AI-generated content while preserving semantic meaning, effectively ``laundering'' synthetic text to appear human-authored \\cite{krishna2023paraphrasingevadesdetectorsaigenerated}. Advanced techniques like recursive paraphrasing can significantly reduce detection rates while maintaining text quality \\cite{sadasivan2023canaigeneratedtextreliably}. Unlike methods requiring deep technical expertise, paraphrasing is easily executed, causing state-of-the-art detectors' accuracy to plummet to near-random performance and creating severe risks across domains from education to information security \\cite{Weber_Wulff_2023, shportko-verbitsky-2025-paraphrasing}.",
+      "translation": "改写攻击已成为规避这些检测系统最有效的策略。这类攻击通过系统性地重新表述AI生成的内容，同时保留语义含义，有效地将合成文本\"洗白\"为看似人类撰写的内容\\cite{krishna2023paraphrasingevades检测器saigenerated}。递归改写等先进技术能够在保持文本质量的同时显著降低检测率\\cite{sadasivan2023canaigeneratedtextreliably}。与需要深厚技术专业知识的方法不同，改写攻击易于实施，导致最先进检测器的准确率骤降至接近随机水平，并在从教育到信息安全等各个领域造成严重风险\\cite{Weber_Wulff_2023, shportko-verbitsky-2025-paraphrasing}。",
+      "chunk_id": "2272e46d-e258-43ea-b921-5d56eb6d8a28",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 3
+      }
+    },
+    {
+      "source": "% The prevalence of paraphrase attacks has exposed critical inadequacies in current evaluation frameworks for AIGT detection robustness. While existing benchmarks like RAID \\cite{raid} provide comprehensive AIGT detection evaluation, they employ only single-step Dipper-based paraphrasing without systematic robustness assessment. Similarly, PARAPHRASUS \\cite{michail2024paraphrasuscomprehensivebenchmark} evaluates paraphrase identification capabilities across multiple models using Classify, Min, and Max challenges on well-known NLP datasets. However, performing well on these challenges does not necessarily indicate robust adversarial defense capabilities, as these artificial scenarios focus on paraphrase detection rather than systematic evaluation of detector vulnerabilities to iterative evasion attacks. Consequently, neither framework addresses the critical gap: assessing how detectors perform against realistic, multi-iteration paraphrase-based attacks designed to evade detection.",
+      "translation": "改写攻击的普遍存在暴露了当前AI生成文本检测鲁棒性评估框架的严重不足。虽然现有基准如RAID \\cite{raid}提供了全面的AI生成文本检测评估，但它们仅采用单步基于Dipper的改写方法，缺乏系统性的鲁棒性评估。类似地，PARAPHRASUS \\cite{michail2024paraphrasuscomprehensivebenchmark}使用Classify、Min和Max挑战在知名自然语言处理数据集上评估多个模型的改写识别能力。然而，在这些挑战中表现良好并不一定表明具备强大的对抗防御能力，因为这些人工场景侧重于改写检测，而非系统性评估检测器对迭代逃避攻击的脆弱性。因此，这两个框架都未能解决关键缺陷：评估检测器在面对旨在逃避检测的真实多迭代改写攻击时的表现。",
+      "chunk_id": "d4c203b2-d5fd-4f90-b48c-5413da48855d",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 10
+      }
+    },
+    {
+      "source": "% To address this gap, we introduce PADBen (\\textbf{P}araphrase \\textbf{A}ttack \\textbf{D}etection \\textbf{Ben}chmark), the first comprehensive benchmark designed to systematically evaluate AI text detectors against paraphrase attacks. Through dual representation space analysis, we reveal that iterative paraphrasing creates an ``intermediate laundering region'' where texts undergo semantic drift while preserving generation patterns—a mechanism that creates detection blind spots in current binary classification paradigms.",
+      "translation": "为了填补这一空白，我们提出了PADBen（\\textbf{P}araphrase \\textbf{A}ttack \\textbf{D}etection \\textbf{Ben}chmark），这是首个专门用于系统性评估AI文本检测器对改写攻击鲁棒性的综合基准。通过双重表示空间分析，我们发现迭代改写会产生一个\"中间洗白区域\"，在该区域中文本发生语义漂移的同时仍保留生成模式特征——这一机制在当前的二元分类范式中造成了检测盲区。",
+      "chunk_id": "fac149a5-ec59-4961-85dd-1f9462f4fca9",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 3
+      }
+    },
+    {
+      "source": "% Based on this insight, we establish a five-type text taxonomy capturing the complete spectrum of authorship and paraphrasing dynamics: (1) \\textbf{Type 1} - Human original text; (2) \\textbf{Type 2} - LLM-generated text; (3) \\textbf{Type 3} - Human-paraphrased original text; (4) \\textbf{Type 4} - LLM-paraphrased original text; and (5) \\textbf{Type 5} - Iteratively LLM-paraphrased LLM-generated text. Building upon this taxonomy, PADBen introduces five progressive detection tasks across two evaluation formats—single-sentence classification and sentence-pair recognition—designed to reflect realistic adversarial conditions.",
+      "translation": "基于这一洞察，我们建立了一个五类文本分类体系，涵盖了作者身份和改写动态的完整谱系：(1) \\textbf{Type 1} - 人类原创文本；(2) \\textbf{Type 2} - LLM生成的文本；(3) \\textbf{Type 3} - 人类改写的原创文本；(4) \\textbf{Type 4} - LLM改写的原创文本；(5) \\textbf{Type 5} - 迭代LLM改写的LLM生成文本。在此分类体系基础上，PADBen引入了五个渐进式检测任务，采用两种评估格式——单句分类和句对识别——旨在反映真实的对抗性条件。",
+      "chunk_id": "43aba906-9f61-44e7-8f2a-6e3ef30da7cc",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 7
+      }
+    },
+    {
+      "source": "% Our key contributions are:\n% \\begin{enumerate}[nosep]\n%     \\item To the best of our knowledge, we are the first to systematically investigate the intrinsic mechanisms of paraphrase attacks through dual representation space analysis. We reveal that iterative paraphrasing creates an intermediate laundering region characterized by semantic displacement with preserved generation patterns, enabling two fundamentally distinct attack categories: authorship obfuscation (paraphrasing human-authored text) and plagiarism evasion (paraphrasing LLM-generated text);\n%     \\item We propose a comprehensive five-type text taxonomy capturing both attack categories across their full trajectory from original content to deeply laundered text. We construct five progressive detection tasks evaluating detector robustness across sentence-pair and single-sentence formats, systematically assessing vulnerabilities to both authorship obfuscation and plagiarism evasion scenarios;\n%     \\item We conduct extensive evaluations of 11 state-of-the-art detectors (4 zero-shot, 7 model-based), revealing critical asymmetry: paraphrase attacks do not universally defeat detection systems—outcomes depend on text origin.\n% \\end{enumerate}",
+      "translation": "我们的主要贡献包括：\n\\begin{enumerate}[nosep]\n    \\item 据我们所知，我们首次通过双重表示空间分析系统性地研究了改写攻击的内在机制。我们揭示了迭代改写会创建一个中间洗白区域，该区域的特征是语义位移同时保留生成模式，从而实现两类根本不同的攻击：作者身份混淆（改写人类撰写的文本）和抄袭规避（改写LLM生成的文本）；\n    \\item 我们提出了一个全面的五类文本分类体系，涵盖了从原始内容到深度洗白文本的完整轨迹中的两类攻击。我们构建了五个渐进式检测任务，在句子对和单句格式下评估检测器的鲁棒性，系统性地评估其对作者身份混淆和抄袭规避场景的脆弱性；\n    \\item 我们对11个SOTA 检测器（4个零样本、7个基于模型）进行了广泛评估，揭示了关键的不对称性：改写攻击并非普遍击败检测系统——结果取决于文本来源。\n\\end{enumerate}",
+      "chunk_id": "037c3b7e-0215-46b4-a43c-2bfcd0b51818",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 5
+      }
+    },
+    {
+      "source": "Introduction",
+      "translation": "# 引言",
+      "chunk_id": "954ef84a-11b2-45f0-bb5c-92cc041f8331",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "Large Language Models (LLMs) like GPT-5, Claude-4, and Gemini-2.5 have achieved near-human quality in text generation [[REF_4]]. While enabling unprecedented automation across creative and academic domains, AI-generated text (AIGT) poses significant risks through malicious applications, including fabricating misinformation and automating spam [[REF_5]]. This has spurred development of robust systems to differentiate human-authored from machine-generated text [[REF_6]].",
+      "translation": "大型语言模型（LLM）如GPT-5、Claude-4和Gemini-2.5在文本生成方面已达到接近人类的质量水平[[REF_4]]。尽管这些模型在创意和学术领域实现了前所未有的自动化能力，但AI生成的文本（AI生成文本）通过恶意应用带来了重大风险，包括制造虚假信息和自动化垃圾内容生成[[REF_5]]。这促使研究人员开发出能够有效区分人类撰写文本与机器生成文本的鲁棒系统[[REF_6]]。",
+      "chunk_id": "5c62aafc-4770-4c72-b707-ce0bdc3a228b",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 3
+      }
+    },
+    {
+      "source": "A diverse ecosystem of AI text detectors has emerged, falling into two categories: zero-shot detectors like FastDetectGPT [[REF_7]], DetectGPT [[REF_8]], GLTR [[REF_9]], and Binoculars [[REF_10]], which identify intrinsic statistical artifacts in synthetic text; and model-based detectors, including RADAR [[REF_11]] and OpenAI's RoBERTa classifier [[REF_12]], fine-tuned on large datasets of human and AI content [[REF_13]]. Recent research indicates that proprietary LLMs like GPT-4 and Qwen can be prompted to serve as effective detectors [[REF_14]].",
+      "translation": "多样化的AI文本检测器生态系统已经出现，可分为两类：零样本检测器，如FastDetectGPT [[REF_7]]、DetectGPT [[REF_8]]、GLTR [[REF_9]]和Binoculars [[REF_10]]，这些方法通过识别合成文本中的内在统计特征来进行检测；以及基于模型的检测器，包括RADAR [[REF_11]]和OpenAI的RoBERTa分类器 [[REF_12]]，这些模型在大规模人类和AI内容数据集上进行微调 [[REF_13]]。最新研究表明，GPT-4和Qwen等专有LLM可以通过提示词引导，作为有效的检测器使用 [[REF_14]]。",
+      "chunk_id": "f4fcc81b-cb53-4762-bfcc-47510419a414",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 8
+      }
+    },
+    {
+      "source": "Paraphrase attacks have emerged as the most effective evasion strategy. These attacks systematically reword AI-generated content while preserving semantic meaning, effectively ``laundering'' synthetic text to appear human-authored [[REF_15]]. Advanced techniques like recursive paraphrasing significantly reduce detection performance while maintaining text quality [[REF_16]]. Unlike methods requiring deep technical expertise, paraphrasing is easily executed, causing state-of-the-art detectors' accuracy to plummet to near-random performance, creating severe risks from education to information security [[REF_17]].",
+      "translation": "改写攻击已成为最有效的规避策略。这类攻击系统性地重新表述AI生成的内容，同时保留语义含义，有效地将合成文本\"洗白\"为看似人类撰写的文本[[REF_15]]。递归改写等先进技术在保持文本质量的同时显著降低了检测性能[[REF_16]]。与需要深厚技术专长的方法不同，改写操作易于执行，导致SOTA 检测器的准确率骤降至接近随机水平，从教育到信息安全领域都带来了严重风险[[REF_17]]。",
+      "chunk_id": "95f332e2-f2f3-4345-b829-02f614c6b947",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "The prevalence of paraphrase attacks has exposed critical inadequacies in current evaluation frameworks for AIGT detection robustness. While existing benchmarks like RAID [[REF_18]] provide comprehensive AIGT detection evaluation, they employ only single-step Dipper-based paraphrasing without systematic robustness assessment. Similarly, PARAPHRASUS [[REF_19]] evaluates paraphrase identification across multiple models using Classify, Min, and Max challenges on established NLP datasets. However, performing well on these challenges does not indicate robust adversarial defense, as these artificial scenarios focus on paraphrase detection rather than systematic evaluation of detector vulnerabilities to iterative evasion attacks. Neither framework addresses the critical gap: assessing detector performance against realistic, multi-iteration paraphrase-based attacks.",
+      "translation": "改写攻击的普遍存在暴露了当前AI生成文本检测鲁棒性评估框架的严重不足。尽管现有基准如RAID [[REF_18]]提供了全面的AI生成文本检测评估，但它们仅采用单步基于Dipper的改写方法，缺乏系统性的鲁棒性评估。类似地，PARAPHRASUS [[REF_19]]使用Classify、Min和Max挑战在已建立的自然语言处理数据集上评估多个模型的改写识别能力。然而，在这些挑战中表现良好并不意味着具备强大的对抗防御能力，因为这些人工场景侧重于改写检测，而非系统性评估检测器面对迭代逃避攻击的脆弱性。这两个框架都未能解决关键缺陷：评估检测器在面对现实的、多迭代改写攻击时的性能表现。",
+      "chunk_id": "deb4ab8d-23b3-4130-9dd6-453fcaa2040c",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 10
+      }
+    },
+    {
+      "source": "To address this gap, we introduce PADBen (\\textbf{P}araphrase \\textbf{A}ttack \\textbf{D}etection \\textbf{Ben}chmark), the first comprehensive benchmark to systematically evaluate AI text detectors against paraphrase attacks. Through dual representation space analysis, we observe that iterative paraphrasing creates an ``intermediate laundering region'' where texts undergo semantic drift while preserving generation patterns—a mechanism creating detection blind spots in current binary classification paradigms.",
+      "translation": "为了填补这一空白，我们提出了PADBen（\\textbf{P}araphrase \\textbf{A}ttack \\textbf{D}etection \\textbf{Ben}chmark），这是首个系统性评估AI文本检测器对抗改写攻击的综合基准。通过双重表示空间分析，我们发现迭代改写会产生一个\"中间洗白区域\"，在该区域中文本发生语义漂移的同时保留了生成模式——这一机制在当前的二元分类范式中造成了检测盲区。",
+      "chunk_id": "f836abab-b800-4194-b122-7c33a72e066f",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 3
+      }
+    },
+    {
+      "source": "Based on this insight, we establish a five-type text taxonomy capturing the complete spectrum of authorship and paraphrasing dynamics: (1) \\textbf{Type 1} - Human original text; (2) \\textbf{Type 2} - LLM-generated text; (3) \\textbf{Type 3} - Human-paraphrased original text; (4) \\textbf{Type 4} - LLM-paraphrased original text; and (5) \\textbf{Type 5} - Iteratively LLM-paraphrased LLM-generated text. Building upon this taxonomy, PADBen introduces five progressive detection tasks across two evaluation formats—single-sentence classification and sentence-pair recognition—designed to reflect realistic adversarial conditions.",
+      "translation": "基于这一洞察，我们建立了一个五类文本分类体系，涵盖了作者身份和改写动态的完整谱系：(1) \\textbf{Type 1} - 人类原创文本；(2) \\textbf{Type 2} - LLM生成的文本；(3) \\textbf{Type 3} - 人类改写的原创文本；(4) \\textbf{Type 4} - LLM改写的原创文本；(5) \\textbf{Type 5} - 迭代式LLM改写的LLM生成文本。在此分类体系基础上，PADBen引入了五个渐进式检测任务，采用两种评估格式——单句分类和句对识别——旨在反映真实的对抗性条件。",
+      "chunk_id": "9f086f97-b138-4656-ada3-281a5ef82411",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 7
+      }
+    },
+    {
+      "source": "Our key contributions are:\n\n    \\item We are the first to systematically investigate paraphrase attack mechanisms through dual representation space analysis. We reveal that iterative paraphrasing creates an intermediate laundering region characterized by semantic displacement with preserved generation patterns, enabling two fundamentally distinct attack categories: authorship obfuscation (paraphrasing human-authored text) and plagiarism evasion (paraphrasing LLM-generated text);\n    \\item We propose a comprehensive five-type text taxonomy capturing both attack categories across their full trajectory from original content to deeply laundered text. We construct five progressive detection tasks evaluating detector robustness across sentence-pair and single-sentence formats, systematically assessing vulnerabilities to both authorship obfuscation and plagiarism evasion scenarios;\n    \\item We conduct extensive evaluations of 11 state-of-the-art detectors (4 zero-shot, 7 model-based), revealing critical asymmetry: paraphrase attacks do not universally defeat detection systems—outcomes depend on text origin.",
+      "translation": "我们的主要贡献包括：\n\n    \\item 我们首次系统性地通过双重表示空间分析研究了改写攻击机制。我们揭示了迭代改写会创建一个中间洗白区域，该区域的特征是语义位移但保留了生成模式，从而形成两类本质上不同的攻击：作者身份混淆（改写人类撰写的文本）和抄袭规避（改写LLM生成的文本）；\n    \\item 我们提出了一个全面的五类文本分类体系，涵盖了从原始内容到深度洗白文本的完整轨迹中的两类攻击。我们构建了五个渐进式检测任务，在句对和单句格式下评估检测器的鲁棒性，系统性地评估了对作者身份混淆和抄袭规避场景的脆弱性；\n    \\item 我们对11个SOTA 检测器（4个零样本、7个基于模型）进行了广泛评估，揭示了关键的不对称性：改写攻击并非普遍击败检测系统——结果取决于文本来源。",
+      "chunk_id": "97a2bb00-e055-4644-b160-4c5a5a4bcbb4",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 5
+      }
+    },
+    {
+      "source": "Related Work",
+      "translation": "# 相关工作",
+      "chunk_id": "2102b9c2-91f6-42b6-83c3-24b3cdb0d908",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "Paraphrase Attacks: A Primary Evasion Threat to AIGT Detection",
+      "translation": "改写攻击：AI生成文本检测面临的主要逃避威胁",
+      "chunk_id": "d9b96175-951a-4d77-ba6e-81cdff30f094",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 1
+      }
+    },
+    {
+      "source": "AIGT detectors face constant challenges from evasion techniques [[REF_20]]. Among various evasion strategies, paraphrase attacks—which employ language models to rewrite text while preserving semantic meaning—have emerged as a particularly potent threat [[REF_21]]. Research demonstrates that these attacks significantly compromise watermarking, zero-shot, and neural network-based detectors [[REF_22]]. The study of paraphrase-based evasion is therefore essential for uncovering detector vulnerabilities and improving robustness, creating urgent need for rigorous evaluation frameworks.",
+      "translation": "AI生成文本 检测器面临着来自规避技术的持续挑战[[REF_20]]。在各种规避策略中，改写攻击——利用语言模型改写文本同时保留语义——已成为一种特别强大的威胁[[REF_21]]。研究表明，这些攻击显著削弱了基于水印、零样本和神经网络的检测器[[REF_22]]。因此，研究基于改写的规避对于揭示检测器的脆弱性和提升鲁棒性至关重要，这迫切需要严格的评估框架。",
+      "chunk_id": "b1ef56cb-ae8f-4ee9-a960-c595ddc0367b",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 6
+      }
+    },
+    {
+      "source": "Existing Benchmarks and Gaps in Paraphrase Attack Evaluation",
+      "translation": "# 现有基准测试及改写攻击评估中的不足",
+      "chunk_id": "d201f256-27cb-4985-a961-59194997b37c",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "Researchers have developed several major benchmarks targeting AIGT detection across diverse scenarios. RAID [[REF_23]] encompasses over 6 million text generations from 11 language models across multiple domains, incorporating adversarial techniques including paraphrase attacks via Krishna et al.'s fine-tuned T5-11B models [[REF_24]]. MAGE [[REF_25]] contributes 447k generations from 7 model families, emphasizing cross-domain and cross-model generalization. Complementary benchmarks address multilingual detection [[REF_26]], question-answering scenarios [[REF_27]], and scientific text discrimination [[REF_28]].",
+      "translation": "研究人员已经开发了几个主要的基准测试，针对不同场景下的AI生成文本检测。RAID [[REF_23]]包含来自11个语言模型在多个领域的超过600万条文本生成样本，并融入了对抗性技术，包括通过Krishna等人微调的T5-11B模型[[REF_24]]进行的改写攻击。MAGE [[REF_25]]贡献了来自7个模型家族的44.7万条生成样本，重点关注跨域和跨模型的泛化能力。其他补充性基准测试则针对多语言检测[[REF_26]]、问答场景[[REF_27]]以及科学文本识别[[REF_28]]等方面。",
+      "chunk_id": "d350e575-5568-440e-b709-53943a0587de",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 3
+      }
+    },
+    {
+      "source": "Despite incorporating paraphrase attacks, these benchmarks treat paraphrasing as one perturbation among many rather than examining it as a distinct, evolving evasion pathway. This limited depth overlooks crucial challenges such as tracking degradation through iterative rewrites or assessing boundaries between laundering depths.",
+      "translation": "尽管这些基准测试纳入了改写攻击，但它们仅将改写视为众多扰动方式之一，而非将其作为一种独特且不断演进的逃避路径进行深入研究。这种深度的缺失忽略了一些关键挑战，例如追踪迭代重写过程中的性能退化，或评估不同洗稿深度之间的边界。",
+      "chunk_id": "521a249b-3661-4f21-8d56-14dde9621da8",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 1
+      }
+    },
+    {
+      "source": "PARAPHRASUS [[REF_29]] targets paraphrase identification through three challenges across varying distributions: Classify (mixed), Minimize (0[[MACRO_30]]), and Maximize (100[[MACRO_31]] paraphrases). However, it focuses on paraphrase identification rather than adversarial robustness in AIGT detection. The extreme distributions may allow models to exploit dataset characteristics rather than generalizing to realistic scenarios.",
+      "translation": "PARAPHRASUS [[REF_29]] 通过三个不同分布的挑战来识别改写：分类（混合）、最小化（0[[MACRO_30]]）和最大化（100[[MACRO_31]] 改写）。然而，该工作侧重于改写识别，而非AI生成文本检测中的对抗鲁棒性。这些极端分布可能导致模型利用数据集特征，而非泛化到真实场景。",
+      "chunk_id": "9390a971-3efe-44f6-804c-ac611efcca00",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 4
+      }
+    }
+  ]
+}

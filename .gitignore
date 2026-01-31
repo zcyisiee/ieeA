@@ -1,0 +1,34 @@
+
+# Testing & Coverage
+.coverage
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+
+# Type Checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Linting
+.ruff_cache/
+
+# Environment
+.venv
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Output and cache
+output/
+papers_cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
