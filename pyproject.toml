@@ -4,13 +4,25 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ieeet"
-version = "0.1.0"
-description = "A tool to translate IEEE/arXiv LaTeX papers"
+version = "0.9.0"
+description = "arXiv 论文翻译工具 - 将英文 LaTeX 论文翻译成中文，保留数学公式和文档结构"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = {text = "GPL-3.0-or-later"}
 authors = [
-  {name = "Antigravity", email = "antigravity@example.com"},
+  {name = "ieeT Team"},
+]
+keywords = ["arxiv", "latex", "translation", "chinese", "llm", "academic", "paper"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Text Processing :: Markup :: LaTeX",
+  "Topic :: Scientific/Engineering",
 ]
 dependencies = [
   "pylatexenc",
@@ -19,7 +31,7 @@ dependencies = [
   "pyyaml",
   "pydantic",
   "requests",
-  "openai>=2.16.0",
+  "openai>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -27,7 +39,13 @@ dev = [
   "pytest",
   "ruff",
   "mypy",
+  "build",
+  "twine",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ieeet/ieeet"
+Repository = "https://github.com/ieeet/ieeet"
 
 [project.scripts]
 ieeet = "ieeet.cli:main"
@@ -42,3 +60,9 @@ target-version = "py310"
 [tool.mypy]
 python_version = "3.10"
 strict = true
+
+[dependency-groups]
+dev = [
+    "build>=1.4.0",
+    "twine>=6.2.0",
+]
