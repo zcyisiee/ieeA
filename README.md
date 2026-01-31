@@ -56,7 +56,7 @@ ieet translate https://arxiv.org/abs/2301.07041 --output-dir output/
 
 ## 配置
 
-配置文件位置：`~/.ieeet/config.yaml`
+配置文件位置：`~/.ieet/config.yaml`
 
 ```yaml
 # LLM 配置
@@ -80,7 +80,7 @@ translation:
 
 ### 术语表
 
-术语表位置：`~/.ieeet/glossary.yaml`
+术语表位置：`~/.ieet/glossary.yaml`
 
 ```yaml
 # 保持原文不翻译

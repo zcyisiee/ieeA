@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ieeet"
-version = "0.9.1"
+name = "ieeT"
+version = "0.9.0"
 description = "arXiv 论文翻译工具 - 将英文 LaTeX 论文翻译成中文，保留数学公式和文档结构"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -44,8 +44,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ieeet/ieeet"
-Repository = "https://github.com/ieeet/ieeet"
+Homepage = "https://github.com/ieeT/ieeT"
+Repository = "https://github.com/ieeT/ieeT"
 
 [project.scripts]
 ieet = "ieeet.cli:main"
@@ -60,9 +60,3 @@ target-version = "py310"
 [tool.mypy]
 python_version = "3.10"
 strict = true
-
-[dependency-groups]
-dev = [
-    "build>=1.4.0",
-    "twine>=6.2.0",
-]

@@ -360,8 +360,8 @@ wheels = [
 ]
 
 [[package]]
-name = "ieeet"
-version = "0.9.1"
+name = "ieet"
+version = "0.9.0"
 source = { editable = "." }
 dependencies = [
     { name = "openai" },
@@ -382,12 +382,6 @@ dev = [
     { name = "twine" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "build" },
-    { name = "twine" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "build", marker = "extra == 'dev'" },
@@ -404,12 +398,6 @@ requires-dist = [
     { name = "typer" },
 ]
 provides-extras = ["dev"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "build", specifier = ">=1.4.0" },
-    { name = "twine", specifier = ">=6.2.0" },
-]
 
 [[package]]
 name = "importlib-metadata"
