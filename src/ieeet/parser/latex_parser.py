@@ -28,10 +28,6 @@ class LaTeXParser:
         "lstlisting",
         "verbatim",
         "minted",
-        "figure",
-        "figure*",
-        "table",
-        "table*",
     }
 
     TRANSLATABLE_ENVIRONMENTS = {
@@ -65,10 +61,11 @@ class LaTeXParser:
         flattened_content = self._flatten_latex(content, base_dir)
         preamble, body_content = self._split_preamble_body(flattened_content)
 
-        preamble = self._inject_chinese_support(preamble)
-
         self.chunks = []
         self.protected_counter = 0
+
+        preamble = self._extract_title_from_preamble(preamble)
+        preamble = self._inject_chinese_support(preamble)
 
         body_template = self._process_body(body_content)
 
@@ -132,10 +129,85 @@ class LaTeXParser:
 
         return inject_chinese_support(preamble)
 
+    def _extract_title_from_preamble(self, preamble: str) -> str:
+        """Extract title from preamble and create translatable chunk."""
+        pattern = re.compile(r"(\\title\s*\{)([^}]+)(\})")
+
+        def replacer(match):
+            prefix, content, suffix = match.group(1), match.group(2), match.group(3)
+            if not content.strip() or content.startswith("[["):
+                return match.group(0)
+
+            chunk_id = str(uuid.uuid4())
+            placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
+            chunk = Chunk(
+                id=chunk_id,
+                content=content.strip(),
+                latex_wrapper="%s",
+                context="title",
+                preserved_elements={},
+            )
+            self.chunks.append(chunk)
+            return f"{prefix}{placeholder}{suffix}"
+
+        return pattern.sub(replacer, preamble)
+
+    def _extract_captions(self, text: str) -> str:
+        """Extract caption content for translation before environment protection."""
+        pattern = re.compile(r"(\\caption)(\*?)(\s*\[[^\]]*\])?\s*\{")
+        result = []
+        pos = 0
+
+        for match in pattern.finditer(text):
+            result.append(text[pos : match.start()])
+            start = match.end()
+            brace_count = 1
+            i = start
+
+            while i < len(text) and brace_count > 0:
+                if text[i] == "{":
+                    brace_count += 1
+                elif text[i] == "}":
+                    brace_count -= 1
+                i += 1
+
+            if brace_count == 0:
+                content = text[start : i - 1]
+                if (
+                    content.strip()
+                    and not content.startswith("[[")
+                    and not content.startswith("{{CHUNK_")
+                    and len(content.strip()) > 10
+                ):
+                    chunk_id = str(uuid.uuid4())
+                    placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
+                    chunk = Chunk(
+                        id=chunk_id,
+                        content=content.strip(),
+                        latex_wrapper="%s",
+                        context="caption",
+                        preserved_elements={},
+                    )
+                    self.chunks.append(chunk)
+                    optional_short = match.group(3) if match.group(3) else ""
+                    result.append(
+                        f"{match.group(1)}{match.group(2)}{optional_short}{{{placeholder}}}"
+                    )
+                else:
+                    result.append(match.group(0) + content + "}")
+                pos = i
+            else:
+                result.append(match.group(0))
+                pos = match.end()
+
+        result.append(text[pos:])
+        return "".join(result)
+
     def _process_body(self, body: str) -> str:
         result = body
 
         result = self._protect_author_block(result)
+        result = self._extract_captions(result)
         result = self._protect_math_environments(result)
         result = self._protect_inline_math(result)
         result = self._protect_commands(result)

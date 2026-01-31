@@ -151,13 +151,11 @@ def inject_chinese_support(latex_source: str, font_config: Optional[Any] = None)
         f"\\setCJKmonofont{{{mono_font}}}\n"
     )
 
-    # Try to find the documentclass declaration
-    match = re.search(r"\\documentclass(\[.*?\])?\{.*?\}", latex_source, re.DOTALL)
+    # Find position right before \begin{document}
+    begin_doc_match = re.search(r"\\begin\{document\}", latex_source)
+    if begin_doc_match:
+        insert_pos = begin_doc_match.start()
+        return latex_source[:insert_pos] + injection + "\n" + latex_source[insert_pos:]
 
-    if match:
-        end_pos = match.end()
-        # Insert after the documentclass line
-        return latex_source[:end_pos] + injection + latex_source[end_pos:]
-    else:
-        # If no documentclass is found, prepend to the start
-        return injection + latex_source
+    # Fallback: append at end if no \begin{document} found
+    return latex_source + "\n" + injection

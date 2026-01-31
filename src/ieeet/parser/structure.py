@@ -52,10 +52,20 @@ class LaTeXDocument:
         Args:
             translated_chunks: Dict mapping chunk ID to translated text.
         """
+        preamble_result = self.preamble
+
+        for chunk in self.chunks:
+            placeholder = f"{{{{CHUNK_{chunk.id}}}}}"
+            if placeholder in preamble_result:
+                trans_text = (
+                    translated_chunks.get(chunk.id) if translated_chunks else None
+                )
+                reconstructed = chunk.reconstruct(trans_text)
+                preamble_result = preamble_result.replace(placeholder, reconstructed)
+
         if self.body_template:
             result = self.body_template
 
-            # First pass: Replace {{CHUNK_uuid}} placeholders with translated content
             for chunk in self.chunks:
                 placeholder = f"{{{{CHUNK_{chunk.id}}}}}"
                 if placeholder in result:
@@ -65,17 +75,15 @@ class LaTeXDocument:
                     reconstructed = chunk.reconstruct(trans_text)
                     result = result.replace(placeholder, reconstructed)
 
-            # Second pass: Restore ALL preserved elements (LABEL, CITE, MATH, etc.)
-            # These are stored as chunks with preserved_elements mapping
             for chunk in self.chunks:
                 for placeholder, original in chunk.preserved_elements.items():
                     result = result.replace(placeholder, original)
 
-            return self.preamble + result
+            return preamble_result + result
 
         body_parts = []
         for chunk in self.chunks:
             trans_text = translated_chunks.get(chunk.id) if translated_chunks else None
             body_parts.append(chunk.reconstruct(trans_text))
 
-        return self.preamble + "".join(body_parts)
+        return preamble_result + "".join(body_parts)
