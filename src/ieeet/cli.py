@@ -149,78 +149,18 @@ def translate(
 
             chunk_data = [{"chunk_id": c.id, "content": c.content} for c in doc.chunks]
 
-            # Using custom progress display for translation
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                BarColumn(),
-                TaskProgressColumn(),
-                TimeRemainingColumn(),
-                console=console,
-            ) as progress:
-                task_id = progress.add_task(
-                    "Translating chunks...", total=len(chunk_data)
-                )
+            console.print(
+                f"[bold]Translating {len(chunk_data)} chunks (max 20 concurrent)...[/bold]"
+            )
 
-                # Wrap the async generator or polling logic?
-                # Pipeline.translate_document is a single async call.
-                # To get progress, we might need to modify pipeline or wrap the provider?
-                # For now, we'll just wait, but `translate_document` saves state.
-                # Ideally, `translate_document` should yield progress or accept a callback.
-                # Since I can't easily change `TranslationPipeline` API right now without breaking things,
-                # I'll simulate progress or just show a spinner if I can't hook in.
+            translated_chunks = await pipeline.translate_document(
+                chunks=chunk_data,
+                context="Academic Paper",
+                max_concurrent=20,
+            )
 
-                # Actually, `TranslationPipeline.translate_document` processes sequentially (mostly).
-                # I can override it or just let it run.
-                # Wait, I CAN invoke `translate_chunk` in a loop here to control progress!
-
-                translated_chunks_map = {}
-                state = pipeline._load_state()
-                completed_ids = set(state["completed"])
-
-                # Pre-fill completed
-                progress.update(task_id, completed=len(completed_ids))
-
-                # We'll use the pipeline's provider but manage the loop ourselves
-                # or rely on pipeline.translate_chunk
-
-                # NOTE: Re-implementing the loop from pipeline.translate_document to get progress
-                # This duplicates logic but gives us UI control.
-
-                results = []
-                for i, chunk in enumerate(chunk_data):
-                    c_id = chunk["chunk_id"]
-                    if c_id in completed_ids:
-                        # Find result in state
-                        for res in state["results"]:
-                            if res["chunk_id"] == c_id:
-                                results.append(res)
-                                break
-                        continue
-
-                    # Rate limit
-                    if i > 0 and pipeline.rate_limit_delay > 0:
-                        await asyncio.sleep(pipeline.rate_limit_delay)
-
-                    try:
-                        # Translate
-                        res_obj = await pipeline.translate_chunk(
-                            chunk["content"], c_id, context="Academic Paper"
-                        )
-                        results.append(res_obj.model_dump())
-
-                        # Update state (saving is handled by pipeline normally, but we are bypassing translate_document)
-                        # We should save state manually
-                        state["completed"].append(c_id)
-                        state["results"].append(res_obj.model_dump())
-                        pipeline._save_state(state)
-
-                        progress.advance(task_id)
-                    except Exception as e:
-                        console.print(f"[red]Error chunk {c_id}: {e}[/red]")
-                        # Continue or break?
-                        # For robustness, maybe stop?
-                        raise e
+            results = [tc.model_dump() for tc in translated_chunks]
+            console.print(f"[green]Translation complete: {len(results)} chunks[/green]")
 
             # Reconstruct
             translated_map = {r["chunk_id"]: r["translation"] for r in results}
