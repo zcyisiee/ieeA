@@ -28,6 +28,16 @@ class LaTeXParser:
         "lstlisting",
         "verbatim",
         "minted",
+        "itemize",
+        "enumerate",
+        "description",
+        "tabular",
+        "tabular*",
+        "array",
+        "figure",
+        "figure*",
+        "table",
+        "table*",
     }
 
     TRANSLATABLE_ENVIRONMENTS = {
@@ -69,27 +79,66 @@ class LaTeXParser:
             preamble=preamble, chunks=self.chunks, body_template=body_template
         )
 
+    def _protect_author_block(self, text: str) -> str:
+        # Match \author{ start
+        pattern = re.compile(r"(\\author\s*\{)", re.DOTALL)
+        result = []
+        pos = 0
+
+        for match in pattern.finditer(text):
+            # Add text before the match
+            result.append(text[pos : match.start()])
+
+            # Find the matching closing brace
+            start = match.end()
+            brace_count = 1
+            i = start
+
+            while i < len(text) and brace_count > 0:
+                if text[i] == "{":
+                    brace_count += 1
+                elif text[i] == "}":
+                    brace_count -= 1
+                i += 1
+
+            # Check if we found the closing brace
+            if brace_count == 0:
+                # Extract the full author block including \author{...}
+                full_block = match.group(0) + text[start:i]
+
+                self.protected_counter += 1
+                placeholder = f"[[AUTHOR_{self.protected_counter}]]"
+                chunk_id = str(uuid.uuid4())
+
+                chunk = Chunk(
+                    id=chunk_id,
+                    content=placeholder,
+                    latex_wrapper="%s",
+                    context="protected",
+                    preserved_elements={placeholder: full_block},
+                )
+                self.chunks.append(chunk)
+                result.append(placeholder)
+                pos = i
+            else:
+                # Unbalanced braces, just keep the original text
+                # to avoid swallowing the rest of the document
+                result.append(match.group(0))
+                pos = match.end()
+
+        result.append(text[pos:])
+        return "".join(result)
+
     def _inject_chinese_support(self, preamble: str) -> str:
-        if "xeCJK" in preamble:
-            return preamble
+        """Inject Chinese support using auto-detected system fonts."""
+        from ..compiler.chinese_support import inject_chinese_support
 
-        injection = (
-            "\n% Chinese Support\n"
-            "\\usepackage{xeCJK}\n"
-            "\\setCJKmainfont{Noto Serif CJK SC}\n"
-            "\\setCJKsansfont{Noto Sans CJK SC}\n"
-            "\\setCJKmonofont{Noto Sans Mono CJK SC}\n"
-        )
-
-        match = re.search(r"\\documentclass(\[.*?\])?\{.*?\}", preamble, re.DOTALL)
-        if match:
-            end_pos = match.end()
-            return preamble[:end_pos] + injection + preamble[end_pos:]
-        return preamble
+        return inject_chinese_support(preamble)
 
     def _process_body(self, body: str) -> str:
         result = body
 
+        result = self._protect_author_block(result)
         result = self._protect_math_environments(result)
         result = self._protect_inline_math(result)
         result = self._protect_commands(result)
