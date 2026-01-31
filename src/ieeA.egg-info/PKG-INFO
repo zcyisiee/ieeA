@@ -1,3 +1,39 @@
+Metadata-Version: 2.4
+Name: ieeA
+Version: 0.9.0
+Summary: arXiv 论文翻译工具 - 将英文 LaTeX 论文翻译成中文，保留数学公式和文档结构
+Author: ieeA Team
+License: GPL-3.0-or-later
+Project-URL: Homepage, https://github.com/ieeA/ieeA
+Project-URL: Repository, https://github.com/ieeA/ieeA
+Keywords: arxiv,latex,translation,chinese,llm,academic,paper
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Text Processing :: Markup :: LaTeX
+Classifier: Topic :: Scientific/Engineering
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: pylatexenc
+Requires-Dist: typer
+Requires-Dist: rich
+Requires-Dist: pyyaml
+Requires-Dist: pydantic
+Requires-Dist: requests
+Requires-Dist: openai>=1.0.0
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+Requires-Dist: build; extra == "dev"
+Requires-Dist: twine; extra == "dev"
+Dynamic: license-file
+
 # ieeA - arXiv 论文翻译工具
 
 将英文 arXiv 论文翻译成中文，保留数学公式、引用和文档结构。

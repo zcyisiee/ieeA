@@ -1,0 +1,14 @@
+pylatexenc
+typer
+rich
+pyyaml
+pydantic
+requests
+openai>=1.0.0
+
+[dev]
+pytest
+ruff
+mypy
+build
+twine

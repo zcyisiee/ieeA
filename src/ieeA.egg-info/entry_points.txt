@@ -1,0 +1,2 @@
+[console_scripts]
+ieeA = ieet.cli:main

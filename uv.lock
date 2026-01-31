@@ -360,7 +360,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ieet"
+name = "ieea"
 version = "0.9.0"
 source = { editable = "." }
 dependencies = [

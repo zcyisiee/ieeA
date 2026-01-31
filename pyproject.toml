@@ -1,16 +1,16 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "ieeT"
+name = "ieeA"
 version = "0.9.0"
 description = "arXiv 论文翻译工具 - 将英文 LaTeX 论文翻译成中文，保留数学公式和文档结构"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "GPL-3.0-or-later"
+license = {text = "GPL-3.0-or-later"}
 authors = [
-  {name = "ieeT Team"},
+  {name = "ieeA Team"},
 ]
 keywords = ["arxiv", "latex", "translation", "chinese", "llm", "academic", "paper"]
 classifiers = [
@@ -44,24 +44,14 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ieeT/ieeT"
-Repository = "https://github.com/ieeT/ieeT"
+Homepage = "https://github.com/ieeA/ieeA"
+Repository = "https://github.com/ieeA/ieeA"
 
 [project.scripts]
-ieet = "ieet.cli:main"
+ieeA = "ieet.cli:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/ieet"]
-
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.build]
-exclude = [
-  "/.github",
-  "/docs",
-  "/tests",
-]
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
 line-length = 88
