@@ -8,10 +8,10 @@
 - **Error Handling**: Used `try/except` blocks to catch pipeline errors and display them with `[red]` formatting, avoiding raw stack traces for expected errors.
 
 ## Commands
-- `ieeet translate <url>`: Main entry point. Handles the full pipeline.
-- `ieeet config show/set`: Config management.
-- `ieeet glossary add`: Term management.
-- `ieeet validate`: Standalone validation tool.
+- `ieet translate <url>`: Main entry point. Handles the full pipeline.
+- `ieet config show/set`: Config management.
+- `ieet glossary add`: Term management.
+- `ieet validate`: Standalone validation tool.
 
 ## Issues / Limitations
 - **Help Message**: There is a known issue with `typer`'s help generation (`--help`) causing a `TypeError` in the current test environment, possibly due to `click`/`typer` version mismatch. The command execution itself functions correctly.

@@ -64,9 +64,9 @@ def load_defaults() -> Dict[str, Any]:
 
 
 def load_user_config() -> Dict[str, Any]:
-    """Load user configuration from ~/.ieeet/config.yaml."""
+    """Load user configuration from ~/.ieet/config.yaml."""
     home = Path.home()
-    config_path = home / ".ieeet" / "config.yaml"
+    config_path = home / ".ieet" / "config.yaml"
 
     if config_path.exists():
         with open(config_path, "r", encoding="utf-8") as f:

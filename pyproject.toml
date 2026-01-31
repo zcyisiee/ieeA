@@ -48,10 +48,10 @@ Homepage = "https://github.com/ieeT/ieeT"
 Repository = "https://github.com/ieeT/ieeT"
 
 [project.scripts]
-ieet = "ieeet.cli:main"
+ieet = "ieet.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ieeet"]
+packages = ["src/ieet"]
 
 [tool.hatch.metadata]
 allow-direct-references = true

@@ -1,9 +1,9 @@
 import pytest
 import os
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from src.ieeet.parser.structure import Chunk, LaTeXDocument
-from src.ieeet.parser.chunker import LatexChunker
-from src.ieeet.parser.latex_parser import LaTeXParser
+from src.ieet.parser.structure import Chunk, LaTeXDocument
+from src.ieet.parser.chunker import LatexChunker
+from src.ieet.parser.latex_parser import LaTeXParser
 from pylatexenc.latexwalker import LatexWalker, get_default_latex_context_db
 
 

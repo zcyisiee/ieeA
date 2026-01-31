@@ -1,8 +1,8 @@
 import re
 from typing import List, Optional, Any
 from pydantic import BaseModel
-from ieeet.validator.rules import BuiltInRules
-from ieeet.rules.validation_rules import RuleSet, ValidationRule
+from ieet.validator.rules import BuiltInRules
+from ieet.rules.validation_rules import RuleSet, ValidationRule
 
 class ValidationError(BaseModel):
     message: str

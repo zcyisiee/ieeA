@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ieeet.compiler import LaTeXCompiler, inject_chinese_support
+from ieet.compiler import LaTeXCompiler, inject_chinese_support
 
 class TestChineseSupport:
     def test_inject_simple(self):

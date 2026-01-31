@@ -8,7 +8,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from ieeet.translator.openai_provider import OpenAIProvider
+from ieet.translator.openai_provider import OpenAIProvider
 
 # User-provided API configuration
 API_CONFIG = {

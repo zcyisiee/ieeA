@@ -10,13 +10,13 @@ sys.modules["anthropic"] = MagicMock()
 sys.modules["dashscope"] = MagicMock()
 sys.modules["volcenginesdkarkruntime"] = MagicMock()
 
-from ieeet.rules.glossary import Glossary, GlossaryEntry
-from ieeet.translator.pipeline import (
+from ieet.rules.glossary import Glossary, GlossaryEntry
+from ieet.translator.pipeline import (
     TranslationPipeline,
     TranslatedChunk,
     GlossaryPreprocessor,
 )
-from ieeet.translator.prompts import build_translation_prompt
+from ieet.translator.prompts import build_translation_prompt
 
 
 class TestGlossaryPreprocessor:

@@ -19,17 +19,17 @@ from rich.progress import (
 from rich.table import Table
 from rich.text import Text
 
-from ieeet.compiler import LaTeXCompiler
-from ieeet.downloader.arxiv import ArxivDownloader
-from ieeet.parser.latex_parser import LaTeXParser
-from ieeet.rules.config import load_config
-from ieeet.rules.glossary import load_glossary
-from ieeet.translator import get_provider
-from ieeet.translator.pipeline import TranslationPipeline
-from ieeet.validator.engine import ValidationEngine
+from ieet.compiler import LaTeXCompiler
+from ieet.downloader.arxiv import ArxivDownloader
+from ieet.parser.latex_parser import LaTeXParser
+from ieet.rules.config import load_config
+from ieet.rules.glossary import load_glossary
+from ieet.translator import get_provider
+from ieet.translator.pipeline import TranslationPipeline
+from ieet.validator.engine import ValidationEngine
 
 app = typer.Typer(
-    name="ieeet",
+    name="ieet",
     help="ieeT - IEEE/arXiv Translator CLI",
     add_completion=False,
     no_args_is_help=True,
@@ -41,7 +41,7 @@ app.add_typer(glossary_app, name="glossary")
 
 console = Console()
 
-CONFIG_DIR = Path.home() / ".ieeet"
+CONFIG_DIR = Path.home() / ".ieet"
 CONFIG_FILE = CONFIG_DIR / "config.yaml"
 GLOSSARY_FILE = CONFIG_DIR / "glossary.yaml"
 
@@ -279,7 +279,7 @@ def config_show():
 def config_set(key: str, value: str):
     """
     Set a configuration value (dot-separated).
-    Example: ieeet config set llm.model gpt-4
+    Example: ieet config set llm.model gpt-4
     """
     ensure_config_dir()
 

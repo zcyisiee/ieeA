@@ -108,7 +108,7 @@ translation:
 ## 项目结构
 
 ```
-src/ieeet/
+src/ieet/
 ├── cli.py              # 命令行入口
 ├── downloader/         # arXiv 下载器
 ├── parser/             # LaTeX 解析与分块

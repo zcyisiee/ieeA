@@ -4,9 +4,9 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, mock_open
 
-from ieeet.rules.config import load_config, Config, LLMConfig
-from ieeet.rules.glossary import load_glossary, Glossary, GlossaryEntry
-from ieeet.rules.validation_rules import load_rules_from_file, RuleSet, ValidationRule
+from ieet.rules.config import load_config, Config, LLMConfig
+from ieet.rules.glossary import load_glossary, Glossary, GlossaryEntry
+from ieet.rules.validation_rules import load_rules_from_file, RuleSet, ValidationRule
 
 # --- Config Tests ---
 
@@ -27,7 +27,7 @@ def test_config_merge():
       temperature: 0.7
     """
     
-    with patch("ieeet.rules.config.load_user_config") as mock_user_load:
+    with patch("ieet.rules.config.load_user_config") as mock_user_load:
         mock_user_load.return_value = yaml.safe_load(user_config_yaml)
         
         config = load_config()

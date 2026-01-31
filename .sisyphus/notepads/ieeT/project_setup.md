@@ -11,5 +11,5 @@
 - **Type Checking**: `mypy` (Static type safety)
 
 ## Directory Structure
-- `src/ieeet`: Main package
+- `src/ieet`: Main package
 - Submodules initialized: `downloader`, `parser`, `translator`, `validator`, `compiler`, `rules`, `defaults`

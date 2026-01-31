@@ -44,7 +44,7 @@ def load_default_glossary() -> Dict[str, Any]:
 
 def load_user_glossary() -> Dict[str, Any]:
     home = Path.home()
-    path = home / ".ieeet" / "glossary.yaml"
+    path = home / ".ieet" / "glossary.yaml"
     if path.exists():
         with open(path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f) or {}

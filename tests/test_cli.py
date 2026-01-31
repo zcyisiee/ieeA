@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
-from ieeet.cli import app
+from ieet.cli import app
 
 runner = CliRunner()
 
@@ -14,7 +14,7 @@ def test_app_help():
 
 def test_config_show():
     # Mock load_config to return a dummy config
-    with patch("ieeet.cli.load_config") as mock_load:
+    with patch("ieet.cli.load_config") as mock_load:
         mock_config = MagicMock()
         mock_config.model_dump.return_value = {"llm": {"provider": "test"}}
         mock_load.return_value = mock_config
@@ -26,7 +26,7 @@ def test_config_show():
 def test_config_set(tmp_path):
     # We need to mock the CONFIG_FILE path in cli.py to use a temp file
     config_file = tmp_path / "config.yaml"
-    with patch("ieeet.cli.CONFIG_FILE", config_file):
+    with patch("ieet.cli.CONFIG_FILE", config_file):
         result = runner.invoke(app, ["config", "set", "llm.provider", "claude"])
         assert result.exit_code == 0
         assert "Updated llm.provider = claude" in result.stdout
@@ -39,7 +39,7 @@ def test_config_set(tmp_path):
 
 def test_glossary_add(tmp_path):
     glossary_file = tmp_path / "glossary.yaml"
-    with patch("ieeet.cli.GLOSSARY_FILE", glossary_file):
+    with patch("ieet.cli.GLOSSARY_FILE", glossary_file):
         result = runner.invoke(app, ["glossary", "add", "LLM", "大型语言模型"])
         assert result.exit_code == 0
         assert "Added term: LLM -> 大型语言模型" in result.stdout
@@ -49,12 +49,12 @@ def test_glossary_add(tmp_path):
             data = yaml.safe_load(f)
         assert data["LLM"]["target"] == "大型语言模型"
 
-@patch("ieeet.cli.ArxivDownloader")
-@patch("ieeet.cli.LaTeXParser")
-@patch("ieeet.cli.TranslationPipeline")
-@patch("ieeet.cli.get_provider")
-@patch("ieeet.cli.ValidationEngine")
-@patch("ieeet.cli.TeXCompiler")
+@patch("ieet.cli.ArxivDownloader")
+@patch("ieet.cli.LaTeXParser")
+@patch("ieet.cli.TranslationPipeline")
+@patch("ieet.cli.get_provider")
+@patch("ieet.cli.ValidationEngine")
+@patch("ieet.cli.TeXCompiler")
 def test_translate_command(
     mock_compiler, mock_validator, mock_get_provider, 
     mock_pipeline, mock_parser, mock_downloader, tmp_path

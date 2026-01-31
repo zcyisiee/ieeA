@@ -41,7 +41,7 @@
 
 ### Task 1: 修改 PROTECTED_ENVIRONMENTS
 
-**修改文件**: `src/ieeet/parser/latex_parser.py`
+**修改文件**: `src/ieet/parser/latex_parser.py`
 
 **修改内容**:
 从 `PROTECTED_ENVIRONMENTS` 中移除 `tabular`、`tabular*`、`array`：
@@ -62,7 +62,7 @@ PROTECTED_ENVIRONMENTS = {
 **验证命令**:
 ```bash
 python3 -c "
-from ieeet.parser.latex_parser import LaTeXParser
+from ieet.parser.latex_parser import LaTeXParser
 envs = LaTeXParser.PROTECTED_ENVIRONMENTS
 print('tabular in PROTECTED:', 'tabular' in envs)
 print('table in PROTECTED:', 'table' in envs)
@@ -84,7 +84,7 @@ print('table in PROTECTED:', 'table' in envs)
 **验证命令**:
 ```bash
 rm -rf output/2308.01284
-ieeet translate https://arxiv.org/abs/2308.01284 --output-dir output/
+ieet translate https://arxiv.org/abs/2308.01284 --output-dir output/
 
 # 检查翻译后的文件
 grep -A5 "begin{table}" output/2308.01284/main_translated.tex | head -20

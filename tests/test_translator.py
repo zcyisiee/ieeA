@@ -9,8 +9,8 @@ sys.modules["anthropic"] = MagicMock()
 sys.modules["dashscope"] = MagicMock()
 sys.modules["volcenginesdkarkruntime"] = MagicMock()
 
-from ieeet.translator import get_provider, OpenAIProvider, ClaudeProvider, QwenProvider, DoubaoProvider
-from ieeet.translator.llm_base import LLMProvider
+from ieet.translator import get_provider, OpenAIProvider, ClaudeProvider, QwenProvider, DoubaoProvider
+from ieet.translator.llm_base import LLMProvider
 
 @pytest.mark.asyncio
 async def test_get_provider():
@@ -27,7 +27,7 @@ async def test_get_provider():
 
 @pytest.mark.asyncio
 async def test_openai_provider():
-    with patch("ieeet.translator.openai_provider.AsyncOpenAI") as mock_client:
+    with patch("ieet.translator.openai_provider.AsyncOpenAI") as mock_client:
         mock_instance = mock_client.return_value
         mock_instance.chat.completions.create = AsyncMock()
         mock_instance.chat.completions.create.return_value.choices = [
@@ -41,13 +41,13 @@ async def test_openai_provider():
         mock_instance.chat.completions.create.assert_called_once()
         
         # Test estimate tokens
-        with patch("ieeet.translator.openai_provider.HAS_TIKTOKEN", False):
+        with patch("ieet.translator.openai_provider.HAS_TIKTOKEN", False):
             count = provider.estimate_tokens("Hello")
             assert count > 0
 
 @pytest.mark.asyncio
 async def test_claude_provider():
-    with patch("ieeet.translator.claude_provider.AsyncAnthropic") as mock_client:
+    with patch("ieet.translator.claude_provider.AsyncAnthropic") as mock_client:
         mock_instance = mock_client.return_value
         # Mocking the content block structure
         text_block = MagicMock()
@@ -70,7 +70,7 @@ async def test_claude_provider():
 @pytest.mark.asyncio
 async def test_qwen_provider():
     # Mock dashscope
-    with patch("ieeet.translator.qwen_provider.dashscope") as mock_dashscope:
+    with patch("ieet.translator.qwen_provider.dashscope") as mock_dashscope:
         mock_dashscope.Generation.call = MagicMock()
         
         # Mock return value of call
@@ -82,7 +82,7 @@ async def test_qwen_provider():
         mock_dashscope.Generation.call.return_value = mock_response
         
         # We need to mock HTTPStatus since it's used in the module
-        with patch("ieeet.translator.qwen_provider.HTTPStatus") as mock_http_status:
+        with patch("ieet.translator.qwen_provider.HTTPStatus") as mock_http_status:
             mock_http_status.OK = 200
             
             provider = QwenProvider("qwen-max", "test-key")
@@ -96,7 +96,7 @@ async def test_qwen_provider():
 
 @pytest.mark.asyncio
 async def test_doubao_provider():
-    with patch("ieeet.translator.doubao_provider.AsyncArk") as mock_client:
+    with patch("ieet.translator.doubao_provider.AsyncArk") as mock_client:
         mock_instance = mock_client.return_value
         mock_instance.chat.completions.create = AsyncMock()
         mock_instance.chat.completions.create.return_value.choices = [

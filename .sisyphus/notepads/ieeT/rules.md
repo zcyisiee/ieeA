@@ -2,7 +2,7 @@
 
 ## Configuration Schema
 The configuration system uses Pydantic models with YAML backing.
-- **Location**: `src/ieeet/defaults/config.yaml` (defaults), `~/.ieeet/config.yaml` (user overrides).
+- **Location**: `src/ieet/defaults/config.yaml` (defaults), `~/.ieet/config.yaml` (user overrides).
 - **Structure**:
   - `llm`: Provider settings (openai, model, api_key_env, temp, max_tokens).
   - `compilation`: LaTeX engine settings (xelatex, timeout).

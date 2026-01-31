@@ -160,7 +160,7 @@ The parser selected the wrong main .tex file.
 **Solution:**
 Specify the main file explicitly:
 ```bash
-ieeet translate ./paper/main.tex
+ieet translate ./paper/main.tex
 ```
 
 ## Translation Issues
@@ -286,7 +286,7 @@ The LLM removed a citation. Options:
 If translation was interrupted:
 ```bash
 # State is saved automatically, just run again
-ieeet translate paper.tex
+ieet translate paper.tex
 # Will resume from last completed chunk
 ```
 
@@ -295,7 +295,7 @@ ieeet translate paper.tex
 To start fresh:
 ```bash
 rm .cache/state.json
-ieeet translate paper.tex
+ieet translate paper.tex
 ```
 
 ## Getting Help
@@ -304,19 +304,19 @@ ieeet translate paper.tex
 
 Run with verbose output:
 ```bash
-ieeet translate paper.tex --verbose
+ieet translate paper.tex --verbose
 ```
 
 ### Check logs
 
 Logs are saved to:
-- `~/.ieeet/logs/` (user logs)
-- `./ieeet.log` (project logs)
+- `~/.ieet/logs/` (user logs)
+- `./ieet.log` (project logs)
 
 ### Reporting issues
 
 When reporting issues, include:
-1. ieeT version: `ieeet --version`
+1. ieeT version: `ieet --version`
 2. Python version: `python --version`
 3. OS and version
 4. Full error message

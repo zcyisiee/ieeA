@@ -64,8 +64,8 @@ Download and install [MiKTeX](https://miktex.org/download) or [TeX Live](https:/
 
 **From source (recommended for development):**
 ```bash
-git clone https://github.com/your-org/ieeet.git
-cd ieeet
+git clone https://github.com/your-org/ieet.git
+cd ieet
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -e .
@@ -106,7 +106,7 @@ For permanent configuration, add these to your shell profile (`~/.bashrc`, `~/.z
 
 ```bash
 # Check ieeT is installed
-ieeet --version
+ieet --version
 
 # Check XeLaTeX is available
 xelatex --version
@@ -121,12 +121,12 @@ We strongly recommend using a virtual environment:
 
 ```bash
 # Create virtual environment
-python -m venv ieeet-env
+python -m venv ieet-env
 
 # Activate it
-source ieeet-env/bin/activate  # Linux/macOS
+source ieet-env/bin/activate  # Linux/macOS
 # or
-ieeet-env\Scripts\activate     # Windows
+ieet-env\Scripts\activate     # Windows
 
 # Install ieeT
 pip install -e .
@@ -137,8 +137,8 @@ pip install -e .
 For a containerized installation (coming soon):
 
 ```bash
-docker pull your-org/ieeet:latest
-docker run -v $(pwd):/workspace ieeet translate paper.tex
+docker pull your-org/ieet:latest
+docker run -v $(pwd):/workspace ieet translate paper.tex
 ```
 
 ## Troubleshooting Installation
@@ -186,7 +186,7 @@ xcode-select --install
 ## Updating ieeT
 
 ```bash
-cd ieeet
+cd ieet
 git pull
 pip install -e .
 ```
@@ -194,7 +194,7 @@ pip install -e .
 ## Uninstalling
 
 ```bash
-pip uninstall ieeet
+pip uninstall ieet
 ```
 
 ## Next Steps

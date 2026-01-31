@@ -6,16 +6,16 @@ This guide covers all configuration options for ieeT.
 
 ieeT uses a layered configuration system (later layers override earlier):
 
-1. **Built-in defaults**: `src/ieeet/defaults/config.yaml`
-2. **User config**: `~/.ieeet/config.yaml`
-3. **Project config**: `./ieeet.yaml` (in working directory)
+1. **Built-in defaults**: `src/ieet/defaults/config.yaml`
+2. **User config**: `~/.ieet/config.yaml`
+3. **Project config**: `./ieet.yaml` (in working directory)
 4. **Command-line flags**: Override any setting
 
 ## Creating a Configuration File
 
 ### User Configuration
 
-Create `~/.ieeet/config.yaml`:
+Create `~/.ieet/config.yaml`:
 
 ```yaml
 llm:
@@ -31,13 +31,13 @@ compilation:
   clean_aux: true
 
 paths:
-  output_dir: ~/ieeet-output
-  cache_dir: ~/.ieeet/cache
+  output_dir: ~/ieet-output
+  cache_dir: ~/.ieet/cache
 ```
 
 ### Project Configuration
 
-Create `ieeet.yaml` in your project directory for project-specific settings.
+Create `ieet.yaml` in your project directory for project-specific settings.
 
 ## Configuration Options
 
@@ -178,22 +178,22 @@ Most settings can be overridden via command line:
 
 ```bash
 # Override provider and model
-ieeet translate paper.tex --provider claude --model claude-3-sonnet-20240229
+ieet translate paper.tex --provider claude --model claude-3-sonnet-20240229
 
 # Override output directory
-ieeet translate paper.tex --output ./my-output/
+ieet translate paper.tex --output ./my-output/
 
 # Override temperature
-ieeet translate paper.tex --temperature 0.2
+ieet translate paper.tex --temperature 0.2
 
 # Use specific config file
-ieeet translate paper.tex --config my-config.yaml
+ieet translate paper.tex --config my-config.yaml
 ```
 
 ## Complete Example Configuration
 
 ```yaml
-# ~/.ieeet/config.yaml - Full example
+# ~/.ieet/config.yaml - Full example
 
 llm:
   provider: openai
@@ -209,7 +209,7 @@ compilation:
 
 paths:
   output_dir: ~/Documents/translations
-  cache_dir: ~/.ieeet/cache
+  cache_dir: ~/.ieet/cache
 
 translation:
   max_retries: 3
@@ -218,7 +218,7 @@ translation:
   save_state: true
 
 glossary:
-  path: ~/.ieeet/glossary.yaml
+  path: ~/.ieet/glossary.yaml
   use_builtin: true
   merge: true
 ```
