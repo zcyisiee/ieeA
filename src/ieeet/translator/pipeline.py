@@ -102,7 +102,7 @@ class TranslationPipeline:
         self,
         provider: LLMProvider,
         glossary: Optional[Glossary] = None,
-        max_retries: int = 3,
+        max_retries: int = 5,
         retry_delay: float = 1.0,
         rate_limit_delay: float = 0.0,
         state_file: Optional[Union[str, Path]] = None,
