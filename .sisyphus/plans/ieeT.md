@@ -73,8 +73,8 @@
 ### Definition of Done
 - [ ] `ieeet translate https://arxiv.org/abs/2301.07041` 成功输出中文 PDF
 - [ ] 10 篇测试论文中 ≥7 篇编译成功
-- [ ] 用户可通过 YAML 添加自定义词表和规则
-- [ ] 失败时提供可操作的错误诊断信息
+- [x] 用户可通过 YAML 添加自定义词表和规则
+- [x] 失败时提供可操作的错误诊断信息
 
 ### Must Have
 - arXiv 源码下载和解析
@@ -917,7 +917,7 @@ Critical Path: Task 0 → Task 5 → Task 6 → Task 8 → Task 9
 
 ---
 
-- [ ] 10. 集成测试和文档
+- [x] 10. 集成测试和文档
 
   **What to do**:
   - 创建端到端集成测试
@@ -1021,12 +1021,12 @@ pytest tests/ -v --cov=ieeet
 ```
 
 ### Final Checklist
-- [ ] 所有 "Must Have" 功能已实现
-- [ ] 所有 "Must NOT Have" 功能未实现
+- [x] 所有 "Must Have" 功能已实现
+- [x] 所有 "Must NOT Have" 功能未实现
 - [ ] 10 篇测试论文中 ≥7 篇编译成功
-- [ ] 用户可通过 YAML 添加词表和规则
-- [ ] 失败时提供清晰的错误诊断
-- [ ] 用户文档完整
+- [x] 用户可通过 YAML 添加词表和规则
+- [x] 失败时提供清晰的错误诊断
+- [x] 用户文档完整
 
 ---
 
