@@ -122,17 +122,27 @@ class LaTeXCompiler:
         if not success:
             return False, log, error
 
-        # 2. Check for bibliography
-        bib_tool = self._detect_bibliography_tool(latex_source)
-        if bib_tool and shutil.which(bib_tool):
-            # Run bibliography tool (don't fail strictly if it fails)
-            self._run_bibliography_tool(bib_tool, cwd)
+        # 2. Check for existing .bbl file (pre-compiled bibliography)
+        main_bbl = cwd / "main.bbl"
+        if not main_bbl.exists():
+            # Look for any .bbl file and use it
+            bbl_files = list(cwd.glob("*.bbl"))
+            if bbl_files:
+                # Copy the first .bbl to main.bbl
+                shutil.copy2(bbl_files[0], main_bbl)
 
-            # 3. Second pass (update references)
-            self._run_single_pass(engine, source_file, cwd)
+        # 3. Run bibliography tool only if no .bbl exists
+        if not main_bbl.exists():
+            bib_tool = self._detect_bibliography_tool(latex_source)
+            if bib_tool and shutil.which(bib_tool):
+                # Run bibliography tool (don't fail strictly if it fails)
+                self._run_bibliography_tool(bib_tool, cwd)
 
-            # 4. Third pass (resolve cross-references)
-            success, log, error = self._run_single_pass(engine, source_file, cwd)
+        # 4. Second pass (update references)
+        self._run_single_pass(engine, source_file, cwd)
+
+        # 5. Third pass (resolve cross-references)
+        success, log, error = self._run_single_pass(engine, source_file, cwd)
 
         return success, log, error
 
