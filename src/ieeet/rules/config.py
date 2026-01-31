@@ -2,7 +2,7 @@ import json
 import os
 import yaml
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from pydantic import BaseModel, Field
 
 
@@ -36,11 +36,20 @@ class FontConfig(BaseModel):
     auto_detect: bool = True
 
 
+class TranslationConfig(BaseModel):
+    """Translation configuration."""
+
+    custom_system_prompt: Optional[str] = None
+    custom_user_prompt: Optional[str] = None
+    preserve_terms: List[str] = Field(default_factory=list)
+
+
 class Config(BaseModel):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     compilation: CompilationConfig = Field(default_factory=CompilationConfig)
     paths: PathsConfig = Field(default_factory=PathsConfig)
     fonts: FontConfig = Field(default_factory=FontConfig)
+    translation: TranslationConfig = Field(default_factory=TranslationConfig)
 
 
 def load_defaults() -> Dict[str, Any]:

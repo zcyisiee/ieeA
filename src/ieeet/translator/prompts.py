@@ -1,4 +1,5 @@
 """Prompt templates for translation pipeline."""
+
 from typing import Optional, Dict, List
 
 
@@ -16,20 +17,12 @@ def build_translation_prompt(
     context: Optional[str] = None,
     glossary_hints: Optional[Dict[str, str]] = None,
     few_shot_examples: Optional[List[Dict[str, str]]] = None,
+    custom_system_prompt: Optional[str] = None,
 ) -> str:
-    """
-    Build a translation prompt with optional context, glossary hints, and few-shot examples.
-
-    Args:
-        content: The text to translate.
-        context: Optional context information about the text.
-        glossary_hints: Optional dictionary mapping source terms to target translations.
-        few_shot_examples: Optional list of {"source": ..., "target": ...} examples.
-
-    Returns:
-        The formatted prompt string.
-    """
-    parts = [TRANSLATION_SYSTEM_PROMPT]
+    system_prompt = (
+        custom_system_prompt if custom_system_prompt else TRANSLATION_SYSTEM_PROMPT
+    )
+    parts = [system_prompt]
 
     # Add glossary hints
     if glossary_hints:
@@ -61,17 +54,12 @@ def build_translation_prompt(
 
 def build_system_message(
     glossary_hints: Optional[Dict[str, str]] = None,
+    custom_system_prompt: Optional[str] = None,
 ) -> str:
-    """
-    Build a system message for LLM providers that support separate system messages.
-
-    Args:
-        glossary_hints: Optional dictionary mapping source terms to target translations.
-
-    Returns:
-        The formatted system message.
-    """
-    parts = [TRANSLATION_SYSTEM_PROMPT]
+    system_prompt = (
+        custom_system_prompt if custom_system_prompt else TRANSLATION_SYSTEM_PROMPT
+    )
+    parts = [system_prompt]
 
     if glossary_hints:
         glossary_lines = [f"  - {src}: {tgt}" for src, tgt in glossary_hints.items()]

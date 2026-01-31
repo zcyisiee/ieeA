@@ -19,6 +19,7 @@ dependencies = [
   "pyyaml",
   "pydantic",
   "requests",
+  "openai>=2.16.0",
 ]
 
 [project.optional-dependencies]

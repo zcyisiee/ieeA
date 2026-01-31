@@ -1,28 +1,45 @@
 # Common Computer Science & Machine Learning Terms
+# IMPORTANT: Longer/specific terms listed first to avoid partial replacement
 
-# Simple Key-Value Mappings - keep abbreviations as-is for natural reading
+# Benchmark & Evaluation Metrics (keep as-is)
+"MMLU": "MMLU"
+"MT-Bench": "MT-Bench"
+"TrustLLM": "TrustLLM"
+
+# Attack/Defense Metrics (keep as-is)
+"ASR": "ASR"
+"CR": "CR"
+"FTR": "FTR"
+"TST": "TST"
+
+# Model Names (keep as-is)
+"LLaMA": "LLaMA"
+"Qwen": "Qwen"
+"Mistral": "Mistral"
+"DeepSeek": "DeepSeek"
+"GPT": "GPT"
+"BERT": "BERT"
+
+# Training Methods (keep as-is)
+"LoRA": "LoRA"
+"SFT": "SFT"
+"PEFT": "PEFT"
+
+# Common Abbreviations (keep as-is to avoid partial matches like MMLU->M机器学习U)
 "LLM": "LLM"
+"LLMs": "LLM"
 "SOTA": "SOTA"
 "CNN": "CNN"
 "RNN": "RNN"
-"ML": "机器学习"
 "AI": "AI"
-"AIGT": "AI生成文本"
-"NLP": "自然语言处理"
+"NLP": "NLP"
 
 # Structured Mappings
 "Transformer":
   target: "Transformer"
   context: "Deep Learning"
   domain: "NLP"
-  notes: "Architecture based on self-attention"
 
 "Attention":
   target: "注意力机制"
   priority: 10
-
-"paraphrase":
-  target: "改写"
-  
-"detector":
-  target: "检测器"
