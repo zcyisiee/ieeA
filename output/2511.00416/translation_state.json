@@ -25,7 +25,63 @@
     "d201f256-27cb-4985-a961-59194997b37c",
     "d350e575-5568-440e-b709-53943a0587de",
     "521a249b-3661-4f21-8d56-14dde9621da8",
-    "9390a971-3efe-44f6-804c-ac611efcca00"
+    "9390a971-3efe-44f6-804c-ac611efcca00",
+    "58a256c3-72ab-43fd-9331-59b70dba3db1",
+    "39cec113-6ee8-4d04-9386-7bb9deda173b",
+    "92fc453a-33d1-4a7a-bd68-113660bad645",
+    "14ef0e4e-a15f-47ef-b300-24ac4b4bb056",
+    "2722e58d-5e55-442d-b834-a7178cb284a9",
+    "f0bdf151-d228-4108-931c-93f74ec5faf2",
+    "0604b0ef-7359-424c-863b-4be5014765f2",
+    "83ddc8da-6d1f-4c20-aa60-ce6c7828c5ce",
+    "15bfbf4a-cf6a-4be6-a0cc-0b017661338a",
+    "80f0a3dd-d280-475d-843a-bca32aff7c11",
+    "344a63b0-1a6d-47dd-ad9e-bde6d8730033",
+    "b71c2ab5-dce0-475b-92b4-6b0c1ca507bf",
+    "359de649-aa8a-43e7-91ab-befaa786f1c1",
+    "3a1514b8-8360-456a-8552-b2a2b564db1c",
+    "72f03091-e7f7-46e4-b617-6a3b906e7d89",
+    "252ef1da-7b54-470d-8977-ab8fe43d4fda",
+    "2f8ea287-c5a9-41f9-ba0a-9be0c424cd63",
+    "f3ced7b2-b182-442a-9550-2a83815a0c8b",
+    "655f7057-dc66-4ec8-8e13-0be4ed920219",
+    "79985fac-d0bf-419c-93c9-00d14455e2fd",
+    "df8f7b52-0e00-4546-8c0f-8cae64576cfd",
+    "6da97395-8981-4af0-bfd6-46c436822d10",
+    "d39cb206-dfa9-4571-b0fe-268fadaca873",
+    "661bb1c4-6275-4d57-b4bd-036a987d9cd4",
+    "bfa773d1-d553-4085-980b-3c9a50014e27",
+    "6dc6244a-3e03-48ee-a280-b2419c8c84bb",
+    "da1f9891-f1f9-4dac-879f-13f8ccaddb9c",
+    "693347d3-d6e7-441f-bb84-3cb52ee1b129",
+    "c9e60765-83ad-4b10-aae3-71b587d97812",
+    "51df9fe4-ac5c-4017-9ece-a7782ef33729",
+    "83911bd1-f2e4-44a3-a57f-a6af64e31643",
+    "8c850a3c-f556-4695-a658-9754fdf8f214",
+    "85f9c68f-78c5-4db3-add2-d7190334c53c",
+    "d64766b6-3a03-48ef-a481-249c04834226",
+    "57f0c3cb-9268-4be4-94c3-e26eeee9e573",
+    "58a1502c-0847-46b9-9a5b-09bd9690211d",
+    "f876b111-b9c5-4720-83e0-2d793926d58d",
+    "160e9f66-4f7a-4b1b-91b6-1a79e40da5db",
+    "128dea83-eeda-41c4-88fd-bad9517268f7",
+    "b5743aff-d3f5-4c4a-b9fc-39a1471a55cb",
+    "b82f8453-6e4a-41ef-afb3-f887f4f988a9",
+    "72146005-9a27-4f57-9cd3-844013d8476b",
+    "2f25b308-9347-4ea5-9057-4c7a1ad0b878",
+    "42b71325-79f5-4743-a06d-86a5b3d7be69",
+    "b3a6e26f-16f4-4bcf-8033-a07c9cdaf697",
+    "178405a7-3870-4f83-a962-99adf2bb6909",
+    "f61f8011-44c4-4580-82cd-8ac871234d6e",
+    "4de8fff0-a8a6-45e9-8fce-23b908a53b95",
+    "25759849-f665-4f82-b713-6c1ac95c9908",
+    "620516e9-5a81-40dd-81eb-e31a3e6156ac",
+    "df4c3015-4b44-4da7-ac10-320c1ec1bdea",
+    "44ee354e-9fff-490d-b24d-5a5aac495e3c",
+    "84aae9d4-f0c8-48d3-a68c-56b66143fed9",
+    "653e2b7d-88d4-4f9c-9f9b-5aa6df9249d4",
+    "eb41170a-d36b-45ee-bf38-dcbda5b35536",
+    "ede21aed-6bea-453e-9fb1-a14ecc4f2efc"
   ],
   "results": [
     {
@@ -260,6 +316,510 @@
       "metadata": {
         "had_glossary_terms": true,
         "glossary_terms_count": 4
+      }
+    },
+    {
+      "source": "Our work addresses these critical gaps by introducing PADBen, the first benchmark to systematically evaluate detector robustness against iterative paraphrase attacks in two distinct real-world scenarios: authorship obfuscation and plagiarism evasion. Unlike prior work treating paraphrasing as uniform single-step perturbations, PADBen evaluates progressive laundering across multiple iterations in both attack contexts. Through dual representation space analysis (Section~[[REF_32]]), we provide mechanistic insights into attack success patterns and identify critical vulnerabilities in current detection systems.",
+      "translation": "我们的工作通过引入PADBen来填补这些关键空白，这是首个系统性评估检测器对抗迭代改写攻击鲁棒性的基准测试，涵盖两种真实场景：作者身份混淆和抄袭规避。与以往将改写视为统一的单步扰动的研究不同，PADBen在两种攻击场景下评估了多次迭代中的渐进式洗白过程。通过双重表示空间分析（Section~[[REF_32]]），我们从机制层面揭示了攻击成功的模式，并识别出当前检测系统中的关键漏洞。",
+      "chunk_id": "58a256c3-72ab-43fd-9331-59b70dba3db1",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "How Do Paraphrase Attacks Intrinsically Work?",
+      "translation": "# 改写攻击的内在工作机制是什么？",
+      "chunk_id": "39cec113-6ee8-4d04-9386-7bb9deda173b",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[REF_33]]",
+      "translation": "[[REF_33]]",
+      "chunk_id": "92fc453a-33d1-4a7a-bd68-113660bad645",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_34]][[MACRO_35]]",
+      "translation": "[[MACRO_34]][[MACRO_35]]",
+      "chunk_id": "14ef0e4e-a15f-47ef-b300-24ac4b4bb056",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_36]]Overall pipeline for benchmark curation. Preprocessing details in Appendix~[[REF_37]], data generation in Appendix~[[REF_38]].\n    [[REF_39]]",
+      "translation": "[[MACRO_36]]基准数据集构建的整体流程。预处理细节见附录~[[REF_37]]，数据生成见附录~[[REF_38]]。\n    [[REF_39]]",
+      "chunk_id": "2722e58d-5e55-442d-b834-a7178cb284a9",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "\\textit{Since iteratively-paraphrased text is also AI-generated, why do paraphrase attacks evade AIGT detection systems?}",
+      "translation": "\\textit{既然迭代[[GLOSS_118]]的文本也是[[GLOSS_120]]生成的，为什么[[GLOSS_117]]攻击能够逃避[[GLOSS_119]]检测系统？}",
+      "chunk_id": "f0bdf151-d228-4108-931c-93f74ec5faf2",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 4
+      }
+    },
+    {
+      "source": "[[MACRO_40]]We hypothesize paraphrase attack effectiveness stems from unique representation space transformations. We formulate two testable hypotheses:",
+      "translation": "[[MACRO_40]]我们假设改写攻击的有效性源于独特的表示空间变换。我们提出两个可检验的假设：",
+      "chunk_id": "0604b0ef-7359-424c-863b-4be5014765f2",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 1
+      }
+    },
+    {
+      "source": "\\textbf{Hypothesis 1:} Paraphrasing creates distinct semantic transformation differing from ``semantic equivalence'' prompting.",
+      "translation": "\\textbf{假设1：}改写会产生与\"语义等价\"提示不同的独特语义转换。",
+      "chunk_id": "83ddc8da-6d1f-4c20-aa60-ce6c7828c5ce",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "\\textbf{Hypothesis 2:} Iterative paraphrasing increases coherence, deviating from LLM-generated patterns toward human-authored characteristics.",
+      "translation": "\\textbf{假设2：}迭代改写会提高连贯性，使文本偏离LLM生成的模式，转向人类写作的特征。",
+      "chunk_id": "15bfbf4a-cf6a-4be6-a0cc-0b017661338a",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 1
+      }
+    },
+    {
+      "source": "[[MACRO_41]]To test these hypotheses, we investigate how different prompting strategies (paraphrasing versus semantic equivalence) manifest in the model's representation space, and how iterative paraphrasing operations traverse this space over multiple iterations.",
+      "translation": "[[MACRO_41]]为了验证这些假设，我们研究了不同的提示策略（改写与语义等价）如何在模型的表示空间中体现，以及迭代改写操作如何在多次迭代中遍历这一空间。",
+      "chunk_id": "80f0a3dd-d280-475d-843a-bca32aff7c11",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "Experimental Setup",
+      "translation": "# 实验设置",
+      "chunk_id": "344a63b0-1a6d-47dd-ad9e-bde6d8730033",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "\\textbf{Experiment 1:} We analyze three text categories in BGE-M3 embedding space: (1) human-authored, (2) LLM-generated via semantic equivalence prompts (GPT-4o), and (3) LLM-paraphrased human texts (GPT-4o). We apply PCA for 2D visualization while computing pairwise distances in full-dimensional space. K-means clustering ([[MATH_42]]) assesses separability (Appendix~[[REF_43]]).",
+      "translation": "\\textbf{实验1：}我们在BGE-M3嵌入空间中分析三类文本：(1) 人类撰写的文本，(2) 通过语义等价提示生成的LLM文本（GPT-4o），以及(3) LLM-改写后的人类文本（GPT-4o）。我们采用PCA进行二维可视化，同时在全维空间中计算成对距离。K-means聚类（[[MATH_42]]）用于评估可分离性（附录~[[REF_43]]）。",
+      "chunk_id": "b71c2ab5-dce0-475b-92b4-6b0c1ca507bf",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 3
+      }
+    },
+    {
+      "source": "[[MACRO_44]]\\textbf{Experiment 2:} We sample 100 texts each from human-authored and LLM-generated categories, performing 10 paraphrasing iterations using Qwen3-4B-Instruct. For each iteration, we extract: (1) paraphrased text, (2) final layer hidden states (4096-dim), and (3) BGE-M3 embeddings (1024-dim). We compute cosine, Euclidean, and Manhattan distances, applying PCA to centroid trajectories (Appendix~[[REF_45]]).",
+      "translation": "[[MACRO_44]]\\textbf{实验2：}我们分别从人类撰写和LLM生成的类别中各采样100篇文本，使用Qwen3-4B-Instruct进行10轮改写迭代。对于每轮迭代，我们提取：(1) 改写后的文本，(2) 最终层隐藏状态（4096维），以及(3) BGE-M3嵌入（1024维）。我们计算余弦距离、欧几里得距离和曼哈顿距离，并对质心轨迹应用PCA（附录~[[REF_45]]）。",
+      "chunk_id": "359de649-aa8a-43e7-91ab-befaa786f1c1",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "Results and Analysis",
+      "translation": "# 结果与分析",
+      "chunk_id": "3a1514b8-8360-456a-8552-b2a2b564db1c",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[REF_46]]",
+      "translation": "[[REF_46]]",
+      "chunk_id": "72f03091-e7f7-46e4-b617-6a3b906e7d89",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "\\centering\n\\small",
+      "translation": "\\centering\n\\small",
+      "chunk_id": "252ef1da-7b54-470d-8977-ab8fe43d4fda",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_47]]{Pairwise semantic distances between text categories in BGE-M3 embedding space.}\n\\label{tab:pairwise_distances}\n\\begin{tabular}{@{}lccc@{}}\n\\toprule\n\\textbf{Comparison} & \\textbf{Cosine} & \\textbf{Eucl.} & \\textbf{Manh.} \\\\\n\\midrule\nHuman $\\leftrightarrow$ LLM-Gen. & 0.195 & 0.605 & 15.318 \\\\\nHuman $\\leftrightarrow$ LLM-Para. & \\textbf{0.068} & \\textbf{0.355} & \\textbf{8.991} \\\\\nLLM-Gen. $\\leftrightarrow$ LLM-Para. & 0.214 & 0.637 & 16.129 \\\\\n\\bottomrule\n\\end{tabular}",
+      "translation": "[[MACRO_47]]{BGE-M3嵌入空间中文本类别之间的成对语义距离。}\n\\label{tab:pairwise_distances}\n\\begin{tabular}{@{}lccc@{}}\n\\toprule\n\\textbf{比较} & \\textbf{余弦} & \\textbf{欧氏} & \\textbf{曼哈顿} \\\\\n\\midrule\n人类 $\\leftrightarrow$ LLM-生成 & 0.195 & 0.605 & 15.318 \\\\\n人类 $\\leftrightarrow$ LLM-改写 & \\textbf{0.068} & \\textbf{0.355} & \\textbf{8.991} \\\\\nLLM-生成 $\\leftrightarrow$ LLM-改写 & 0.214 & 0.637 & 16.129 \\\\\n\\bottomrule\n\\end{tabular}",
+      "chunk_id": "2f8ea287-c5a9-41f9-ba0a-9be0c424cd63",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 4
+      }
+    },
+    {
+      "source": "\\textbf{Semantic Distinction Between Paraphrasing and Semantic Equivalence (Hypothesis 1)}",
+      "translation": "\\textbf{改写与语义等价之间的语义区别（假设1）}",
+      "chunk_id": "f3ced7b2-b182-442a-9550-2a83815a0c8b",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_48]]Table~[[REF_49]] reveals LLM-paraphrased texts are \\textbf{3.15$\\times$ closer} to human originals (0.068 cosine similarity) than to LLM-generated texts (0.214), confirming paraphrased texts occupy an intermediate semantic region near human-authored content—\\textbf{supporting Hypothesis 1}. On the other hand, Figure~[[REF_50]] shows an apparent paradox: While the above distance exhibits clear separability, 2D PCA results reveals substantial overlap. K-means clustering (Appendix~[[REF_51]]) produces mixed clusters across all text types. This is indicating semantic differences distribute across many dimensions rather than concentrating in low dimensionalities.",
+      "translation": "[[MACRO_48]]表~[[REF_49]]显示，经LLM-改写处理的文本与人类原创文本的距离\\textbf{缩短了3.15倍}（余弦相似度为0.068），而与LLM生成文本的距离为0.214，这证实了改写处理后的文本占据了接近人类创作内容的中间语义区域——\\textbf{支持假设1}。另一方面，图~[[REF_50]]呈现出一个明显的矛盾现象：尽管上述距离表现出清晰的可分性，但二维PCA结果却显示出大量重叠。K-means聚类（附录~[[REF_51]]）在所有文本类型中产生了混合聚类。这表明语义差异分布在多个维度上，而非集中在低维空间中。",
+      "chunk_id": "655f7057-dc66-4ec8-8e13-0be4ed920219",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 4
+      }
+    },
+    {
+      "source": "\\centering\n\\small",
+      "translation": "\\centering\n\\small",
+      "chunk_id": "79985fac-d0bf-419c-93c9-00d14455e2fd",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_52]]{Semantic distance (cosine and Euclidean) between iteratively paraphrased human text and two reference categories: original human-authored text and LLM-generated text in BGE-M3 embedding. Full table can be found in Table.\\ref{tab:semantic_distances_detailed}}\n\\label{tab:semantic_distances}\n\\setlength{\\tabcolsep}{4pt}\n\\begin{tabular}{@{}lcccccc@{}}\n\\toprule\n\\multirow{2}{*}{\\textbf{Reference}} & \\multirow{2}{*}{\\textbf{Metric}} & \\multicolumn{5}{c}{\\textbf{Iteration}} \\\\\n\\cmidrule(lr){3-7}\n& & \\textbf{2} & \\textbf{4} & \\textbf{6} & \\textbf{8} & \\textbf{10} \\\\\n\\midrule\n\\multirow{2}{*}{\\shortstack[l]{Human-\\\\Authored}} \n& Cosine & 0.085 & 0.107 & 0.122 & 0.128 & 0.134 \\\\\n& Euclidean & 0.394 & 0.443 & 0.472 & 0.484 & 0.494 \\\\\n\\midrule\n\\multirow{2}{*}{\\shortstack[l]{LLM-\\\\Generated}} \n& Cosine & 0.698 & 0.697 & 0.697 & 0.699 & 0.698 \\\\\n& Euclidean & 1.180 & 1.180 & 1.179 & 1.181 & 1.180 \\\\\n\\bottomrule\n\\end{tabular}",
+      "translation": "[[MACRO_52]]{迭代改写的人类文本与两个参考类别（原始人类撰写文本和LLM生成文本）在BGE-M3嵌入空间中的语义距离（余弦距离和欧氏距离）。完整表格见表\\ref{tab:semantic_distances_detailed}}\n\\label{tab:semantic_distances}\n\\setlength{\\tabcolsep}{4pt}\n\\begin{tabular}{@{}lcccccc@{}}\n\\toprule\n\\multirow{2}{*}{\\textbf{参考类别}} & \\multirow{2}{*}{\\textbf{度量}} & \\multicolumn{5}{c}{\\textbf{迭代次数}} \\\\\n\\cmidrule(lr){3-7}\n& & \\textbf{2} & \\textbf{4} & \\textbf{6} & \\textbf{8} & \\textbf{10} \\\\\n\\midrule\n\\multirow{2}{*}{\\shortstack[l]{人类\\\\撰写}} \n& 余弦 & 0.085 & 0.107 & 0.122 & 0.128 & 0.134 \\\\\n& 欧氏 & 0.394 & 0.443 & 0.472 & 0.484 & 0.494 \\\\\n\\midrule\n\\multirow{2}{*}{\\shortstack[l]{LLM\\\\生成}} \n& 余弦 & 0.698 & 0.697 & 0.697 & 0.699 & 0.698 \\\\\n& 欧氏 & 1.180 & 1.180 & 1.179 & 1.181 & 1.180 \\\\\n\\bottomrule\n\\end{tabular}",
+      "chunk_id": "df8f7b52-0e00-4546-8c0f-8cae64576cfd",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 3
+      }
+    },
+    {
+      "source": "[[MACRO_53]][[MACRO_54]]\\textbf{Semantic and Syntactic Impact of Iterative Paraphrasing (Hypothesis 2)}",
+      "translation": "[[MACRO_53]][[MACRO_54]]\\textbf{迭代改写对语义和句法的影响（假设2）}",
+      "chunk_id": "6da97395-8981-4af0-bfd6-46c436822d10",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_55]]Table~[[REF_56]] compares semantic distances: (1) human-authored text versus iteratively paraphrased human text shows progressive drift (cosine: 0.085→0.134), while (2) LLM-generated text versus iteratively paraphrased human text maintains stable distance (~0.698 across all iterations). These patterns \\textbf{reject Hypothesis 2}—iterative paraphrasing increases distance from human texts while keeps a constant distance from LLM-generated text.",
+      "translation": "[[MACRO_55]]表~[[REF_56]]比较了语义距离：(1) 人类原创文本与经过迭代[[GLOSS_140]]的人类文本之间显示出逐步偏移（余弦距离：0.085→0.134），而(2) [[GLOSS_142]]生成文本与经过迭代[[GLOSS_139]]的人类文本之间保持稳定距离（所有迭代中约为0.698）。这些模式\\textbf{否定了假设2}——迭代改写增加了与人类文本的距离，同时与[[GLOSS_141]]生成文本保持恒定距离。",
+      "chunk_id": "d39cb206-dfa9-4571-b0fe-268fadaca873",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 4
+      }
+    },
+    {
+      "source": "To further examine the drift dynamics, Table~[[REF_57]] quantifies inter-iteration semantic changes across different representation spaces, revealing two key patterns: \\textbf{(1) Progressive Semantic Shift:} Iterative-paraphrasing produce cumulative small semantic displacement for both human-authored and LLM-generated inputs. \\textbf{(2) Representation-Dependent Drift Magnitude:} BGE-M3 embeddings exhibit larger inter-iteration displacement than Qwen3-4B hidden states.",
+      "translation": "为了进一步考察漂移动态，表~[[REF_57]]量化了不同表示空间中迭代间的语义变化，揭示了两个关键模式：\\textbf{(1) 渐进式语义偏移：}迭代改写对人类撰写和LLM生成的输入都会产生累积的小幅语义位移。\\textbf{(2) 表示依赖的漂移幅度：}BGE-M3嵌入表现出比Qwen3-4B隐藏状态更大的迭代间位移。",
+      "chunk_id": "661bb1c4-6275-4d57-b4bd-036a987d9cd4",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 1
+      }
+    },
+    {
+      "source": "These patterns reflect fundamental differences in what each representation captures—BGE-M3's contrastive training tracks \\textit{semantic core} variations, while hidden states capture \\textit{surface-level generation patterns} (lexical, syntactic, stylistic features). Thus, \\textbf{iterative paraphrasing induces semantic shifts while preserving generation patterns}.",
+      "translation": "这些模式反映了每种表示所捕获内容的根本差异——BGE-M3的对比训练追踪\\textit{语义核心}变化，而隐藏状态捕获\\textit{表层生成模式}（词汇、句法、风格特征）。因此，\\textbf{迭代改写引发语义偏移，同时保留生成模式}。",
+      "chunk_id": "bfa773d1-d553-4085-980b-3c9a50014e27",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "This mechanism enables two distinct attack scenarios: \\textbf{(1) Authorship Obfuscation:} Human-authored text undergoing iterative paraphrasing maintains human-like stylistic markers despite semantic drift, creating detection blind spots that enable unauthorized appropriation of human writing. \\textbf{(2) Plagiarism Detection Evasion:} LLM-generated text experiencing iterative paraphrasing preserves AI-like generation patterns while achieving sufficient semantic transformation to evade plagiarism detection systems, facilitating academic misconduct.",
+      "translation": "这一机制催生了两种不同的攻击场景：\\textbf{(1) 作者身份混淆：}人类撰写的文本经过迭代改写后，尽管语义发生漂移，仍保留类人类的风格特征，从而形成检测盲区，使得未经授权挪用人类写作成为可能。\\textbf{(2) 规避抄袭检测：}LLM生成的文本经过迭代改写后，既保留了AI式的生成模式，又实现了足够的语义转换以规避抄袭检测系统，为学术不端行为提供了便利。",
+      "chunk_id": "6dc6244a-3e03-48ee-a280-b2419c8c84bb",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "[[MACRO_58]][[MACRO_59]]",
+      "translation": "[[MACRO_58]][[MACRO_59]]",
+      "chunk_id": "da1f9891-f1f9-4dac-879f-13f8ccaddb9c",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_60]]Overall Task introduction for the Benchmark. Task 1-5 measures the detector's different capabilities covering the robustness, performance when encountering the paraphrase attack. Detailed task specific can be found in Appendix.[[REF_61]].\n    [[REF_62]]\n\n[[MACRO_63]]\\textbf{Trajectory Analysis in Representation Space}",
+      "translation": "[[MACRO_60]]基准测试的整体任务介绍。任务1-5测量了检测器在面对改写攻击时的不同能力，涵盖了鲁棒性和性能表现。详细的任务说明可参见附录[[REF_61]]。\n    [[REF_62]]\n\n[[MACRO_63]]\\textbf{表示空间中的轨迹分析}",
+      "chunk_id": "693347d3-d6e7-441f-bb84-3cb52ee1b129",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "[[MACRO_64]]Figure~[[REF_65]] reveals both text origins converge toward similar regions with distinct patterns: hidden states show initial drift then oscillations; embeddings show gradual consistent drift. Directional convergence further support the existence of an \"intermediate laundering region\" in semantic space where texts deviate semantically from their origins while preserving generation characteristics. This region exhibits two properties: (1) \\textit{universality}—accessible from both AI-generated and human-authored starting points; and (2) \\textit{stability}—reliably reached via iterative paraphrasing.",
+      "translation": "[[MACRO_64]]图~[[REF_65]]显示，两种来源的文本都朝着相似的区域收敛，但呈现出不同的模式：隐藏状态表现出初始漂移后的振荡；嵌入则表现出渐进且一致的漂移。方向收敛进一步支持了语义空间中存在\"中间洗白区域\"的观点，在该区域中，文本在语义上偏离其原始来源，同时保留了生成特征。该区域具有两个特性：(1) \\textit{普遍性}——无论是从AI生成的文本还是人类撰写的文本出发，都可以到达该区域；(2) \\textit{稳定性}——通过迭代改写可以可靠地到达该区域。",
+      "chunk_id": "c9e60765-83ad-4b10-aae3-71b587d97812",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 1
+      }
+    },
+    {
+      "source": "[[MACRO_66]]\\textbf{Summary}\n[[MACRO_67]]Section~[[REF_68]] reveals a critical distinction in paraphrase attacks: iterative paraphrasing of human-authored text (authorship obfuscation) versus iterative paraphrasing of LLM-generated text (plagiarism evasion) represent fundamentally different risks, yet both exploit the same intermediate laundering region. Our mechanistic analysis demonstrates that regardless of origin, paraphrased texts converge toward this intermediate semantic space characterized by semantic displacement coupled with generation pattern preservation. This finding necessitates: (1) moving beyond binary human-versus-AIGT classification to capture how texts from different origins traverse through and occupy the intermediate region, and (2) incorporating multiple iterative paraphrasing depths to assess detector robustness as texts progressively enter this detection-resistant zone.",
+      "translation": "[[MACRO_66]]\\textbf{总结}\n[[MACRO_67]]第~[[REF_68]]节揭示了改写攻击中的一个关键区别：对人类撰写文本的迭代改写（作者身份混淆）与对LLM生成文本的迭代改写（逃避抄袭检测）代表着本质上不同的风险，但两者都利用了相同的中间洗白区域。我们的机制分析表明，无论来源如何，经过改写处理的文本都会收敛到这个中间语义空间，该空间的特征是语义位移与生成模式保留并存。这一发现要求：（1）超越简单的人类versus AI生成文本二元分类，以捕捉不同来源的文本如何穿越并占据中间区域；（2）纳入多个迭代改写深度来评估检测器的鲁棒性，因为文本会逐步进入这个难以检测的区域。",
+      "chunk_id": "51df9fe4-ac5c-4017-9ece-a7782ef33729",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 5
+      }
+    },
+    {
+      "source": "[[MACRO_69]]",
+      "translation": "[[MACRO_69]]",
+      "chunk_id": "83911bd1-f2e4-44a3-a57f-a6af64e31643",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_70]]Zero-shot Detectors Performance Summary\n[[REF_71]]\n[[MACRO_72]][[MACRO_73]]\n[[MACRO_74]][[MACRO_75]]!%\n\n[[MACRO_76]]\\textbf{MODEL} & \\textbf{CHALLENGE} & \\textbf{METHOD}\n& [[MACRO_77]]4c|\\textbf{Task 1}\n& [[MACRO_78]]4c|\\textbf{Task 2}\n& [[MACRO_79]]4c|\\textbf{Task 3}\n& [[MACRO_80]]4c|\\textbf{Task 4}\n& [[MACRO_81]]4c\\textbf{Task 5} [[MACRO_82]]\n & & & AUC & T1 & T5 & T10 & AUC & T1 & T5 & T10 & AUC & T1 & T5 & T10 & AUC & T1 & T5 & T10 & AUC & T1 & T5 & T10 [[MACRO_83]]\n[[MACRO_84]][[MACRO_85]]5*BINOCULAR \n & sentence-pair   &      & 0.399 & 0.003 & 0.023 & 0.050 & 0.457 & 0.007 & 0.037 & 0.081 & 0.505 & 0.008 & 0.046 & 0.099 & 0.498 & \\underline{\\textcolor{blue}{0.011}} & 0.052 & 0.106 & 0.457 & 0.006 & 0.032 & 0.070 [[MACRO_86]]\n & single-sentence & exhaustive     & 0.439 & \\underline{\\textcolor{blue}{0.011}} & \\underline{\\textcolor{blue}{0.046}} & 0.080 & 0.579 & \\underline{\\textcolor{blue}{0.029}} & \\underline{\\textcolor{blue}{0.106}} & \\underline{\\textcolor{blue}{0.184}} & 0.500 & 0.008 & 0.050 & 0.101 & 0.486 & \\underline{\\textcolor{blue}{0.012}} & 0.050 & 0.098 & 0.428 & 0.009 & \\underline{\\textcolor{blue}{0.047}} & 0.087 [[MACRO_87]]\n & single-sentence & sampling[[MACRO_88]]30[[MACRO_89]] & 0.437 & \\underline{\\textcolor{blue}{0.010}} & \\underline{\\textcolor{blue}{0.046}} & 0.081 & 0.575 & \\underline{\\textcolor{blue}{0.031}} & \\underline{\\textcolor{blue}{0.109}} & \\underline{\\textcolor{blue}{0.188}} & 0.495 & 0.008 & 0.050 & 0.096 & 0.486 & \\underline{\\textcolor{blue}{0.010}} & \\underline{\\textcolor{blue}{0.051}} & 0.098 & 0.429 & 0.008 & \\underline{\\textcolor{blue}{0.050}} & 0.090 [[MACRO_90]]\n & single-sentence & sampling[[MACRO_91]]50[[MACRO_92]] & 0.443 & \\underline{\\textcolor{blue}{0.011}} & \\underline{\\textcolor{blue}{0.047}} & 0.084 & 0.583 & \\underline{\\textcolor{blue}{0.032}} & \\underline{\\textcolor{blue}{0.112}} & \\underline{\\textcolor{blue}{0.194}} & 0.499 & 0.008 & 0.051 & 0.102 & 0.487 & \\underline{\\textcolor{blue}{0.012}} & \\underline{\\textcolor{blue}{0.053}} & 0.099 & 0.434 & 0.009 & \\underline{\\textcolor{blue}{0.051}} & 0.092 [[MACRO_93]]\n & single-sentence & sampling[[MACRO_94]]80[[MACRO_95]] & 0.453 & \\underline{\\textcolor{blue}{0.010}} & \\underline{\\textcolor{blue}{0.049}} & 0.087 & 0.589 & \\underline{\\textcolor{blue}{0.034}} & \\underline{\\textcolor{blue}{0.116}} & \\underline{\\textcolor{blue}{0.195}} & 0.507 & 0.007 & 0.058 & 0.106 & 0.487 & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.060}} & \\underline{\\textcolor{blue}{0.104}} & 0.439 & \\underline{\\textcolor{blue}{0.012}} & \\underline{\\textcolor{blue}{0.053}} & 0.092 [[MACRO_96]]\n[[MACRO_97]][[MACRO_98]]5*FAST[[MACRO_99]]DETECT[[MACRO_100]][[MACRO_101]]GPT \n & sentence-pair   &      & \\underline{\\textcolor{blue}{0.638}} & \\textbf{\\textcolor{red}{0.027}} & \\textbf{\\textcolor{red}{0.115}} & \\underline{\\textcolor{blue}{0.204}} & \\underline{\\textcolor{blue}{0.787}} & \\underline{\\textcolor{blue}{0.086}} & \\underline{\\textcolor{blue}{0.249}} & \\underline{\\textcolor{blue}{0.369}} & 0.503 & \\underline{\\textcolor{blue}{0.012}} & 0.055 & 0.108 & 0.476 & 0.005 & 0.036 & 0.081 & \\underline{\\textcolor{blue}{0.606}} & 0.023 & \\underline{\\textcolor{blue}{0.090}} & \\underline{\\textcolor{blue}{0.165}} [[MACRO_102]]\n & single-sentence & exhaustive     & \\underline{\\textcolor{blue}{0.573}} & 0.006 & 0.044 & \\underline{\\textcolor{blue}{0.099}} & \\underline{\\textcolor{blue}{0.665}} & 0.010 & 0.075 & 0.149 & 0.504 & 0.011 & 0.051 & 0.103 & 0.488 & 0.009 & 0.051 & 0.099 & \\underline{\\textcolor{blue}{0.568}} & 0.006 & 0.047 & \\underline{\\textcolor{blue}{0.103}} [[MACRO_103]]\n & single-sentence & sampling[[MACRO_104]]30[[MACRO_105]] & \\underline{\\textcolor{blue}{0.576}} & 0.006 & \\underline{\\textcolor{blue}{0.046}} & \\underline{\\textcolor{blue}{0.097}} & \\underline{\\textcolor{blue}{0.666}} & 0.009 & 0.078 & 0.154 & 0.502 & 0.011 & 0.049 & 0.096 & 0.490 & 0.007 & 0.046 & 0.091 & \\underline{\\textcolor{blue}{0.572}} & 0.005 & 0.045 & \\underline{\\textcolor{blue}{0.100}} [[MACRO_106]]\n & single-sentence & sampling[[MACRO_107]]50[[MACRO_108]] & \\underline{\\textcolor{blue}{0.581}} & 0.005 & 0.045 & \\underline{\\textcolor{blue}{0.098}} & \\underline{\\textcolor{blue}{0.672}} & 0.010 & 0.078 & 0.153 & 0.505 & 0.010 & 0.051 & 0.101 & 0.491 & 0.008 & 0.049 & 0.095 & \\underline{\\textcolor{blue}{0.577}} & 0.005 & 0.047 & \\underline{\\textcolor{blue}{0.102}} [[MACRO_109]]\n & single-sentence & sampling[[MACRO_110]]80[[MACRO_111]] & \\underline{\\textcolor{blue}{0.587}} & 0.004 & 0.040 & \\underline{\\textcolor{blue}{0.092}} & \\underline{\\textcolor{blue}{0.675}} & 0.008 & 0.076 & 0.151 & 0.514 & 0.007 & 0.045 & 0.100 & 0.488 & 0.011 & 0.049 & 0.095 & \\underline{\\textcolor{blue}{0.578}} & 0.005 & 0.048 & \\underline{\\textcolor{blue}{0.103}} [[MACRO_112]]\n[[MACRO_113]][[MACRO_114]]5*GLTR \n & sentence-pair   &      & 0.429 & \\underline{\\textcolor{blue}{0.007}} & 0.043 & 0.082 & 0.436 & 0.006 & 0.045 & 0.086 & \\underline{\\textcolor{blue}{0.529}} & 0.011 & \\underline{\\textcolor{blue}{0.060}} & \\underline{\\textcolor{blue}{0.116}} & \\underline{\\textcolor{blue}{0.514}} & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.057}} & \\textbf{\\textcolor{red}{0.113}} & 0.482 & \\underline{\\textcolor{blue}{0.012}} & 0.054 & 0.108 [[MACRO_115]]\n & single-sentence & exhaustive     & 0.459 & 0.006 & 0.032 & 0.068 & 0.480 & 0.004 & 0.021 & 0.056 & \\underline{\\textcolor{blue}{0.513}} & \\underline{\\textcolor{blue}{0.012}} & \\underline{\\textcolor{blue}{0.059}} & \\underline{\\textcolor{blue}{0.122}} & \\underline{\\textcolor{blue}{0.506}} & \\textbf{\\textcolor{red}{0.013}} & \\textbf{\\textcolor{red}{0.057}} & \\textbf{\\textcolor{red}{0.113}} & 0.488 & \\underline{\\textcolor{blue}{0.011}} & 0.047 & 0.091 [[MACRO_116]]\n & single-sentence & sampling[[MACRO_117]]30[[MACRO_118]] & 0.457 & 0.004 & 0.034 & 0.066 & 0.474 & 0.003 & 0.019 & 0.053 & \\underline{\\textcolor{blue}{0.519}} & \\underline{\\textcolor{blue}{0.012}} & \\underline{\\textcolor{blue}{0.065}} & \\underline{\\textcolor{blue}{0.124}} & \\underline{\\textcolor{blue}{0.502}} & \\textbf{\\textcolor{red}{0.014}} & \\textbf{\\textcolor{red}{0.056}} & \\textbf{\\textcolor{red}{0.109}} & 0.484 & \\underline{\\textcolor{blue}{0.012}} & 0.045 & 0.085 [[MACRO_119]]\n & single-sentence & sampling[[MACRO_120]]50[[MACRO_121]] & 0.461 & 0.005 & 0.036 & 0.068 & 0.480 & 0.004 & 0.022 & 0.057 & \\underline{\\textcolor{blue}{0.524}} & \\underline{\\textcolor{blue}{0.012}} & \\underline{\\textcolor{blue}{0.066}} & \\underline{\\textcolor{blue}{0.126}} & \\textbf{\\textcolor{red}{0.507}} & \\textbf{\\textcolor{red}{0.015}} & \\textbf{\\textcolor{red}{0.059}} & \\textbf{\\textcolor{red}{0.114}} & 0.489 & \\underline{\\textcolor{blue}{0.011}} & 0.049 & 0.089 [[MACRO_122]]\n & single-sentence & sampling[[MACRO_123]]80[[MACRO_124]] & 0.458 & 0.006 & 0.031 & 0.063 & 0.482 & 0.004 & 0.021 & 0.059 & \\underline{\\textcolor{blue}{0.523}} & \\underline{\\textcolor{blue}{0.011}} & \\underline{\\textcolor{blue}{0.062}} & \\underline{\\textcolor{blue}{0.117}} & \\textbf{\\textcolor{red}{0.509}} & \\underline{\\textcolor{blue}{0.013}} & \\underline{\\textcolor{blue}{0.059}} & \\textbf{\\textcolor{red}{0.111}} & 0.491 & 0.011 & 0.047 & 0.095 [[MACRO_125]]\n[[MACRO_126]][[MACRO_127]]5*RADAR \n & sentence-pair   &      & \\textbf{\\textcolor{red}{0.728}} & 0.004 & \\underline{\\textcolor{blue}{0.105}} & \\textbf{\\textcolor{red}{0.246}} & \\textbf{\\textcolor{red}{0.910}} & \\textbf{\\textcolor{red}{0.142}} & \\textbf{\\textcolor{red}{0.566}} & \\textbf{\\textcolor{red}{0.809}} & \\textbf{\\textcolor{red}{0.748}} & \\textbf{\\textcolor{red}{0.054}} & \\textbf{\\textcolor{red}{0.234}} & \\textbf{\\textcolor{red}{0.372}} & \\textbf{\\textcolor{red}{0.526}} & 0.010 & \\underline{\\textcolor{blue}{0.055}} & \\underline{\\textcolor{blue}{0.112}} & \\textbf{\\textcolor{red}{0.909}} & \\textbf{\\textcolor{red}{0.140}} & \\textbf{\\textcolor{red}{0.542}} & \\textbf{\\textcolor{red}{0.808}} [[MACRO_128]]\n & single-sentence & exhaustive     & \\textbf{\\textcolor{red}{0.648}} & \\textbf{\\textcolor{red}{0.038}} & \\textbf{\\textcolor{red}{0.190}} & \\textbf{\\textcolor{red}{0.345}} & \\textbf{\\textcolor{red}{0.793}} & \\textbf{\\textcolor{red}{0.063}} & \\textbf{\\textcolor{red}{0.313}} & \\textbf{\\textcolor{red}{0.567}} & \\textbf{\\textcolor{red}{0.633}} & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.080}} & \\textbf{\\textcolor{red}{0.160}} & \\textbf{\\textcolor{red}{0.511}} & 0.010 & \\underline{\\textcolor{blue}{0.052}} & \\underline{\\textcolor{blue}{0.104}} & \\textbf{\\textcolor{red}{0.797}} & \\textbf{\\textcolor{red}{0.062}} & \\textbf{\\textcolor{red}{0.310}} & \\textbf{\\textcolor{red}{0.562}} [[MACRO_129]]\n & single-sentence & sampling[[MACRO_130]]30[[MACRO_131]] & \\textbf{\\textcolor{red}{0.642}} & \\textbf{\\textcolor{red}{0.037}} & \\textbf{\\textcolor{red}{0.187}} & \\textbf{\\textcolor{red}{0.337}} & \\textbf{\\textcolor{red}{0.789}} & \\textbf{\\textcolor{red}{0.063}} & \\textbf{\\textcolor{red}{0.313}} & \\textbf{\\textcolor{red}{0.560}} & \\textbf{\\textcolor{red}{0.627}} & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.078}} & \\textbf{\\textcolor{red}{0.157}} & \\textbf{\\textcolor{red}{0.508}} & \\underline{\\textcolor{blue}{0.010}} & \\underline{\\textcolor{blue}{0.051}} & \\underline{\\textcolor{blue}{0.103}} & \\textbf{\\textcolor{red}{0.797}} & \\textbf{\\textcolor{red}{0.062}} & \\textbf{\\textcolor{red}{0.312}} & \\textbf{\\textcolor{red}{0.560}} [[MACRO_132]]\n & single-sentence & sampling[[MACRO_133]]50[[MACRO_134]] & \\textbf{\\textcolor{red}{0.644}} & \\textbf{\\textcolor{red}{0.036}} & \\textbf{\\textcolor{red}{0.181}} & \\textbf{\\textcolor{red}{0.337}} & \\textbf{\\textcolor{red}{0.789}} & \\textbf{\\textcolor{red}{0.060}} & \\textbf{\\textcolor{red}{0.302}} & \\textbf{\\textcolor{red}{0.559}} & \\textbf{\\textcolor{red}{0.628}} & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.078}} & \\textbf{\\textcolor{red}{0.155}} & \\underline{\\textcolor{blue}{0.506}} & 0.010 & 0.051 & \\underline{\\textcolor{blue}{0.102}} & \\textbf{\\textcolor{red}{0.795}} & \\textbf{\\textcolor{red}{0.060}} & \\textbf{\\textcolor{red}{0.300}} & \\textbf{\\textcolor{red}{0.556}} [[MACRO_135]]\n & single-sentence & sampling[[MACRO_136]]80[[MACRO_137]] & \\textbf{\\textcolor{red}{0.648}} & \\textbf{\\textcolor{red}{0.039}} & \\textbf{\\textcolor{red}{0.195}} & \\textbf{\\textcolor{red}{0.345}} & \\textbf{\\textcolor{red}{0.797}} & \\textbf{\\textcolor{red}{0.067}} & \\textbf{\\textcolor{red}{0.335}} & \\textbf{\\textcolor{red}{0.569}} & \\textbf{\\textcolor{red}{0.630}} & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.078}} & \\textbf{\\textcolor{red}{0.156}} & \\underline{\\textcolor{blue}{0.508}} & 0.010 & 0.051 & 0.102 & \\textbf{\\textcolor{red}{0.803}} & \\textbf{\\textcolor{red}{0.066}} & \\textbf{\\textcolor{red}{0.332}} & \\textbf{\\textcolor{red}{0.568}} [[MACRO_138]]\n[[MACRO_139]]%\n\n[[MACRO_140]][[MACRO_141]]\\textbf{Note:} AUC = AUC-ROC, T1 = TPR@1[[MACRO_142]]FPR, T5 = TPR@5[[MACRO_143]]FPR, T10 = TPR@10[[MACRO_144]]FPR. Best ([[MACRO_145]]\\textbf{red bold}) and second-best ([[MACRO_146]]\\underline{blue underlined}) results are marked within each setup (sentence-pair, single-sentence exhaustive, sampling 30[[MACRO_147]], 50[[MACRO_148]], 80[[MACRO_149]]) for each task and metric.[[MACRO_150]]",
+      "translation": "[[MACRO_70]]零样本检测器性能总结\n[[REF_71]]\n[[MACRO_72]][[MACRO_73]]\n[[MACRO_74]][[MACRO_75]]!%\n\n[[MACRO_76]]\\textbf{模型} & \\textbf{挑战} & \\textbf{方法}\n& [[MACRO_77]]4c|\\textbf{任务 1}\n& [[MACRO_78]]4c|\\textbf{任务 2}\n& [[MACRO_79]]4c|\\textbf{任务 3}\n& [[MACRO_80]]4c|\\textbf{任务 4}\n& [[MACRO_81]]4c\\textbf{任务 5} [[MACRO_82]]\n & & & AUC & T1 & T5 & T10 & AUC & T1 & T5 & T10 & AUC & T1 & T5 & T10 & AUC & T1 & T5 & T10 & AUC & T1 & T5 & T10 [[MACRO_83]]\n[[MACRO_84]][[MACRO_85]]5*BINOCULAR \n & 句子对   &      & 0.399 & 0.003 & 0.023 & 0.050 & 0.457 & 0.007 & 0.037 & 0.081 & 0.505 & 0.008 & 0.046 & 0.099 & 0.498 & \\underline{\\textcolor{blue}{0.011}} & 0.052 & 0.106 & 0.457 & 0.006 & 0.032 & 0.070 [[MACRO_86]]\n & 单句 & 穷举     & 0.439 & \\underline{\\textcolor{blue}{0.011}} & \\underline{\\textcolor{blue}{0.046}} & 0.080 & 0.579 & \\underline{\\textcolor{blue}{0.029}} & \\underline{\\textcolor{blue}{0.106}} & \\underline{\\textcolor{blue}{0.184}} & 0.500 & 0.008 & 0.050 & 0.101 & 0.486 & \\underline{\\textcolor{blue}{0.012}} & 0.050 & 0.098 & 0.428 & 0.009 & \\underline{\\textcolor{blue}{0.047}} & 0.087 [[MACRO_87]]\n & 单句 & 采样[[MACRO_88]]30[[MACRO_89]] & 0.437 & \\underline{\\textcolor{blue}{0.010}} & \\underline{\\textcolor{blue}{0.046}} & 0.081 & 0.575 & \\underline{\\textcolor{blue}{0.031}} & \\underline{\\textcolor{blue}{0.109}} & \\underline{\\textcolor{blue}{0.188}} & 0.495 & 0.008 & 0.050 & 0.096 & 0.486 & \\underline{\\textcolor{blue}{0.010}} & \\underline{\\textcolor{blue}{0.051}} & 0.098 & 0.429 & 0.008 & \\underline{\\textcolor{blue}{0.050}} & 0.090 [[MACRO_90]]\n & 单句 & 采样[[MACRO_91]]50[[MACRO_92]] & 0.443 & \\underline{\\textcolor{blue}{0.011}} & \\underline{\\textcolor{blue}{0.047}} & 0.084 & 0.583 & \\underline{\\textcolor{blue}{0.032}} & \\underline{\\textcolor{blue}{0.112}} & \\underline{\\textcolor{blue}{0.194}} & 0.499 & 0.008 & 0.051 & 0.102 & 0.487 & \\underline{\\textcolor{blue}{0.012}} & \\underline{\\textcolor{blue}{0.053}} & 0.099 & 0.434 & 0.009 & \\underline{\\textcolor{blue}{0.051}} & 0.092 [[MACRO_93]]\n & 单句 & 采样[[MACRO_94]]80[[MACRO_95]] & 0.453 & \\underline{\\textcolor{blue}{0.010}} & \\underline{\\textcolor{blue}{0.049}} & 0.087 & 0.589 & \\underline{\\textcolor{blue}{0.034}} & \\underline{\\textcolor{blue}{0.116}} & \\underline{\\textcolor{blue}{0.195}} & 0.507 & 0.007 & 0.058 & 0.106 & 0.487 & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.060}} & \\underline{\\textcolor{blue}{0.104}} & 0.439 & \\underline{\\textcolor{blue}{0.012}} & \\underline{\\textcolor{blue}{0.053}} & 0.092 [[MACRO_96]]\n[[MACRO_97]][[MACRO_98]]5*FAST[[MACRO_99]]DETECT[[MACRO_100]][[MACRO_101]]GPT \n & 句子对   &      & \\underline{\\textcolor{blue}{0.638}} & \\textbf{\\textcolor{red}{0.027}} & \\textbf{\\textcolor{red}{0.115}} & \\underline{\\textcolor{blue}{0.204}} & \\underline{\\textcolor{blue}{0.787}} & \\underline{\\textcolor{blue}{0.086}} & \\underline{\\textcolor{blue}{0.249}} & \\underline{\\textcolor{blue}{0.369}} & 0.503 & \\underline{\\textcolor{blue}{0.012}} & 0.055 & 0.108 & 0.476 & 0.005 & 0.036 & 0.081 & \\underline{\\textcolor{blue}{0.606}} & 0.023 & \\underline{\\textcolor{blue}{0.090}} & \\underline{\\textcolor{blue}{0.165}} [[MACRO_102]]\n & 单句 & 穷举     & \\underline{\\textcolor{blue}{0.573}} & 0.006 & 0.044 & \\underline{\\textcolor{blue}{0.099}} & \\underline{\\textcolor{blue}{0.665}} & 0.010 & 0.075 & 0.149 & 0.504 & 0.011 & 0.051 & 0.103 & 0.488 & 0.009 & 0.051 & 0.099 & \\underline{\\textcolor{blue}{0.568}} & 0.006 & 0.047 & \\underline{\\textcolor{blue}{0.103}} [[MACRO_103]]\n & 单句 & 采样[[MACRO_104]]30[[MACRO_105]] & \\underline{\\textcolor{blue}{0.576}} & 0.006 & \\underline{\\textcolor{blue}{0.046}} & \\underline{\\textcolor{blue}{0.097}} & \\underline{\\textcolor{blue}{0.666}} & 0.009 & 0.078 & 0.154 & 0.502 & 0.011 & 0.049 & 0.096 & 0.490 & 0.007 & 0.046 & 0.091 & \\underline{\\textcolor{blue}{0.572}} & 0.005 & 0.045 & \\underline{\\textcolor{blue}{0.100}} [[MACRO_106]]\n & 单句 & 采样[[MACRO_107]]50[[MACRO_108]] & \\underline{\\textcolor{blue}{0.581}} & 0.005 & 0.045 & \\underline{\\textcolor{blue}{0.098}} & \\underline{\\textcolor{blue}{0.672}} & 0.010 & 0.078 & 0.153 & 0.505 & 0.010 & 0.051 & 0.101 & 0.491 & 0.008 & 0.049 & 0.095 & \\underline{\\textcolor{blue}{0.577}} & 0.005 & 0.047 & \\underline{\\textcolor{blue}{0.102}} [[MACRO_109]]\n & 单句 & 采样[[MACRO_110]]80[[MACRO_111]] & \\underline{\\textcolor{blue}{0.587}} & 0.004 & 0.040 & \\underline{\\textcolor{blue}{0.092}} & \\underline{\\textcolor{blue}{0.675}} & 0.008 & 0.076 & 0.151 & 0.514 & 0.007 & 0.045 & 0.100 & 0.488 & 0.011 & 0.049 & 0.095 & \\underline{\\textcolor{blue}{0.578}} & 0.005 & 0.048 & \\underline{\\textcolor{blue}{0.103}} [[MACRO_112]]\n[[MACRO_113]][[MACRO_114]]5*GLTR \n & 句子对   &      & 0.429 & \\underline{\\textcolor{blue}{0.007}} & 0.043 & 0.082 & 0.436 & 0.006 & 0.045 & 0.086 & \\underline{\\textcolor{blue}{0.529}} & 0.011 & \\underline{\\textcolor{blue}{0.060}} & \\underline{\\textcolor{blue}{0.116}} & \\underline{\\textcolor{blue}{0.514}} & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.057}} & \\textbf{\\textcolor{red}{0.113}} & 0.482 & \\underline{\\textcolor{blue}{0.012}} & 0.054 & 0.108 [[MACRO_115]]\n & 单句 & 穷举     & 0.459 & 0.006 & 0.032 & 0.068 & 0.480 & 0.004 & 0.021 & 0.056 & \\underline{\\textcolor{blue}{0.513}} & \\underline{\\textcolor{blue}{0.012}} & \\underline{\\textcolor{blue}{0.059}} & \\underline{\\textcolor{blue}{0.122}} & \\underline{\\textcolor{blue}{0.506}} & \\textbf{\\textcolor{red}{0.013}} & \\textbf{\\textcolor{red}{0.057}} & \\textbf{\\textcolor{red}{0.113}} & 0.488 & \\underline{\\textcolor{blue}{0.011}} & 0.047 & 0.091 [[MACRO_116]]\n & 单句 & 采样[[MACRO_117]]30[[MACRO_118]] & 0.457 & 0.004 & 0.034 & 0.066 & 0.474 & 0.003 & 0.019 & 0.053 & \\underline{\\textcolor{blue}{0.519}} & \\underline{\\textcolor{blue}{0.012}} & \\underline{\\textcolor{blue}{0.065}} & \\underline{\\textcolor{blue}{0.124}} & \\underline{\\textcolor{blue}{0.502}} & \\textbf{\\textcolor{red}{0.014}} & \\textbf{\\textcolor{red}{0.056}} & \\textbf{\\textcolor{red}{0.109}} & 0.484 & \\underline{\\textcolor{blue}{0.012}} & 0.045 & 0.085 [[MACRO_119]]\n & 单句 & 采样[[MACRO_120]]50[[MACRO_121]] & 0.461 & 0.005 & 0.036 & 0.068 & 0.480 & 0.004 & 0.022 & 0.057 & \\underline{\\textcolor{blue}{0.524}} & \\underline{\\textcolor{blue}{0.012}} & \\underline{\\textcolor{blue}{0.066}} & \\underline{\\textcolor{blue}{0.126}} & \\textbf{\\textcolor{red}{0.507}} & \\textbf{\\textcolor{red}{0.015}} & \\textbf{\\textcolor{red}{0.059}} & \\textbf{\\textcolor{red}{0.114}} & 0.489 & \\underline{\\textcolor{blue}{0.011}} & 0.049 & 0.089 [[MACRO_122]]\n & 单句 & 采样[[MACRO_123]]80[[MACRO_124]] & 0.458 & 0.006 & 0.031 & 0.063 & 0.482 & 0.004 & 0.021 & 0.059 & \\underline{\\textcolor{blue}{0.523}} & \\underline{\\textcolor{blue}{0.011}} & \\underline{\\textcolor{blue}{0.062}} & \\underline{\\textcolor{blue}{0.117}} & \\textbf{\\textcolor{red}{0.509}} & \\underline{\\textcolor{blue}{0.013}} & \\underline{\\textcolor{blue}{0.059}} & \\textbf{\\textcolor{red}{0.111}} & 0.491 & 0.011 & 0.047 & 0.095 [[MACRO_125]]\n[[MACRO_126]][[MACRO_127]]5*RADAR \n & 句子对   &      & \\textbf{\\textcolor{red}{0.728}} & 0.004 & \\underline{\\textcolor{blue}{0.105}} & \\textbf{\\textcolor{red}{0.246}} & \\textbf{\\textcolor{red}{0.910}} & \\textbf{\\textcolor{red}{0.142}} & \\textbf{\\textcolor{red}{0.566}} & \\textbf{\\textcolor{red}{0.809}} & \\textbf{\\textcolor{red}{0.748}} & \\textbf{\\textcolor{red}{0.054}} & \\textbf{\\textcolor{red}{0.234}} & \\textbf{\\textcolor{red}{0.372}} & \\textbf{\\textcolor{red}{0.526}} & 0.010 & \\underline{\\textcolor{blue}{0.055}} & \\underline{\\textcolor{blue}{0.112}} & \\textbf{\\textcolor{red}{0.909}} & \\textbf{\\textcolor{red}{0.140}} & \\textbf{\\textcolor{red}{0.542}} & \\textbf{\\textcolor{red}{0.808}} [[MACRO_128]]\n & 单句 & 穷举     & \\textbf{\\textcolor{red}{0.648}} & \\textbf{\\textcolor{red}{0.038}} & \\textbf{\\textcolor{red}{0.190}} & \\textbf{\\textcolor{red}{0.345}} & \\textbf{\\textcolor{red}{0.793}} & \\textbf{\\textcolor{red}{0.063}} & \\textbf{\\textcolor{red}{0.313}} & \\textbf{\\textcolor{red}{0.567}} & \\textbf{\\textcolor{red}{0.633}} & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.080}} & \\textbf{\\textcolor{red}{0.160}} & \\textbf{\\textcolor{red}{0.511}} & 0.010 & \\underline{\\textcolor{blue}{0.052}} & \\underline{\\textcolor{blue}{0.104}} & \\textbf{\\textcolor{red}{0.797}} & \\textbf{\\textcolor{red}{0.062}} & \\textbf{\\textcolor{red}{0.310}} & \\textbf{\\textcolor{red}{0.562}} [[MACRO_129]]\n & 单句 & 采样[[MACRO_130]]30[[MACRO_131]] & \\textbf{\\textcolor{red}{0.642}} & \\textbf{\\textcolor{red}{0.037}} & \\textbf{\\textcolor{red}{0.187}} & \\textbf{\\textcolor{red}{0.337}} & \\textbf{\\textcolor{red}{0.789}} & \\textbf{\\textcolor{red}{0.063}} & \\textbf{\\textcolor{red}{0.313}} & \\textbf{\\textcolor{red}{0.560}} & \\textbf{\\textcolor{red}{0.627}} & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.078}} & \\textbf{\\textcolor{red}{0.157}} & \\textbf{\\textcolor{red}{0.508}} & \\underline{\\textcolor{blue}{0.010}} & \\underline{\\textcolor{blue}{0.051}} & \\underline{\\textcolor{blue}{0.103}} & \\textbf{\\textcolor{red}{0.797}} & \\textbf{\\textcolor{red}{0.062}} & \\textbf{\\textcolor{red}{0.312}} & \\textbf{\\textcolor{red}{0.560}} [[MACRO_132]]\n & 单句 & 采样[[MACRO_133]]50[[MACRO_134]] & \\textbf{\\textcolor{red}{0.644}} & \\textbf{\\textcolor{red}{0.036}} & \\textbf{\\textcolor{red}{0.181}} & \\textbf{\\textcolor{red}{0.337}} & \\textbf{\\textcolor{red}{0.789}} & \\textbf{\\textcolor{red}{0.060}} & \\textbf{\\textcolor{red}{0.302}} & \\textbf{\\textcolor{red}{0.559}} & \\textbf{\\textcolor{red}{0.628}} & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.078}} & \\textbf{\\textcolor{red}{0.155}} & \\underline{\\textcolor{blue}{0.506}} & 0.010 & 0.051 & \\underline{\\textcolor{blue}{0.102}} & \\textbf{\\textcolor{red}{0.795}} & \\textbf{\\textcolor{red}{0.060}} & \\textbf{\\textcolor{red}{0.300}} & \\textbf{\\textcolor{red}{0.556}} [[MACRO_135]]\n & 单句 & 采样[[MACRO_136]]80[[MACRO_137]] & \\textbf{\\textcolor{red}{0.648}} & \\textbf{\\textcolor{red}{0.039}} & \\textbf{\\textcolor{red}{0.195}} & \\textbf{\\textcolor{red}{0.345}} & \\textbf{\\textcolor{red}{0.797}} & \\textbf{\\textcolor{red}{0.067}} & \\textbf{\\textcolor{red}{0.335}} & \\textbf{\\textcolor{red}{0.569}} & \\textbf{\\textcolor{red}{0.630}} & \\textbf{\\textcolor{red}{0.016}} & \\textbf{\\textcolor{red}{0.078}} & \\textbf{\\textcolor{red}{0.156}} & \\underline{\\textcolor{blue}{0.508}} & 0.010 & 0.051 & 0.102 & \\textbf{\\textcolor{red}{0.803}} & \\textbf{\\textcolor{red}{0.066}} & \\textbf{\\textcolor{red}{0.332}} & \\textbf{\\textcolor{red}{0.568}} [[MACRO_138]]\n[[MACRO_139]]%\n\n[[MACRO_140]][[MACRO_141]]\\textbf{注:} AUC = AUC-ROC, T1 = TPR@1[[MACRO_142]]FPR, T5 = TPR@5[[MACRO_143]]FPR, T10 = TPR@10[[MACRO_144]]FPR. 在每种设置(句子对、单句穷举、采样30[[MACRO_147]]、50[[MACRO_148]]、80[[MACRO_149]])下,每个任务和指标的最佳结果([[MACRO_145]]\\textbf{红色粗体})和次优结果([[MACRO_146]]\\underline{蓝色下划线})已标出。[[MACRO_150]]",
+      "chunk_id": "8c850a3c-f556-4695-a658-9754fdf8f214",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "Methodology",
+      "translation": "# 方法论",
+      "chunk_id": "85f9c68f-78c5-4db3-add2-d7190334c53c",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "Section~[[REF_151]] reveals two different approaches in paraphrase attacks that existing benchmark did not address.\nTo systematically evaluate detection capabilities across both attack scenarios and the intermediate region they exploit, we develop a five-type text taxonomy. This taxonomy captures the full spectrum from original texts through the intermediate laundering region to deeply transformed content, enabling comprehensive evaluation of detector vulnerabilities against both paraphrase attack categories.",
+      "translation": "第[[REF_151]]节揭示了现有基准测试未涉及的两种不同的改写攻击方法。\n为了系统性地评估检测能力在这两种攻击场景及其利用的中间区域中的表现，我们开发了一个五类文本分类体系。该分类体系涵盖了从原始文本、经过中间洗白区域到深度转换内容的完整谱系，使得能够全面评估检测器在面对两类改写攻击时的脆弱性。",
+      "chunk_id": "d64766b6-3a03-48ef-a481-249c04834226",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 3
+      }
+    },
+    {
+      "source": "Text Type Taxonomy",
+      "translation": "# 文本类型分类体系",
+      "chunk_id": "57f0c3cb-9268-4be4-94c3-e26eeee9e573",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "We establish a five-category taxonomy:[[MACRO_152]]\n[[MACRO_153]]\\textbf{Type 1}: Human original text [[MACRO_154]]\n[[MACRO_155]]\\textbf{Type 2}: LLM-generated text [[MACRO_156]]\n[[MACRO_157]]\\textbf{Type 3}: Human-paraphrased human text [[MACRO_158]]\n[[MACRO_159]]\\textbf{Type 4}: LLM-paraphrased human text [[MACRO_160]]\n[[MACRO_161]]\\textbf{Type 5}: LLM-iteratively-paraphrased LLM text",
+      "translation": "我们建立了一个五类分类体系：[[MACRO_152]]\n[[MACRO_153]]\\textbf{类型1}：人类原创文本 [[MACRO_154]]\n[[MACRO_155]]\\textbf{类型2}：LLM生成的文本 [[MACRO_156]]\n[[MACRO_157]]\\textbf{类型3}：人类改写的人类文本 [[MACRO_158]]\n[[MACRO_159]]\\textbf{类型4}：LLM改写的人类文本 [[MACRO_160]]\n[[MACRO_161]]\\textbf{类型5}：LLM迭代改写的LLM文本",
+      "chunk_id": "58a1502c-0847-46b9-9a5b-09bd9690211d",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 7
+      }
+    },
+    {
+      "source": "[[MACRO_162]]These clear categorized texts will help us build up our curation in task that mimiking most real world scenarios. Among them, the type 5 text will have both 1-iteration and 3-iteration. The detailed definition of them can be found in Appendix. [[REF_163]].",
+      "translation": "[[MACRO_162]]这些清晰分类的文本将帮助我们构建策展任务，以模拟大多数真实世界场景。其中，类型5文本将包含1次迭代和3次迭代两种版本。关于它们的详细定义可参见附录[[REF_163]]。",
+      "chunk_id": "f876b111-b9c5-4720-83e0-2d793926d58d",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "Data Preparation",
+      "translation": "# 数据准备",
+      "chunk_id": "160e9f66-4f7a-4b1b-91b6-1a79e40da5db",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_164]]Source Data [[MACRO_165]] Data Preprocessing~[[MACRO_166]]\nOur benchmark leverages three established datasets: Microsoft Research Paraphrase Corpus (\\textbf{MRPC})[[REF_167]], Human-LLM Paraphrase Corpus (\\textbf{HLPC})[[REF_168]], and Paraphrase Adversaries from Word Scrambling (\\textbf{PAWS})[[REF_169]]. We apply a cosine similarity filter (threshold: 0.85) to remove near-duplicates, and combined them to get 16233 human authored texts(Type1) and human-paraphrased human texts(Type3).",
+      "translation": "[[MACRO_164]]源数据 [[MACRO_165]] 数据预处理~[[MACRO_166]]\n我们的基准测试利用了三个已建立的数据集：微软研究院释义语料库（\\textbf{MRPC}）[[REF_167]]、人工LLM释义语料库（\\textbf{HLPC}）[[REF_168]]和词序打乱释义对抗样本（\\textbf{PAWS}）[[REF_169]]。我们应用余弦相似度过滤器（阈值：0.85）来去除近似重复项，并将它们组合得到16233个人类原创文本（类型1）和人工改写的人类文本（类型3）。",
+      "chunk_id": "128dea83-eeda-41c4-88fd-bad9517268f7",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "[[MACRO_170]]Generation Procedures~[[MACRO_171]]\nFigure [[REF_172]] illustrates the detailed procedure of how raw data been preprocessed and how Type 2,4,5 texts are generated. As figure showed, we employed modularized generation pipeline for three categories in taxonomy:[[MACRO_173]]\n[[MACRO_174]]\\textbf{Type 2}: Sentence completion using Google Gemini-2.5-Pro[[MACRO_175]]\n[[MACRO_176]]\\textbf{Type 4}: Multi-model paraphrasing (DIPPER, Gemini-2.5-Pro, LLaMA-3-8B)[[MACRO_177]]\n[[MACRO_178]]\\textbf{Type 5}: Iterative paraphrasing with temperature scaling and convergence detection",
+      "translation": "[[MACRO_170]]生成流程~[[MACRO_171]]\n图[[REF_172]]展示了原始数据预处理以及Type 2、4、5类文本生成的详细流程。如图所示，我们针对分类体系中的三个类别采用了模块化的生成流水线：[[MACRO_173]]\n[[MACRO_174]]\\textbf{Type 2}：使用Google Gemini-2.5-Pro进行句子补全[[MACRO_175]]\n[[MACRO_176]]\\textbf{Type 4}：多模型改写（DIPPER、Gemini-2.5-Pro、LLaMA-3-8B）[[MACRO_177]]\n[[MACRO_178]]\\textbf{Type 5}：采用温度缩放和收敛检测的迭代改写",
+      "chunk_id": "b5743aff-d3f5-4c4a-b9fc-39a1471a55cb",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "Quality Assurance",
+      "translation": "# 质量保证",
+      "chunk_id": "b82f8453-6e4a-41ef-afb3-f887f4f988a9",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "To ensure the quality of our generated data, we examine the data quality by calculating three metrics: jaccard similarity, perplexity, and self-BLEU score. The jaccard similarity matrix across our text type taxonomy can be found in Figure.[[REF_179]]. Besides, Table.[[REF_180]] and [[REF_181]] reveals that PADBen demonstrates superior dataset quality across three metrics. [[MACRO_182]]\nJaccard similarity confirms semantic preservation (0.798 for human paraphrases) while enabling controlled lexical divergence through iteration. [[MACRO_183]]\nPerplexity analysis using GPT-2-XL and LLaMA-2-7B shows LLM-generated text exhibits lowest complexity (77.84/42.61), while human-authored and iteratively paraphrased texts achieve higher unpredictability (up to 109.32/50.23), indicating greater linguistic diversity.[[MACRO_184]]\nCompared to RAID, PADBen achieves 62× higher intra-type diversity (self-BLEU: 0.222 vs 13.7) and 4.1-7.0× greater perplexity across evaluation models. This cross-model validation confirms PADBen generates more varied, complex content that effectively challenges detection systems.",
+      "translation": "为确保生成数据的质量，我们通过计算三个指标来检验数据质量：jaccard相似度、困惑度和self-BLEU分数。我们文本类型分类法的jaccard相似度矩阵见图[[REF_179]]。此外，表[[REF_180]]和[[REF_181]]表明PADBen在三个指标上均展现出卓越的数据集质量。[[MACRO_182]]\nJaccard相似度证实了语义保留性（人类改写为0.798），同时通过迭代实现了可控的词汇差异。[[MACRO_183]]\n使用GPT-2-XL和LLaMA-2-7B进行的困惑度分析显示，LLM生成的文本复杂度最低（77.84/42.61），而人类撰写和迭代改写的文本则具有更高的不可预测性（高达109.32/50.23），表明其语言多样性更强。[[MACRO_184]]\n与RAID相比，PADBen的类型内多样性高出62倍（self-BLEU：0.222 vs 13.7），在各评估模型上的困惑度高出4.1-7.0倍。这种跨模型验证证实PADBen生成的内容更加多样化、复杂，能够有效挑战检测系统。",
+      "chunk_id": "72146005-9a27-4f57-9cd3-844013d8476b",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 4
+      }
+    },
+    {
+      "source": "Detailed Task Introduction",
+      "translation": "# 学术论文翻译专家\n\n我已准备好协助您进行英文学术论文到中文的改写翻译工作。\n\n## 我的工作方式\n\n**核心原则：**\n- 将英文学术内容改写为流畅自然的中文，而非逐词翻译\n- 确保学术严谨性和专业术语的准确性\n- 让中文读者能够顺畅理解原文含义\n\n**严格保护的内容（原样保留）：**\n- LaTeX 命令：`\\cite{...}`, `\\ref{...}`, `\\label{...}`, `$...$`, `\\textbf{...}` 等\n- 占位符：`[[MATH_0]]`, `[[REF_1]]`, `[[MACRO_2]]` 等格式\n- 数学公式和方程式\n\n**输出规范：**\n- 仅提供翻译结果，无额外说明\n- 遇到纯占位符输入时，直接原样返回\n\n## 专业术语对照\n\n| 英文 | 中文 |\n|------|------|\n| LLM | LLM |\n| SOTA | SOTA |\n| CNN | CNN |\n| RNN | RNN |\n| ML | 机器学习 |\n| AI | AI |\n| AIGT | AI生成文本 |\n| NLP | 自然语言处理 |\n| Transformer | Transformer |\n| Attention | 注意力机制 |\n| paraphrase | 改写 |\n| detector | 检测器 |\n\n请提供需要翻译的英文学术文本，我将为您提供高质量的中文改写。",
+      "chunk_id": "2f25b308-9347-4ea5-9057-4c7a1ad0b878",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "We design five progressive detection tasks to systematically assess AI text detection systems across varying complexity levels and attack scenarios. Each task targets specific vulnerabilities while leveraging our multi-type text dataset to evaluate detectors under increasingly sophisticated adversarial conditions. Figure. [[REF_185]] demonstrate the description of the five tasks.",
+      "translation": "我们设计了五个递进式检测任务，以系统性地评估AI文本检测系统在不同复杂度级别和攻击场景下的表现。每个任务针对特定的脆弱性，同时利用我们的多类型文本数据集，在日益复杂的对抗条件下评估检测器的性能。图[[REF_185]]展示了这五个任务的描述。",
+      "chunk_id": "42b71325-79f5-4743-a06d-86a5b3d7be69",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "[[MACRO_186]]PADBen evaluates AI text detectors through five progressively challenging tasks:",
+      "translation": "[[MACRO_186]]PADBen通过五个难度递进的任务来评估AI文本检测器：",
+      "chunk_id": "b3a6e26f-16f4-4bcf-8033-a07c9cdaf697",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "\\item \\textbf{Task1: Paraphrase Source Attribution}:[[MACRO_187]] Distinguish human-paraphrased (Type 3) from LLM-paraphrased (Type 4) text without original context\n    \n    \\item \\textbf{Task2: General Authorship Detection}:[[MACRO_188]] Classify human original (Type 1) versus LLM-generated (Type 2) text—the baseline detection scenario\n    \n    \\item \\textbf{Task3: AI Text Laundering Detection}:[[MACRO_189]] Identify whether paraphrased text originated from human (Type 4) or LLM sources (Type 5-1st) before transformation\n    \n    \\item \\textbf{Task4: Iterative Depth Detection}:[[MACRO_190]] Distinguish shallow (Type 5-1st, 1 iteration) from deep paraphrasing (Type 5-3rd, 3 iterations) of the same LLM text\n    \n    \\item \\textbf{Task5: Paraphrase attack Detection}:[[MACRO_191]] Classify human original (Type 1) versus maximally obfuscated AI text (Type 5-3rd)",
+      "translation": "\\item \\textbf{任务1：改写来源归因}：[[MACRO_187]] 在没有原始上下文的情况下，区分人类改写的文本（类型3）和AI改写的文本（类型4）\n    \n    \\item \\textbf{任务2：通用作者身份检测}：[[MACRO_188]] 分类人类原创文本（类型1）与AI生成文本（类型2）——这是基线检测场景\n    \n    \\item \\textbf{任务3：AI文本洗稿检测}：[[MACRO_189]] 识别改写后的文本在转换前是源自人类（类型4）还是AI来源（类型5-第1次）\n    \n    \\item \\textbf{任务4：迭代深度检测}：[[MACRO_190]] 区分对同一AI文本进行的浅层改写（类型5-第1次，1次迭代）和深层改写（类型5-第3次，3次迭代）\n    \n    \\item \\textbf{任务5：改写攻击检测}：[[MACRO_191]] 分类人类原创文本（类型1）与经过最大程度混淆的AI文本（类型5-第3次）",
+      "chunk_id": "178405a7-3870-4f83-a962-99adf2bb6909",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 9
+      }
+    },
+    {
+      "source": "[[MACRO_192]]All tasks present sentence pairs in random order, with human/less-processed text labeled as 0 and LLM/more-processed text labeled as 1.\n\n    \\centering\n    \\includegraphics[width=\\columnwidth]{figures/evaluation_setup.png}",
+      "translation": "[[MACRO_192]]所有任务都以随机顺序呈现句子对，其中人类/较少处理的文本标记为0，LLM/更多处理的文本标记为1。\n\n    \\centering\n    \\includegraphics[width=\\columnwidth]{figures/evaluation_setup.png}",
+      "chunk_id": "f61f8011-44c4-4580-82cd-8ac871234d6e",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 1
+      }
+    },
+    {
+      "source": "[[MACRO_193]]{Two evaluation challenges: single-sentence classification and sentence-pair recognition. All five tasks are transformed into these two challenge formats. Detailed setup is provided in Appendix \\ref{appD:evaluation_setup}.}\n    \\label{fig:evaluation_setup}\n     \\vspace{-1.5em}",
+      "translation": "[[MACRO_193]]{两个评估挑战：单句分类和句对识别。所有五个任务都被转换为这两种挑战格式。详细设置见附录\\ref{appD:evaluation_setup}。}\n    \\label{fig:evaluation_setup}\n     \\vspace{-1.5em}",
+      "chunk_id": "4de8fff0-a8a6-45e9-8fce-23b908a53b95",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "Evaluation Framework",
+      "translation": "# 评估框架",
+      "chunk_id": "25759849-f665-4f82-b713-6c1ac95c9908",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "To comprehensively evaluate AI text detection capabilities, we examine two categories of detectors across multiple scenarios. Our selection covers both \\textbf{Zero-shot Detectors} and \\textbf{Model-based Detectors}, enabling a thorough assessment across methodological approaches.",
+      "translation": "为了全面评估AI文本检测能力，我们在多个场景下考察了两类检测器。我们的选择涵盖了\\textbf{零样本检测器}和\\textbf{基于模型的检测器}，从而能够对不同方法论进行全面评估。",
+      "chunk_id": "620516e9-5a81-40dd-81eb-e31a3e6156ac",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "[[MACRO_194]]Zero-shot detectors~[[MACRO_195]]\nOperate without task-specific training, relying on pre-existing linguistic/statistical patterns to distinguish human vs.~machine text. They include traditional statistical and rule-based systems while utilizing language models for extracting certain features. The state-of-the-art zero-shot detectors we evaluated include Binocular, Fast-Detect-GPT, GTLR, and RADAR.(Detailed technical setup can be found in Appendix.[[REF_196]].",
+      "translation": "[[MACRO_194]]零样本检测器s~[[MACRO_195]]\n无需针对特定任务进行训练，而是依赖预先存在的语言/统计模式来区分人类文本与机器文本。这类方法包括传统的统计和基于规则的系统，同时利用语言模型提取特定特征。我们评估的最先进零样本检测器s包括Binocular、Fast-Detect-GPT、GTLR和RADAR（详细的技术设置见附录[[REF_196]]）。",
+      "chunk_id": "df4c3015-4b44-4da7-ac10-320c1ec1bdea",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "[[MACRO_197]]Model-based detectors~[[MACRO_198]]\nLeverage pre-trained language models or instruction-based LLM for classification, using internal representations learned from large-scale corpora to capture subtle differences between human and machine-generated content. We utilize few-shot and persona prompting strategies for both sentence-pair and single-sentence challenges. (Prompting details can see Appendix.[[REF_199]]).",
+      "translation": "[[MACRO_197]]基于模型的检测器s~[[MACRO_198]]\n利用预训练语言模型或基于指令的LLM进行分类，使用从大规模语料库中学习到的内部表示来捕捉人类生成内容和机器生成内容之间的细微差异。我们针对句子对和单句任务采用了少样本和角色提示策略。（提示细节见附录[[REF_199]]）。",
+      "chunk_id": "44ee354e-9fff-490d-b24d-5a5aac495e3c",
+      "metadata": {
+        "had_glossary_terms": true,
+        "glossary_terms_count": 2
+      }
+    },
+    {
+      "source": "Evaluation Setup",
+      "translation": "# 评估设置",
+      "chunk_id": "84aae9d4-f0c8-48d3-a68c-56b66143fed9",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "We evaluate under two challenges: single-sentence classification and sentence-pair recognition with 5 different setups to reflect realistic use cases. Table.[[REF_200]] shows the main difference between 5 setups. Figure.[[REF_201]] explains the inputs and outputs of the two challenges. Below are the listing for 5 setups:\n\n    \\item \\textbf{Single-Sentence Exhaustive:} Uses all available samples with balanced 50-50 distribution\n    \\item \\textbf{Single-Sentence Sampling (30-70):} Random sampling with 30[[MACRO_202]] positive, 70[[MACRO_203]] negative\n    \\item \\textbf{Single-Sentence Sampling (50-50):} Random sampling with balanced distribution\n    \\item \\textbf{Single-Sentence Sampling (80-20):} Random sampling with 80[[MACRO_204]] positive, 20[[MACRO_205]] negative\n    \\item \\textbf{Sentence-Pair Recognition:} Pairwise comparison tasks with random order presentation\n\nDetails can be found from Appendix.[[REF_206]] to Appendix.[[REF_207]], illustrating the reason why we split into such settings and the algorithms for implementing.",
+      "translation": "我们在两个挑战下进行评估：单句分类和句对识别，并设置了5种不同的配置以反映真实使用场景。表[[REF_200]]展示了5种配置之间的主要差异。图[[REF_201]]说明了两个挑战的输入和输出。以下是5种配置的列表：\n\n    \\item \\textbf{单句穷举式：}使用所有可用样本，正负样本比例为50-50的均衡分布\n    \\item \\textbf{单句采样(30-70)：}随机采样，正样本占30[[MACRO_202]]，负样本占70[[MACRO_203]]\n    \\item \\textbf{单句采样(50-50)：}随机采样，正负样本均衡分布\n    \\item \\textbf{单句采样(80-20)：}随机采样，正样本占80[[MACRO_204]]，负样本占20[[MACRO_205]]\n    \\item \\textbf{句对识别：}成对比较任务，随机顺序呈现\n\n详细信息可参见附录[[REF_206]]至附录[[REF_207]]，其中阐述了我们划分这些配置的原因以及实现算法。",
+      "chunk_id": "653e2b7d-88d4-4f9c-9f9b-5aa6df9249d4",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_208]]",
+      "translation": "[[MACRO_208]]",
+      "chunk_id": "eb41170a-d36b-45ee-bf38-dcbda5b35536",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
+      }
+    },
+    {
+      "source": "[[MACRO_209]]Model-based Detectors Performance Summary\n[[REF_210]]\n[[MACRO_211]][[MACRO_212]]\n[[MACRO_213]][[MACRO_214]]!%\n\n[[MACRO_215]]\\textbf{Model} & \\textbf{Challenge}\n& [[MACRO_216]]4c|\\textbf{Task 1}\n& [[MACRO_217]]4c|\\textbf{Task 2}\n& [[MACRO_218]]4c|\\textbf{Task 3}\n& [[MACRO_219]]4c|\\textbf{Task 4}\n& [[MACRO_220]]4c\\textbf{Task 5} [[MACRO_221]]\n &  & \\textbf{AUC} & \\textbf{T1} & \\textbf{T5} & \\textbf{T10}\n      & \\textbf{AUC} & \\textbf{T1} & \\textbf{T5} & \\textbf{T10}\n      & \\textbf{AUC} & \\textbf{T1} & \\textbf{T5} & \\textbf{T10}\n      & \\textbf{AUC} & \\textbf{T1} & \\textbf{T5} & \\textbf{T10}\n      & \\textbf{AUC} & \\textbf{T1} & \\textbf{T5} & \\textbf{T10} [[MACRO_222]]\n[[MACRO_223]][[MACRO_224]]2*Claude-3.5-Haiku \n& sentence-pair \n& \\underline{\\textcolor{blue}{0.623}} & \\underline{\\textcolor{blue}{0.016}} & \\underline{\\textcolor{blue}{0.078}} & \\underline{\\textcolor{blue}{0.155}} & 0.366 & 0.005 & 0.024 & 0.047 & 0.475 & \\underline{\\textcolor{blue}{0.010}} & 0.042 & 0.085 & 0.507 & \\underline{\\textcolor{blue}{0.010}} & 0.051 & 0.102 & 0.351 & 0.003 & 0.017 & 0.034 [[MACRO_225]]\n& single-sentence\n& \\textbf{\\textcolor{red}{0.514}} & \\textbf{\\textcolor{red}{0.012}} & \\underline{\\textcolor{blue}{0.058}} & \\textbf{\\textcolor{red}{0.115}} & \\underline{\\textcolor{blue}{0.535}} & \\textbf{\\textcolor{red}{0.018}} & \\textbf{\\textcolor{red}{0.089}} & \\textbf{\\textcolor{red}{0.162}} & 0.519 & \\underline{\\textcolor{blue}{0.022}} & \\underline{\\textcolor{blue}{0.069}} & 0.069 & 0.503 & \\underline{\\textcolor{blue}{0.011}} & 0.054 & 0.073 & \\underline{\\textcolor{blue}{0.545}} & \\textbf{\\textcolor{red}{0.049}} & \\underline{\\textcolor{blue}{0.112}} & \\underline{\\textcolor{blue}{0.112}} [[MACRO_226]]\n[[MACRO_227]][[MACRO_228]]2*DeepSeek-V2.5 \n& sentence-pair \n& 0.572 & 0.012 & 0.060 & 0.120 & 0.467 & 0.008 & 0.039 & 0.078 & \\textbf{\\textcolor{red}{0.519}} & \\textbf{\\textcolor{red}{0.011}} & \\textbf{\\textcolor{red}{0.057}} & \\textbf{\\textcolor{red}{0.113}} & \\textbf{\\textcolor{red}{0.514}} & \\textbf{\\textcolor{red}{0.011}} & \\textbf{\\textcolor{red}{0.054}} & \\textbf{\\textcolor{red}{0.108}} & 0.484 & 0.009 & 0.046 & 0.091 [[MACRO_229]]\n& single-sentence\n& 0.480 & 0.009 & 0.046 & 0.092 & 0.479 & 0.009 & 0.047 & 0.095 & \\underline{\\textcolor{blue}{0.531}} & 0.014 & \\underline{\\textcolor{blue}{0.069}} & \\textbf{\\textcolor{red}{0.138}} & 0.501 & 0.010 & 0.051 & 0.101 & 0.511 & 0.011 & 0.055 & 0.110 [[MACRO_230]]\n[[MACRO_231]][[MACRO_232]]2*Gemma-3-27B \n& sentence-pair \n& 0.521 & 0.011 & 0.053 & 0.105 & \\underline{\\textcolor{blue}{0.506}} & \\underline{\\textcolor{blue}{0.010}} & 0.051 & \\underline{\\textcolor{blue}{0.102}} & 0.480 & \\underline{\\textcolor{blue}{0.010}} & 0.048 & 0.095 & 0.502 & \\underline{\\textcolor{blue}{0.010}} & 0.050 & 0.101 & 0.516 & \\underline{\\textcolor{blue}{0.010}} & 0.052 & 0.104 [[MACRO_233]]\n& single-sentence\n& 0.461 & 0.008 & 0.040 & 0.080 & 0.465 & 0.009 & 0.044 & 0.088 & 0.520 & 0.013 & 0.064 & 0.129 & 0.503 & 0.010 & 0.052 & 0.104 & 0.478 & 0.009 & 0.043 & 0.085 [[MACRO_234]]\n[[MACRO_235]][[MACRO_236]]2*Kimi-K2-Instruct \n& sentence-pair \n& \\textbf{\\textcolor{red}{0.691}} & \\textbf{\\textcolor{red}{0.020}} & \\textbf{\\textcolor{red}{0.102}} & \\textbf{\\textcolor{red}{0.204}} & 0.431 & 0.007 & 0.036 & 0.071 & \\underline{\\textcolor{blue}{0.516}} & \\textbf{\\textcolor{red}{0.011}} & 0.053 & 0.106 & 0.487 & \\underline{\\textcolor{blue}{0.010}} & 0.048 & 0.096 & 0.441 & 0.006 & 0.030 & 0.060 [[MACRO_237]]\n& single-sentence\n& \\underline{\\textcolor{blue}{0.509}} & \\textbf{\\textcolor{red}{0.012}} & \\textbf{\\textcolor{red}{0.062}} & 0.096 & \\textbf{\\textcolor{red}{0.540}} & \\underline{\\textcolor{blue}{0.014}} & \\underline{\\textcolor{blue}{0.071}} & \\underline{\\textcolor{blue}{0.141}} & \\textbf{\\textcolor{red}{0.540}} & \\textbf{\\textcolor{red}{0.029}} & \\textbf{\\textcolor{red}{0.123}} & 0.123 & 0.503 & \\underline{\\textcolor{blue}{0.011}} & \\textbf{\\textcolor{red}{0.056}} & 0.063 & \\textbf{\\textcolor{red}{0.573}} & \\underline{\\textcolor{blue}{0.047}} & \\textbf{\\textcolor{red}{0.185}} & \\textbf{\\textcolor{red}{0.185}} [[MACRO_238]]\n[[MACRO_239]][[MACRO_240]]2*Llama-4-Scout[[MACRO_241]]-17B \n& sentence-pair \n& 0.561 & 0.012 & 0.059 & 0.118 & 0.456 & 0.008 & 0.042 & 0.085 & \\textbf{\\textcolor{red}{0.519}} & \\textbf{\\textcolor{red}{0.011}} & \\underline{\\textcolor{blue}{0.054}} & \\underline{\\textcolor{blue}{0.109}} & 0.493 & \\underline{\\textcolor{blue}{0.010}} & 0.049 & 0.098 & 0.476 & 0.009 & 0.046 & 0.091 [[MACRO_242]]\n& single-sentence\n& 0.486 & 0.009 & 0.047 & 0.095 & 0.472 & 0.009 & 0.046 & 0.091 & 0.523 & 0.013 & 0.065 & \\underline{\\textcolor{blue}{0.131}} & \\textbf{\\textcolor{red}{0.509}} & \\underline{\\textcolor{blue}{0.011}} & \\underline{\\textcolor{blue}{0.055}} & \\textbf{\\textcolor{red}{0.111}} & 0.506 & 0.010 & 0.052 & 0.103 [[MACRO_243]]\n[[MACRO_244]][[MACRO_245]]2*Mistral-Nemo \n& sentence-pair \n& 0.510 & 0.014 & 0.069 & 0.073 & 0.504 & \\textbf{\\textcolor{red}{0.011}} & \\textbf{\\textcolor{red}{0.057}} & 0.066 & 0.501 & \\underline{\\textcolor{blue}{0.010}} & 0.051 & 0.101 & 0.502 & \\underline{\\textcolor{blue}{0.010}} & 0.051 & 0.101 & \\underline{\\textcolor{blue}{0.518}} & \\textbf{\\textcolor{red}{0.012}} & \\underline{\\textcolor{blue}{0.059}} & \\underline{\\textcolor{blue}{0.118}} [[MACRO_246]]\n& single-sentence\n& 0.489 & 0.009 & 0.044 & 0.089 & 0.470 & 0.008 & 0.040 & 0.081 & 0.494 & 0.008 & 0.038 & 0.040 & 0.493 & 0.009 & 0.046 & 0.091 & 0.498 & 0.009 & 0.046 & 0.049 [[MACRO_247]]\n[[MACRO_248]][[MACRO_249]]2*WizardLM-2[[MACRO_250]]-8x22B \n& sentence-pair \n& 0.558 & 0.012 & 0.059 & 0.119 & \\textbf{\\textcolor{red}{0.520}} & \\textbf{\\textcolor{red}{0.011}} & \\underline{\\textcolor{blue}{0.054}} & \\textbf{\\textcolor{red}{0.108}} & 0.508 & \\underline{\\textcolor{blue}{0.010}} & \\underline{\\textcolor{blue}{0.052}} & 0.103 & \\underline{\\textcolor{blue}{0.510}} & \\underline{\\textcolor{blue}{0.010}} & \\underline{\\textcolor{blue}{0.052}} & \\underline{\\textcolor{blue}{0.104}} & \\textbf{\\textcolor{red}{0.551}} & \\textbf{\\textcolor{red}{0.012}} & \\textbf{\\textcolor{red}{0.061}} & \\textbf{\\textcolor{red}{0.122}} [[MACRO_251]]\n& single-sentence\n& 0.501 & \\underline{\\textcolor{blue}{0.010}} & 0.050 & \\underline{\\textcolor{blue}{0.101}} & 0.505 & 0.011 & 0.053 & 0.105 & 0.505 & 0.013 & 0.045 & 0.045 & \\underline{\\textcolor{blue}{0.504}} & \\textbf{\\textcolor{red}{0.012}} & 0.049 & 0.049 & 0.499 & 0.009 & 0.047 & 0.048 [[MACRO_252]]\n[[MACRO_253]]%\n\n[[MACRO_254]][[MACRO_255]]\\textbf{Note:} AUC = AUC-ROC, T1 = TPR@1[[MACRO_256]]FPR, T5 = TPR@5[[MACRO_257]]FPR, T10 = TPR@10[[MACRO_258]]FPR. Single-sentence evaluation uses 50--50 sampling. Best ([[MACRO_259]]\\textbf{red bold}) and second-best ([[MACRO_260]]\\underline{blue underlined}) results are marked within each setup (sentence-pair or single-sentence) for each task and metric.[[MACRO_261]]",
+      "translation": "[[MACRO_209]]基于模型的检测器性能总结\n[[REF_210]]\n[[MACRO_211]][[MACRO_212]]\n[[MACRO_213]][[MACRO_214]]!%\n\n[[MACRO_215]]\\textbf{Model} & \\textbf{Challenge}\n& [[MACRO_216]]4c|\\textbf{Task 1}\n& [[MACRO_217]]4c|\\textbf{Task 2}\n& [[MACRO_218]]4c|\\textbf{Task 3}\n& [[MACRO_219]]4c|\\textbf{Task 4}\n& [[MACRO_220]]4c\\textbf{Task 5} [[MACRO_221]]\n &  & \\textbf{AUC} & \\textbf{T1} & \\textbf{T5} & \\textbf{T10}\n      & \\textbf{AUC} & \\textbf{T1} & \\textbf{T5} & \\textbf{T10}\n      & \\textbf{AUC} & \\textbf{T1} & \\textbf{T5} & \\textbf{T10}\n      & \\textbf{AUC} & \\textbf{T1} & \\textbf{T5} & \\textbf{T10}\n      & \\textbf{AUC} & \\textbf{T1} & \\textbf{T5} & \\textbf{T10} [[MACRO_222]]\n[[MACRO_223]][[MACRO_224]]2*Claude-3.5-Haiku \n& sentence-pair \n& \\underline{\\textcolor{blue}{0.623}} & \\underline{\\textcolor{blue}{0.016}} & \\underline{\\textcolor{blue}{0.078}} & \\underline{\\textcolor{blue}{0.155}} & 0.366 & 0.005 & 0.024 & 0.047 & 0.475 & \\underline{\\textcolor{blue}{0.010}} & 0.042 & 0.085 & 0.507 & \\underline{\\textcolor{blue}{0.010}} & 0.051 & 0.102 & 0.351 & 0.003 & 0.017 & 0.034 [[MACRO_225]]\n& single-sentence\n& \\textbf{\\textcolor{red}{0.514}} & \\textbf{\\textcolor{red}{0.012}} & \\underline{\\textcolor{blue}{0.058}} & \\textbf{\\textcolor{red}{0.115}} & \\underline{\\textcolor{blue}{0.535}} & \\textbf{\\textcolor{red}{0.018}} & \\textbf{\\textcolor{red}{0.089}} & \\textbf{\\textcolor{red}{0.162}} & 0.519 & \\underline{\\textcolor{blue}{0.022}} & \\underline{\\textcolor{blue}{0.069}} & 0.069 & 0.503 & \\underline{\\textcolor{blue}{0.011}} & 0.054 & 0.073 & \\underline{\\textcolor{blue}{0.545}} & \\textbf{\\textcolor{red}{0.049}} & \\underline{\\textcolor{blue}{0.112}} & \\underline{\\textcolor{blue}{0.112}} [[MACRO_226]]\n[[MACRO_227]][[MACRO_228]]2*DeepSeek-V2.5 \n& sentence-pair \n& 0.572 & 0.012 & 0.060 & 0.120 & 0.467 & 0.008 & 0.039 & 0.078 & \\textbf{\\textcolor{red}{0.519}} & \\textbf{\\textcolor{red}{0.011}} & \\textbf{\\textcolor{red}{0.057}} & \\textbf{\\textcolor{red}{0.113}} & \\textbf{\\textcolor{red}{0.514}} & \\textbf{\\textcolor{red}{0.011}} & \\textbf{\\textcolor{red}{0.054}} & \\textbf{\\textcolor{red}{0.108}} & 0.484 & 0.009 & 0.046 & 0.091 [[MACRO_229]]\n& single-sentence\n& 0.480 & 0.009 & 0.046 & 0.092 & 0.479 & 0.009 & 0.047 & 0.095 & \\underline{\\textcolor{blue}{0.531}} & 0.014 & \\underline{\\textcolor{blue}{0.069}} & \\textbf{\\textcolor{red}{0.138}} & 0.501 & 0.010 & 0.051 & 0.101 & 0.511 & 0.011 & 0.055 & 0.110 [[MACRO_230]]\n[[MACRO_231]][[MACRO_232]]2*Gemma-3-27B \n& sentence-pair \n& 0.521 & 0.011 & 0.053 & 0.105 & \\underline{\\textcolor{blue}{0.506}} & \\underline{\\textcolor{blue}{0.010}} & 0.051 & \\underline{\\textcolor{blue}{0.102}} & 0.480 & \\underline{\\textcolor{blue}{0.010}} & 0.048 & 0.095 & 0.502 & \\underline{\\textcolor{blue}{0.010}} & 0.050 & 0.101 & 0.516 & \\underline{\\textcolor{blue}{0.010}} & 0.052 & 0.104 [[MACRO_233]]\n& single-sentence\n& 0.461 & 0.008 & 0.040 & 0.080 & 0.465 & 0.009 & 0.044 & 0.088 & 0.520 & 0.013 & 0.064 & 0.129 & 0.503 & 0.010 & 0.052 & 0.104 & 0.478 & 0.009 & 0.043 & 0.085 [[MACRO_234]]\n[[MACRO_235]][[MACRO_236]]2*Kimi-K2-Instruct \n& sentence-pair \n& \\textbf{\\textcolor{red}{0.691}} & \\textbf{\\textcolor{red}{0.020}} & \\textbf{\\textcolor{red}{0.102}} & \\textbf{\\textcolor{red}{0.204}} & 0.431 & 0.007 & 0.036 & 0.071 & \\underline{\\textcolor{blue}{0.516}} & \\textbf{\\textcolor{red}{0.011}} & 0.053 & 0.106 & 0.487 & \\underline{\\textcolor{blue}{0.010}} & 0.048 & 0.096 & 0.441 & 0.006",
+      "chunk_id": "ede21aed-6bea-453e-9fb1-a14ecc4f2efc",
+      "metadata": {
+        "had_glossary_terms": false,
+        "glossary_terms_count": 0
       }
     }
   ]

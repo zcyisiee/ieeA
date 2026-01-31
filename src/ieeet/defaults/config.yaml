@@ -13,3 +13,6 @@ compilation:
 paths:
   output_dir: output
   cache_dir: .cache
+
+fonts:
+  auto_detect: true

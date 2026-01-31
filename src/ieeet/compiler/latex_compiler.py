@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
@@ -67,7 +68,9 @@ class LaTeXCompiler:
                 if not shutil.which(engine):
                     continue
 
-                success, log, error = self._run_engine(engine, source_file, temp_path)
+                success, log, error = self._run_engine(
+                    engine, source_file, temp_path, latex_source
+                )
 
                 if success:
                     # Move generated PDF to output_path
@@ -110,9 +113,57 @@ class LaTeXCompiler:
             pass
 
     def _run_engine(
+        self, engine: str, source_file: Path, cwd: Path, latex_source: str
+    ) -> Tuple[bool, str, Optional[str]]:
+        """Runs the full compilation cycle: latex -> bib -> latex -> latex."""
+
+        # 1. First pass
+        success, log, error = self._run_single_pass(engine, source_file, cwd)
+        if not success:
+            return False, log, error
+
+        # 2. Check for bibliography
+        bib_tool = self._detect_bibliography_tool(latex_source)
+        if bib_tool and shutil.which(bib_tool):
+            # Run bibliography tool (don't fail strictly if it fails)
+            self._run_bibliography_tool(bib_tool, cwd)
+
+            # 3. Second pass (update references)
+            self._run_single_pass(engine, source_file, cwd)
+
+            # 4. Third pass (resolve cross-references)
+            success, log, error = self._run_single_pass(engine, source_file, cwd)
+
+        return success, log, error
+
+    def _detect_bibliography_tool(self, latex_source: str) -> Optional[str]:
+        # Check for biblatex -> biber
+        if re.search(r"\\usepackage(\[.*\])?\{biblatex\}", latex_source):
+            return "biber"
+        # Check for standard bibliography -> bibtex
+        if re.search(r"\\bibliography\{", latex_source):
+            return "bibtex"
+        return None
+
+    def _run_bibliography_tool(self, tool: str, cwd: Path) -> bool:
+        cmd = [tool, "main"]
+        try:
+            subprocess.run(
+                cmd,
+                cwd=cwd,
+                capture_output=True,
+                timeout=60,
+                encoding="utf-8",
+                errors="replace",
+            )
+            return True
+        except Exception:
+            return False
+
+    def _run_single_pass(
         self, engine: str, source_file: Path, cwd: Path
     ) -> Tuple[bool, str, Optional[str]]:
-        """Runs a specific latex engine."""
+        """Runs a single pass of the latex engine."""
         cmd = [engine, "-interaction=nonstopmode", source_file.name]
 
         try:

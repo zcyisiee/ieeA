@@ -27,10 +27,20 @@ class PathsConfig(BaseModel):
     cache_dir: str = ".cache"
 
 
+class FontConfig(BaseModel):
+    """CJK font configuration."""
+
+    main: Optional[str] = None
+    sans: Optional[str] = None
+    mono: Optional[str] = None
+    auto_detect: bool = True
+
+
 class Config(BaseModel):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     compilation: CompilationConfig = Field(default_factory=CompilationConfig)
     paths: PathsConfig = Field(default_factory=PathsConfig)
+    fonts: FontConfig = Field(default_factory=FontConfig)
 
 
 def load_defaults() -> Dict[str, Any]:

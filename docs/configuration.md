@@ -95,6 +95,34 @@ paths:
   cache_dir: .cache
 ```
 
+### Font Settings
+
+```yaml
+fonts:
+  # Auto-detect available CJK fonts (recommended)
+  auto_detect: true
+  
+  # Or specify fonts manually:
+  # main: "STSong"      # Main font (Serif) - for body text
+  # sans: "STHeiti"     # Sans font - for headings
+  # mono: "STFangsong"  # Mono font - for code
+```
+
+#### Available Fonts by Platform
+
+| Platform | Main (Serif) | Sans | Mono |
+|----------|--------------|------|------|
+| macOS | STSong, Songti SC | STHeiti, PingFang SC | STFangsong |
+| Windows | SimSun | SimHei, Microsoft YaHei | FangSong, KaiTi |
+| Linux | Noto Serif CJK SC | Noto Sans CJK SC | Noto Sans Mono CJK SC |
+
+When `auto_detect: true`, ieeT will automatically detect available fonts in this priority order:
+1. Noto CJK (Google/Adobe)
+2. Source Han (Adobe)
+3. macOS system fonts (STSong, PingFang SC)
+4. Windows system fonts (SimSun, SimHei)
+5. Fandol (TeX Live default)
+
 ### Translation Settings
 
 ```yaml
