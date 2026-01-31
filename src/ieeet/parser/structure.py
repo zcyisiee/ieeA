@@ -54,13 +54,23 @@ class LaTeXDocument:
         """
         if self.body_template:
             result = self.body_template
+
+            # First pass: Replace {{CHUNK_uuid}} placeholders with translated content
             for chunk in self.chunks:
-                trans_text = (
-                    translated_chunks.get(chunk.id) if translated_chunks else None
-                )
-                reconstructed = chunk.reconstruct(trans_text)
                 placeholder = f"{{{{CHUNK_{chunk.id}}}}}"
-                result = result.replace(placeholder, reconstructed)
+                if placeholder in result:
+                    trans_text = (
+                        translated_chunks.get(chunk.id) if translated_chunks else None
+                    )
+                    reconstructed = chunk.reconstruct(trans_text)
+                    result = result.replace(placeholder, reconstructed)
+
+            # Second pass: Restore ALL preserved elements (LABEL, CITE, MATH, etc.)
+            # These are stored as chunks with preserved_elements mapping
+            for chunk in self.chunks:
+                for placeholder, original in chunk.preserved_elements.items():
+                    result = result.replace(placeholder, original)
+
             return self.preamble + result
 
         body_parts = []
