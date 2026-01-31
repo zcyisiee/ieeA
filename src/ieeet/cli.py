@@ -138,6 +138,7 @@ def translate(
                 model=model_name,
                 api_key=api_key_val,
                 base_url=config.llm.base_url,
+                temperature=config.llm.temperature,
             )
             pipeline = TranslationPipeline(
                 provider=provider,
