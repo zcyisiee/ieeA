@@ -220,6 +220,8 @@ def translate(
                     compiler = LaTeXCompiler(timeout=config.compilation.timeout)
                     try:
                         latex_source = out_file.read_text(encoding="utf-8")
+                        # Inject Chinese font support before compilation
+                        latex_source = compiler.inject_chinese_support(latex_source)
                         pdf_path = (
                             output_dir
                             / download_result.arxiv_id
