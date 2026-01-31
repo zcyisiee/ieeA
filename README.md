@@ -9,7 +9,7 @@
 pip install -e .
 
 # 翻译 arXiv 论文
-ieeet translate https://arxiv.org/abs/2301.07041 --output-dir output/
+ieet translate https://arxiv.org/abs/2301.07041 --output-dir output/
 ```
 
 ## 翻译流程 (Pipeline)
