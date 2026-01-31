@@ -190,9 +190,16 @@ class LaTeXParser:
                     )
                     self.chunks.append(chunk)
                     optional_short = match.group(3) if match.group(3) else ""
-                    result.append(
-                        f"{match.group(1)}{match.group(2)}{optional_short}{{{placeholder}}}"
+                    # Build caption string without f-string brace escaping issues
+                    caption_str = (
+                        match.group(1)
+                        + match.group(2)
+                        + optional_short
+                        + "{"
+                        + placeholder
+                        + "}"
                     )
+                    result.append(caption_str)
                 else:
                     result.append(match.group(0) + content + "}")
                 pos = i
