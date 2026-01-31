@@ -58,6 +58,8 @@ class LaTeXParser:
         flattened_content = self._flatten_latex(content, base_dir)
         preamble, body_content = self._split_preamble_body(flattened_content)
 
+        preamble = self._inject_chinese_support(preamble)
+
         self.chunks = []
         self.protected_counter = 0
 
@@ -66,6 +68,24 @@ class LaTeXParser:
         return LaTeXDocument(
             preamble=preamble, chunks=self.chunks, body_template=body_template
         )
+
+    def _inject_chinese_support(self, preamble: str) -> str:
+        if "xeCJK" in preamble:
+            return preamble
+
+        injection = (
+            "\n% Chinese Support\n"
+            "\\usepackage{xeCJK}\n"
+            "\\setCJKmainfont{Noto Serif CJK SC}\n"
+            "\\setCJKsansfont{Noto Sans CJK SC}\n"
+            "\\setCJKmonofont{Noto Sans Mono CJK SC}\n"
+        )
+
+        match = re.search(r"\\documentclass(\[.*?\])?\{.*?\}", preamble, re.DOTALL)
+        if match:
+            end_pos = match.end()
+            return preamble[:end_pos] + injection + preamble[end_pos:]
+        return preamble
 
     def _process_body(self, body: str) -> str:
         result = body
