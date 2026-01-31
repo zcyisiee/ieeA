@@ -1,191 +1,131 @@
-# ieeT
+# ieeT - arXiv 论文翻译工具
 
-**ieeT** (IEEE/arXiv Translator) is a tool for translating academic LaTeX papers from English to Chinese while preserving mathematical formulas, citations, and document structure.
+将英文 arXiv 论文翻译成中文，保留数学公式、引用和文档结构。
 
-## Features
-
-- **arXiv Paper Download**: Automatically download source files from arXiv
-- **LaTeX Parsing**: Parse complex LaTeX documents with proper handling of imports, math, and citations
-- **Smart Chunking**: Split documents into translatable chunks while preserving structure
-- **Glossary Support**: Maintain consistent terminology across translations
-- **Multiple LLM Providers**: Support for OpenAI, Claude, Qwen, and Doubao
-- **Validation Engine**: Verify translation quality and structural integrity
-- **Resume Capability**: Save/restore translation progress for large documents
-
-## Quick Start
+## 快速开始
 
 ```bash
-# Install ieeT
+# 安装
 pip install -e .
 
-# Translate an arXiv paper
-ieeet translate 2301.07041 --output ./translated/
-
-# Or translate a local LaTeX file
-ieeet translate paper.tex --output ./translated/
+# 翻译 arXiv 论文
+ieeet translate https://arxiv.org/abs/2301.07041 --output-dir output/
 ```
 
-## Installation
+## 翻译流程 (Pipeline)
 
-### Requirements
-
-- Python 3.10 or higher
-- XeLaTeX (for PDF compilation)
-- An API key for at least one LLM provider
-
-### Basic Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/your-org/ieeet.git
-cd ieeet
-
-# Install in development mode
-pip install -e .
-
-# Install development dependencies
-pip install -e ".[dev]"
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  1. 下载    │ -> │  2. 解析    │ -> │  3. 翻译    │ -> │  4. 重组    │ -> │  5. 编译    │
+│  arXiv源码  │    │  LaTeX结构  │    │  文本块     │    │  LaTeX文档  │    │  生成PDF   │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
 ```
 
-For detailed installation instructions, see [docs/installation.md](docs/installation.md).
+### 1. 下载 (Downloader)
+从 arXiv 下载论文源码压缩包，自动解压并定位主 `.tex` 文件。
 
-## Usage
+### 2. 解析 (Parser)
+将 LaTeX 文档解析为可翻译的文本块 (Chunk)，同时保护不应翻译的元素。
 
-### Translating arXiv Papers
+#### Chunk 划分依据
 
-```bash
-# By arXiv ID
-ieeet translate 1706.03762
+| 类型 | 处理方式 | 示例 |
+|------|----------|------|
+| **保护环境** | 替换为占位符，不翻译 | `equation`, `align`, `tikzpicture`, `verbatim` |
+| **可翻译环境** | 整体提取为一个 Chunk | `abstract`, `itemize`, `enumerate` |
+| **结构命令** | 提取参数内容为 Chunk | `\title{}`, `\section{}`, `\caption{}` |
+| **保护命令** | 替换为占位符，不翻译 | `\cite{}`, `\ref{}`, `\label{}`, `$...$` |
+| **段落文本** | 按空行分割，长度>20字符的段落作为 Chunk | 正文段落 |
 
-# By arXiv URL
-ieeet translate https://arxiv.org/abs/1706.03762
-
-# With custom output directory
-ieeet translate 1706.03762 --output ./my-translations/
+#### 处理顺序
+```
+原文 -> 提取标题 -> 提取caption -> 保护数学环境 -> 保护行内公式 
+     -> 保护命令(\cite等) -> 提取可翻译环境 -> 分割段落 -> Chunks
 ```
 
-### Translating Local Files
+### 3. 翻译 (Translator)
+- 并发调用 LLM API 翻译各 Chunk
+- 支持术语表 (Glossary) 保持术语一致性
+- 自动重试和断点续传
 
-```bash
-# Single file
-ieeet translate paper.tex
+### 4. 重组 (Reconstructor)
+将翻译后的文本替换回占位符位置，还原完整 LaTeX 文档。
 
-# With custom glossary
-ieeet translate paper.tex --glossary my-glossary.yaml
-```
+### 5. 编译 (Compiler)
+使用 XeLaTeX 编译生成中文 PDF，自动注入中文字体支持。
 
-### Using Custom Configuration
+## 配置
 
-```bash
-# Use a specific config file
-ieeet translate paper.tex --config my-config.yaml
-
-# Override LLM provider
-ieeet translate paper.tex --provider claude --model claude-3-sonnet
-```
-
-## Configuration
-
-ieeT uses a layered configuration system:
-
-1. **Default config**: Built-in defaults
-2. **User config**: `~/.ieeet/config.yaml`
-3. **Project config**: `./ieeet.yaml` in working directory
-4. **Command-line flags**: Override any setting
-
-### Example Configuration
+配置文件位置：`~/.ieeet/config.yaml`
 
 ```yaml
+# LLM 配置
 llm:
   provider: openai
   model: gpt-4o-mini
-  api_key_env: OPENAI_API_KEY
+  api_key: your-api-key          # 或使用 api_key_env 指定环境变量
+  base_url: https://api.openai.com/v1  # 可选，用于 OpenRouter 等代理
   temperature: 0.1
   max_tokens: 4000
 
+# 编译配置
 compilation:
   engine: xelatex
-  timeout: 120
-  clean_aux: true
+  timeout: 300
 
-paths:
-  output_dir: output
-  cache_dir: .cache
+# 自定义翻译提示词（可选）
+translation:
+  custom_system_prompt: "你是专业的学术翻译专家..."
 ```
 
-For all configuration options, see [docs/configuration.md](docs/configuration.md).
+### 术语表
 
-## Glossary
-
-ieeT supports custom glossaries for consistent terminology:
+术语表位置：`~/.ieeet/glossary.yaml`
 
 ```yaml
-# glossary.yaml
-"attention mechanism": "注意力机制"
-"transformer": "Transformer架构"
-"self-attention":
-  target: "自注意力"
+# 保持原文不翻译
+"MMLU": "MMLU"
+"LLaMA": "LLaMA"
+
+# 指定翻译
+"Attention": "注意力机制"
+"Transformer":
+  target: "Transformer"
   context: "Deep Learning"
-  domain: "NLP"
 ```
 
-See [docs/custom-rules.md](docs/custom-rules.md) for details.
+## 支持的 LLM
 
-## Supported LLM Providers
-
-| Provider | Models | API Key Env Var |
-|----------|--------|-----------------|
-| OpenAI | gpt-4o, gpt-4o-mini, gpt-4-turbo | `OPENAI_API_KEY` |
+| 提供商 | 模型示例 | 环境变量 |
+|--------|----------|----------|
+| OpenAI | gpt-4o, gpt-4o-mini | `OPENAI_API_KEY` |
 | Claude | claude-3-opus, claude-3-sonnet | `ANTHROPIC_API_KEY` |
-| Qwen | qwen-turbo, qwen-plus, qwen-max | `DASHSCOPE_API_KEY` |
+| Qwen | qwen-turbo, qwen-max | `DASHSCOPE_API_KEY` |
 | Doubao | doubao-pro-* | `VOLCENGINE_API_KEY` |
 
-## Project Structure
+**提示**：可通过 `base_url` 配置使用 OpenRouter 等代理服务。
+
+## 项目结构
 
 ```
-ieeet/
-├── src/ieeet/
-│   ├── cli.py              # Command-line interface
-│   ├── downloader/         # arXiv paper downloader
-│   ├── parser/             # LaTeX parsing and chunking
-│   ├── translator/         # LLM translation pipeline
-│   ├── validator/          # Translation validation
-│   ├── rules/              # Glossary and validation rules
-│   └── defaults/           # Default configuration
-├── tests/                  # Test suite
-│   ├── integration/        # End-to-end tests
-│   └── ...                 # Unit tests
-└── docs/                   # Documentation
+src/ieeet/
+├── cli.py              # 命令行入口
+├── downloader/         # arXiv 下载器
+├── parser/             # LaTeX 解析与分块
+│   ├── latex_parser.py # 核心解析逻辑
+│   └── structure.py    # Chunk 数据结构
+├── translator/         # 翻译流水线
+├── compiler/           # PDF 编译
+├── validator/          # 翻译质量验证
+└── rules/              # 配置与术语表
 ```
 
-## Documentation
+## 依赖
 
-- [Installation Guide](docs/installation.md)
-- [Configuration Guide](docs/configuration.md)
-- [Custom Rules & Glossary](docs/custom-rules.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [Known Limitations](docs/known-limitations.md)
-
-## Running Tests
-
-```bash
-# Run all tests
-pytest
-
-# Run unit tests only (fast)
-pytest -m "not slow"
-
-# Run integration tests with real papers
-pytest -m slow
-
-# Run with coverage
-pytest --cov=ieeet
-```
+- Python 3.10+
+- XeLaTeX（用于 PDF 编译）
+- 中文字体（macOS 自动检测 Songti SC / PingFang SC）
 
 ## License
 
-MIT License - see LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please read our contributing guidelines before submitting pull requests.
+MIT
