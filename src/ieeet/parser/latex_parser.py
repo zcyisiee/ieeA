@@ -28,9 +28,6 @@ class LaTeXParser:
         "lstlisting",
         "verbatim",
         "minted",
-        "itemize",
-        "enumerate",
-        "description",
         "tabular",
         "tabular*",
         "array",
@@ -42,6 +39,9 @@ class LaTeXParser:
 
     TRANSLATABLE_ENVIRONMENTS = {
         "abstract",
+        "itemize",
+        "enumerate",
+        "description",
     }
 
     SECTION_COMMANDS = {
