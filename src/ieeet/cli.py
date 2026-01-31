@@ -222,6 +222,8 @@ def translate(
                         latex_source = out_file.read_text(encoding="utf-8")
                         # Inject Chinese font support before compilation
                         latex_source = compiler.inject_chinese_support(latex_source)
+                        # Save the final version that will be compiled (for debugging)
+                        out_file.write_text(latex_source, encoding="utf-8")
                         pdf_path = (
                             output_dir
                             / download_result.arxiv_id
