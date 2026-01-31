@@ -153,11 +153,27 @@ def translate(
                 f"[bold]Translating {len(chunk_data)} chunks (max 20 concurrent)...[/bold]"
             )
 
-            translated_chunks = await pipeline.translate_document(
-                chunks=chunk_data,
-                context="Academic Paper",
-                max_concurrent=20,
-            )
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[bold blue]{task.description}"),
+                BarColumn(),
+                TaskProgressColumn(),
+                TimeRemainingColumn(),
+                console=console,
+            ) as progress:
+                task_id = progress.add_task(
+                    "Translating chunks...", total=len(chunk_data)
+                )
+
+                def update_progress(completed: int, total: int):
+                    progress.update(task_id, completed=completed, total=total)
+
+                translated_chunks = await pipeline.translate_document(
+                    chunks=chunk_data,
+                    context="Academic Paper",
+                    max_concurrent=20,
+                    progress_callback=update_progress,
+                )
 
             results = [tc.model_dump() for tc in translated_chunks]
             console.print(f"[green]Translation complete: {len(results)} chunks[/green]")

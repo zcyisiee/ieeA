@@ -4,7 +4,7 @@ import asyncio
 import json
 import re
 from pathlib import Path
-from typing import Optional, Dict, List, Any, Union
+from typing import Optional, Dict, List, Any, Union, Callable, cast
 
 from pydantic import BaseModel, Field
 
@@ -237,6 +237,7 @@ class TranslationPipeline:
         chunks: List[Dict[str, str]],
         context: Optional[str] = None,
         max_concurrent: int = 20,
+        progress_callback: Optional[Callable[[int, int], None]] = None,
     ) -> List[TranslatedChunk]:
         """
         Translate a document consisting of multiple chunks with concurrent requests.
@@ -245,6 +246,7 @@ class TranslationPipeline:
             chunks: List of chunk dictionaries with 'chunk_id' and 'content' keys.
             context: Optional context for all chunks.
             max_concurrent: Maximum number of concurrent translation requests.
+            progress_callback: Optional callback (completed, total) for progress updates.
 
         Returns:
             List of TranslatedChunk objects in the same order as input.
@@ -268,17 +270,32 @@ class TranslationPipeline:
         # Semaphore for concurrency control
         semaphore = asyncio.Semaphore(max_concurrent)
 
+        completed_count = 0
+        progress_lock = asyncio.Lock()
+        total_pending = len(pending_chunks)
+
         async def translate_with_semaphore(
             chunk_data: Dict[str, str],
         ) -> TranslatedChunk:
             async with semaphore:
                 chunk_id = chunk_data["chunk_id"]
                 content = chunk_data["content"]
-                return await self.translate_chunk(
+                result = await self.translate_chunk(
                     chunk=content,
                     chunk_id=chunk_id,
                     context=context,
                 )
+
+                nonlocal completed_count
+                async with progress_lock:
+                    completed_count += 1
+                    if progress_callback:
+                        try:
+                            progress_callback(completed_count, total_pending)
+                        except Exception:
+                            pass
+
+                return result
 
         # Execute all translations concurrently
         tasks = [translate_with_semaphore(c) for c in pending_chunks]
@@ -290,9 +307,10 @@ class TranslationPipeline:
             if isinstance(result, Exception):
                 raise RuntimeError(f"Translation failed for chunk {chunk_id}: {result}")
 
-            results_map[chunk_id] = result
+            success_result = cast(TranslatedChunk, result)
+            results_map[chunk_id] = success_result
             state["completed"].append(chunk_id)
-            state["results"].append(result.model_dump())
+            state["results"].append(success_result.model_dump())
 
         # Save final state
         self._save_state(state)
