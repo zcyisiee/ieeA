@@ -32,3 +32,6 @@ papers_cache/
 .idea/
 .vscode/
 *.swp
+tests/__pycache__/
+src/ieeA/__pycache__/
+.sisyphus/
