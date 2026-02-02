@@ -17,3 +17,7 @@ paths:
 
 fonts:
   auto_detect: true
+
+translation:
+  quality_mode: standard
+  examples_path: null

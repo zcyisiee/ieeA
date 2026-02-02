@@ -65,6 +65,15 @@ def translate(
     concurrency: int = typer.Option(
         5, help="Max concurrent API requests (lower = safer for rate limits)"
     ),
+    high_quality: bool = typer.Option(
+        False,
+        "--high-quality",
+        "-hq",
+        help="启用高质量翻译模式，为每个 chunk 提供摘要上下文",
+    ),
+    abstract: Optional[str] = typer.Option(
+        None, "--abstract", help="手动提供摘要文本（覆盖自动提取）"
+    ),
 ):
     """
     Translate an arXiv paper to Chinese.

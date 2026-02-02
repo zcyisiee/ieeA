@@ -62,6 +62,8 @@ class TranslationConfig(BaseModel):
     custom_system_prompt: Optional[str] = None
     custom_user_prompt: Optional[str] = None
     preserve_terms: List[str] = Field(default_factory=list)
+    quality_mode: str = "standard"  # "standard" or "high"
+    examples_path: Optional[str] = None  # User-defined few-shot examples path
 
 
 class Config(BaseModel):
