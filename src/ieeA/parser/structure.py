@@ -44,6 +44,7 @@ class LaTeXDocument:
     preamble: str
     chunks: List[Chunk]
     body_template: str = ""
+    abstract: Optional[str] = None
 
     def reconstruct(self, translated_chunks: Optional[Dict[str, str]] = None) -> str:
         """

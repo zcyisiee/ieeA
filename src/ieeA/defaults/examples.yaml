@@ -1,0 +1,27 @@
+# Few-shot translation examples for high-quality academic translation
+# These examples demonstrate the desired translation style and quality
+
+examples:
+  # Example 1: Academic motivation paragraph
+  - source: "We propose a novel approach to address the challenge of long-context language modeling. Our method leverages sparse attention mechanisms to reduce computational complexity while maintaining model expressiveness."
+    target: "本文提出一种新方法来解决长上下文语言建模的挑战。我们的方法利用稀疏注意力机制来降低计算复杂度，同时保持模型的表达能力。"
+  
+  # Example 2: Experimental results description
+  - source: "Experimental results demonstrate that our method achieves state-of-the-art performance on multiple benchmarks, outperforming previous approaches by a significant margin. Specifically, we observe a 15% improvement in accuracy on the GLUE benchmark."
+    target: "实验结果表明，我们的方法在多个基准测试中达到了最先进的性能，显著优于以前的方法。具体而言，我们在 GLUE 基准测试中观察到准确率提高了 15%。"
+  
+  # Example 3: Methodology description with key insights
+  - source: "The key insight behind our approach is that not all tokens contribute equally to the final prediction. By identifying and focusing on the most relevant tokens, we can dramatically reduce the computational cost without sacrificing accuracy."
+    target: "我们方法的核心洞察是，并非所有标记对最终预测的贡献都相同。通过识别并关注最相关的标记，我们可以在不牺牲准确性的情况下显著降低计算成本。"
+  
+  # Example 4: Technical implementation detail
+  - source: "We implement this idea using a learnable gating mechanism that assigns importance scores to each token. The attention computation is then restricted to the top-k tokens based on these scores."
+    target: "我们使用可学习的门控机制来实现这一想法，该机制为每个标记分配重要性分数。然后，根据这些分数将注意力计算限制在前 k 个标记上。"
+  
+  # Example 5: Mathematical/formula description
+  - source: "Given an input sequence of length n, the standard self-attention mechanism has a time complexity of O(n²). Our sparse attention reduces this to O(n·k), where k is the sparsity parameter."
+    target: "给定长度为 n 的输入序列，标准自注意力机制的时间复杂度为 O(n²)。我们的稀疏注意力将其降低到 O(n·k)，其中 k 是稀疏参数。"
+  
+  # Example 6: Limitations and future work
+  - source: "While our approach shows promising results, there are several limitations that warrant future investigation. First, the optimal sparsity level may vary across different tasks and datasets."
+    target: "尽管我们的方法显示出良好的结果，但仍有几个局限性值得未来研究。首先，最优稀疏级别可能因不同任务和数据集而异。"
