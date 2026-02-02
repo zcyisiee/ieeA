@@ -1,0 +1,19 @@
+llm:
+  sdk: openai
+  models: gpt-4o-mini
+  endpoint: null
+  key: null
+  temperature: 0.1
+  max_tokens: 4000
+
+compilation:
+  engine: xelatex
+  timeout: 120
+  clean_aux: true
+
+paths:
+  output_dir: output
+  cache_dir: .cache
+
+fonts:
+  auto_detect: true
