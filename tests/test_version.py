@@ -1,4 +1,5 @@
-import ieet
+import ieeA
+
 
 def test_version():
-    assert ieet.__version__ == "0.1.0"
+    assert ieeA.__version__ == "0.1.0"
