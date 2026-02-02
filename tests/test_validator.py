@@ -1,7 +1,7 @@
 import pytest
-from ieet.validator.engine import ValidationEngine
-from ieet.validator.rules import BuiltInRules
-from ieet.rules.validation_rules import ValidationRule, RuleSet
+from ieeA.validator.engine import ValidationEngine
+from ieeA.validator.rules import BuiltInRules
+from ieeA.rules.validation_rules import ValidationRule, RuleSet
 
 class TestValidationEngine:
     @pytest.fixture

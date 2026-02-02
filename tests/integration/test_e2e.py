@@ -13,11 +13,11 @@ from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass
 
-from ieet.downloader.arxiv import ArxivDownloader, DownloadResult
-from ieet.parser.latex_parser import LaTeXParser
-from ieet.parser.structure import LaTeXDocument
-from ieet.validator.engine import ValidationEngine
-from ieet.rules.glossary import Glossary
+from ieeA.downloader.arxiv import ArxivDownloader, DownloadResult
+from ieeA.parser.latex_parser import LaTeXParser
+from ieeA.parser.structure import LaTeXDocument
+from ieeA.validator.engine import ValidationEngine
+from ieeA.rules.glossary import Glossary
 
 
 @dataclass

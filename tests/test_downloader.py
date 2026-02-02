@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch, MagicMock
 import tarfile
 import io
 
-from ieet.downloader import ArxivDownloader, DownloadResult
+from ieeA.downloader import ArxivDownloader, DownloadResult
 
 @pytest.fixture
 def temp_dirs(tmp_path):
