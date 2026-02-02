@@ -106,7 +106,7 @@ For permanent configuration, add these to your shell profile (`~/.bashrc`, `~/.z
 
 ```bash
 # Check ieeT is installed
-ieet --version
+ieeA --version
 
 # Check XeLaTeX is available
 xelatex --version
@@ -138,7 +138,7 @@ For a containerized installation (coming soon):
 
 ```bash
 docker pull your-org/ieet:latest
-docker run -v $(pwd):/workspace ieet translate paper.tex
+docker run -v $(pwd):/workspace ieeA translate paper.tex
 ```
 
 ## Troubleshooting Installation

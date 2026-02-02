@@ -7,7 +7,7 @@ This guide covers all configuration options for ieeT.
 ieeT uses a layered configuration system (later layers override earlier):
 
 1. **Built-in defaults**: `src/ieet/defaults/config.yaml`
-2. **User config**: `~/.ieet/config.yaml`
+2. **User config**: `~/.ieeA/config.yaml`
 3. **Project config**: `./ieet.yaml` (in working directory)
 4. **Command-line flags**: Override any setting
 
@@ -15,7 +15,7 @@ ieeT uses a layered configuration system (later layers override earlier):
 
 ### User Configuration
 
-Create `~/.ieet/config.yaml`:
+Create `~/.ieeA/config.yaml`:
 
 ```yaml
 llm:
@@ -32,7 +32,7 @@ compilation:
 
 paths:
   output_dir: ~/ieet-output
-  cache_dir: ~/.ieet/cache
+  cache_dir: ~/.ieeA/cache
 ```
 
 ### Project Configuration
@@ -178,22 +178,22 @@ Most settings can be overridden via command line:
 
 ```bash
 # Override provider and model
-ieet translate paper.tex --provider claude --model claude-3-sonnet-20240229
+ieeA translate paper.tex --provider claude --model claude-3-sonnet-20240229
 
 # Override output directory
-ieet translate paper.tex --output ./my-output/
+ieeA translate paper.tex --output ./my-output/
 
 # Override temperature
-ieet translate paper.tex --temperature 0.2
+ieeA translate paper.tex --temperature 0.2
 
 # Use specific config file
-ieet translate paper.tex --config my-config.yaml
+ieeA translate paper.tex --config my-config.yaml
 ```
 
 ## Complete Example Configuration
 
 ```yaml
-# ~/.ieet/config.yaml - Full example
+# ~/.ieeA/config.yaml - Full example
 
 llm:
   provider: openai
@@ -209,7 +209,7 @@ compilation:
 
 paths:
   output_dir: ~/Documents/translations
-  cache_dir: ~/.ieet/cache
+  cache_dir: ~/.ieeA/cache
 
 translation:
   max_retries: 3
@@ -218,7 +218,7 @@ translation:
   save_state: true
 
 glossary:
-  path: ~/.ieet/glossary.yaml
+  path: ~/.ieeA/glossary.yaml
   use_builtin: true
   merge: true
 ```

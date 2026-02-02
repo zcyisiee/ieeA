@@ -49,10 +49,10 @@ Create a YAML file with term mappings:
 
 ```bash
 # Via command line
-ieet translate paper.tex --glossary my-glossary.yaml
+ieeA translate paper.tex --glossary my-glossary.yaml
 
 # Via configuration
-# In ~/.ieet/config.yaml:
+# In ~/.ieeA/config.yaml:
 glossary:
   path: ~/my-glossary.yaml
   use_builtin: true
@@ -141,7 +141,7 @@ rules:
 
 ```bash
 # Via command line
-ieet translate paper.tex --rules my-rules.yaml
+ieeA translate paper.tex --rules my-rules.yaml
 
 # Via configuration
 validation:
@@ -154,7 +154,7 @@ Rules with a `replacement` field can automatically fix issues:
 
 ```bash
 # Apply auto-fixes
-ieet translate paper.tex --auto-fix
+ieeA translate paper.tex --auto-fix
 ```
 
 ### Built-in Validation

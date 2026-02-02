@@ -48,7 +48,7 @@ Homepage = "https://github.com/ieeA/ieeA"
 Repository = "https://github.com/ieeA/ieeA"
 
 [project.scripts]
-ieeA = "ieet.cli:main"
+ieeA = "ieeA.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

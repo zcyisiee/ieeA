@@ -9,7 +9,7 @@
 pip install -e .
 
 # 翻译 arXiv 论文
-ieet translate https://arxiv.org/abs/2301.07041 --output-dir output/
+ieeA translate https://arxiv.org/abs/2301.07041 --output-dir output/
 ```
 
 ## 翻译流程 (Pipeline)
@@ -56,7 +56,7 @@ ieet translate https://arxiv.org/abs/2301.07041 --output-dir output/
 
 ## 配置
 
-配置文件位置：`~/.ieet/config.yaml`
+配置文件位置：`~/.ieeA/config.yaml`
 
 ```yaml
 # LLM 配置
@@ -80,7 +80,7 @@ translation:
 
 ### 术语表
 
-术语表位置：`~/.ieet/glossary.yaml`
+术语表位置：`~/.ieeA/glossary.yaml`
 
 ```yaml
 # 保持原文不翻译
@@ -108,7 +108,7 @@ translation:
 ## 项目结构
 
 ```
-src/ieet/
+src/ieeA/
 ├── cli.py              # 命令行入口
 ├── downloader/         # arXiv 下载器
 ├── parser/             # LaTeX 解析与分块
