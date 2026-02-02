@@ -127,6 +127,14 @@ When `auto_detect: true`, ieeT will automatically detect available fonts in this
 
 ```yaml
 translation:
+  # Translation quality mode: "standard" or "high"
+  # High mode injects abstract context and few-shot examples
+  quality_mode: standard
+  
+  # Path to custom few-shot examples (optional)
+  # Default: uses built-in examples from package
+  examples_path: null
+  
   # Maximum retries on API failure
   max_retries: 3
   
@@ -188,6 +196,12 @@ ieeA translate paper.tex --temperature 0.2
 
 # Use specific config file
 ieeA translate paper.tex --config my-config.yaml
+
+# Enable high-quality translation mode
+ieeA translate https://arxiv.org/abs/2301.07041 --high-quality
+
+# Provide custom abstract for context
+ieeA translate https://arxiv.org/abs/2301.07041 --high-quality --abstract "This paper proposes..."
 ```
 
 ## Complete Example Configuration
@@ -212,6 +226,8 @@ paths:
   cache_dir: ~/.ieeA/cache
 
 translation:
+  quality_mode: standard
+  examples_path: null
   max_retries: 3
   retry_delay: 1.0
   rate_limit_delay: 0.5
