@@ -3,19 +3,6 @@
 from typing import Optional, Dict, List
 
 
-CORE_TRANSLATION_RULES = """你是专业的学术论文翻译专家。你的任务是将英文学术文本改写为流畅自然的中文。
-
-## 核心规则
-1. 这是"改写"任务，不是逐词翻译。目标是让中文读者能流畅阅读
-2. 保持学术严谨性和专业术语准确性
-3. 绝对不要修改以下内容（必须原样保留）：
-   - LaTeX 命令：\\cite{...}, \\ref{...}, \\label{...}, $...$, \\textbf{...} 等
-   - 占位符：[[MATH_0]], [[REF_1]], [[MACRO_2]] 等格式的标记
-   - 数学公式和方程
-4. 只输出翻译结果，不要添加任何解释、注释或元信息
-5. 如果输入只包含占位符（如 [[MACRO_0]]），直接原样返回该占位符"""
-
-
 TRANSLATION_SYSTEM_PROMPT = """你是一位专业的学术论文翻译专家。请将以下英文学术文本翻译成中文。
 
 翻译要求：
@@ -81,32 +68,3 @@ def build_system_message(
         parts.append("（无特定术语表）")
 
     return "\n".join(parts)
-
-
-def build_system_prompt(
-    glossary_hints: Optional[Dict[str, str]] = None,
-    context: Optional[str] = None,
-    few_shot_examples: Optional[List[Dict[str, str]]] = None,
-    language: str = "zh",
-) -> str:
-    """Build unified system prompt for all providers.
-
-    Args:
-        glossary_hints: Optional glossary mapping (source: target)
-        context: Optional context information
-        few_shot_examples: Optional few-shot examples (not used in system prompt)
-        language: Target language code (default: "zh" for Chinese)
-
-    Returns:
-        Formatted system prompt string
-    """
-    system_content = CORE_TRANSLATION_RULES
-
-    if context:
-        system_content += f"\n\n## 上下文\n{context}"
-
-    if glossary_hints:
-        glossary_str = "\n".join([f"- {k}: {v}" for k, v in glossary_hints.items()])
-        system_content += f"\n\n## 术语表\n{glossary_str}"
-
-    return system_content

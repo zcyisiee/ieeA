@@ -1,43 +1,36 @@
 import os
 from typing import Optional, Dict, List, Any
 from .llm_base import LLMProvider
-from .prompts import build_system_prompt
 
 try:
     from anthropic import AsyncAnthropic
-
     HAS_ANTHROPIC = True
 except ImportError:
     HAS_ANTHROPIC = False
 
-
-class AnthropicProvider(LLMProvider):
-    def __init__(
-        self,
-        model: str = "claude-3-5-sonnet-20240620",
-        api_key: Optional[str] = None,
-        **kwargs,
-    ):
+class ClaudeProvider(LLMProvider):
+    def __init__(self, model: str = "claude-3-5-sonnet-20240620", api_key: Optional[str] = None, **kwargs):
         super().__init__(model, api_key, **kwargs)
         if not HAS_ANTHROPIC:
-            raise ImportError(
-                "anthropic package is required for AnthropicProvider. Please install it with `pip install anthropic`."
-            )
-
-        self.client = AsyncAnthropic(api_key=api_key)
+            raise ImportError("anthropic package is required for ClaudeProvider. Please install it with `pip install anthropic`.")
+        
+        self.client = AsyncAnthropic(api_key=api_key or os.getenv("ANTHROPIC_API_KEY"))
 
     async def translate(
-        self,
-        text: str,
-        context: Optional[str] = None,
+        self, 
+        text: str, 
+        context: Optional[str] = None, 
         glossary_hints: Optional[Dict[str, str]] = None,
-        few_shot_examples: Optional[List[Dict[str, str]]] = None,
+        few_shot_examples: Optional[List[Dict[str, str]]] = None
     ) -> str:
-        system_content = build_system_prompt(
-            glossary_hints=glossary_hints,
-            context=context,
-            few_shot_examples=few_shot_examples,
-        )
+        # System message construction
+        system_content = "You are a professional academic translator. Translate the following text into fluent Chinese."
+        if context:
+            system_content += f"\nContext: {context}"
+        
+        if glossary_hints:
+            glossary_str = "\n".join([f"{k}: {v}" for k, v in glossary_hints.items()])
+            system_content += f"\nGlossary Hints:\n{glossary_str}"
 
         messages = []
 
@@ -45,9 +38,7 @@ class AnthropicProvider(LLMProvider):
         if few_shot_examples:
             for example in few_shot_examples:
                 messages.append({"role": "user", "content": example.get("source", "")})
-                messages.append(
-                    {"role": "assistant", "content": example.get("target", "")}
-                )
+                messages.append({"role": "assistant", "content": example.get("target", "")})
 
         # User message
         messages.append({"role": "user", "content": text})
@@ -60,16 +51,16 @@ class AnthropicProvider(LLMProvider):
                 messages=messages,
                 temperature=self.kwargs.get("temperature", 0.3),
             )
-
+            
             # Robustly handle content blocks
             full_text = []
             for block in response.content:
-                if block.type == "text":
+                if block.type == 'text':
                     full_text.append(block.text)
-
+            
             return "".join(full_text).strip()
         except Exception as e:
-            raise RuntimeError(f"Anthropic API error: {str(e)}") from e
+            raise RuntimeError(f"Claude API error: {str(e)}") from e
 
     def estimate_tokens(self, text: str) -> int:
         # Anthropic doesn't expose a simple local tokenizer in the SDK for estimation easily without calling API or using third party.

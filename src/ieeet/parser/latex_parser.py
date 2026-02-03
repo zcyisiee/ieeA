@@ -6,11 +6,6 @@ from typing import Optional, Tuple, List, Dict
 from .structure import LaTeXDocument, Chunk
 
 
-def is_placeholder_only(content: str) -> bool:
-    """Check if content is only a placeholder (no translatable text)."""
-    return bool(re.fullmatch(r"\[\[[A-Z_]+_\d+\]\]", content.strip()))
-
-
 class LaTeXParser:
     """
     Parses LaTeX files into a structured LaTeXDocument.
@@ -33,6 +28,10 @@ class LaTeXParser:
         "lstlisting",
         "verbatim",
         "minted",
+        "figure",
+        "figure*",
+        "table",
+        "table*",
     }
 
     TRANSLATABLE_ENVIRONMENTS = {
@@ -58,39 +57,12 @@ class LaTeXParser:
         self.chunks: List[Chunk] = []
         self.protected_counter = 0
 
-    def extract_abstract(self, content: str) -> Optional[str]:
-        """Extract abstract content from LaTeX document.
-
-        Args:
-            content: Full LaTeX document content
-
-        Returns:
-            Abstract text or None if not found
-        """
-        # Match \begin{abstract}...\end{abstract}
-        pattern = re.compile(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", re.DOTALL)
-        match = pattern.search(content)
-        if match:
-            abstract_text = match.group(1)
-            # Filter out LaTeX comment lines (lines starting with %)
-            lines = abstract_text.split("\n")
-            filtered_lines = [
-                line for line in lines if not line.strip().startswith("%")
-            ]
-            abstract_text = "\n".join(filtered_lines).strip()
-            # Truncate to ~500 tokens (≈2000 chars)
-            if len(abstract_text) > 2000:
-                abstract_text = abstract_text[:2000] + "..."
-            return abstract_text if abstract_text else None
-        return None
-
     def parse_file(self, filepath: str) -> LaTeXDocument:
         base_dir = os.path.dirname(os.path.abspath(filepath))
         with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
 
         flattened_content = self._flatten_latex(content, base_dir)
-        abstract = self.extract_abstract(flattened_content)
         preamble, body_content = self._split_preamble_body(flattened_content)
 
         self.chunks = []
@@ -102,10 +74,7 @@ class LaTeXParser:
         body_template = self._process_body(body_content)
 
         return LaTeXDocument(
-            preamble=preamble,
-            chunks=self.chunks,
-            body_template=body_template,
-            abstract=abstract,
+            preamble=preamble, chunks=self.chunks, body_template=body_template
         )
 
     def _protect_author_block(self, text: str) -> str:
@@ -225,16 +194,9 @@ class LaTeXParser:
                     )
                     self.chunks.append(chunk)
                     optional_short = match.group(3) if match.group(3) else ""
-                    # Build caption string without f-string brace escaping issues
-                    caption_str = (
-                        match.group(1)
-                        + match.group(2)
-                        + optional_short
-                        + "{"
-                        + placeholder
-                        + "}"
+                    result.append(
+                        f"{match.group(1)}{match.group(2)}{optional_short}{{{placeholder}}}"
                     )
-                    result.append(caption_str)
                 else:
                     result.append(match.group(0) + content + "}")
                 pos = i
@@ -300,6 +262,15 @@ class LaTeXParser:
         def replacer(match):
             self.protected_counter += 1
             placeholder = f"[[{prefix}_{self.protected_counter}]]"
+            chunk_id = str(uuid.uuid4())
+            chunk = Chunk(
+                id=chunk_id,
+                content=placeholder,
+                latex_wrapper="%s",
+                context="protected",
+                preserved_elements={placeholder: match.group(1)},
+            )
+            self.chunks.append(chunk)
             return placeholder
 
         return pattern.sub(replacer, text)
@@ -448,9 +419,6 @@ class LaTeXParser:
         return False
 
     def _maybe_chunk_paragraph(self, para_text: str) -> str:
-        if is_placeholder_only(para_text):
-            return para_text
-
         text_content = para_text
         for placeholder in re.findall(r"\[\[[A-Z_]+_\d+\]\]", para_text):
             text_content = text_content.replace(placeholder, "")

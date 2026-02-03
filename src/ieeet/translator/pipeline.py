@@ -107,7 +107,6 @@ class TranslationPipeline:
         rate_limit_delay: float = 0.0,
         state_file: Optional[Union[str, Path]] = None,
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
-        abstract_context: Optional[str] = None,
     ):
         """
         Initialize the translation pipeline.
@@ -120,7 +119,6 @@ class TranslationPipeline:
             rate_limit_delay: Delay between API calls for rate limiting.
             state_file: Optional file path to save/load intermediate state.
             few_shot_examples: Optional few-shot examples for the prompt.
-            abstract_context: Optional abstract text for high-quality mode context.
         """
         self.provider = provider
         self.glossary = glossary or Glossary()
@@ -129,7 +127,6 @@ class TranslationPipeline:
         self.rate_limit_delay = rate_limit_delay
         self.state_file = Path(state_file) if state_file else None
         self.few_shot_examples = few_shot_examples or []
-        self.abstract_context = abstract_context
 
         self._preprocessor = GlossaryPreprocessor(self.glossary)
 
@@ -171,14 +168,8 @@ class TranslationPipeline:
             except Exception as e:
                 last_error = e
                 if attempt < self.max_retries - 1:
-                    # Check if it's a rate limit error (429)
-                    error_str = str(e).lower()
-                    if "429" in error_str or "rate limit" in error_str:
-                        # Longer delay for rate limit errors
-                        delay = max(5.0, self.retry_delay * (3**attempt))
-                    else:
-                        # Standard exponential backoff
-                        delay = self.retry_delay * (2**attempt)
+                    # Exponential backoff
+                    delay = self.retry_delay * (2**attempt)
                     await asyncio.sleep(delay)
 
         raise last_error  # type: ignore
@@ -206,20 +197,10 @@ class TranslationPipeline:
         # Build glossary hints for the prompt
         glossary_hints = self._build_glossary_hints()
 
-        # Merge abstract context with provided context for high-quality mode
-        merged_context = context
-        if self.abstract_context:
-            if context:
-                merged_context = (
-                    f"{context}\n\nDocument Abstract:\n{self.abstract_context}"
-                )
-            else:
-                merged_context = f"Document Abstract:\n{self.abstract_context}"
-
         # Call LLM with retry
         raw_translation = await self._call_with_retry(
             text=preprocessed_text,
-            context=merged_context,
+            context=context,
             glossary_hints=glossary_hints,
         )
 

@@ -19,19 +19,18 @@ from rich.progress import (
 from rich.table import Table
 from rich.text import Text
 
-from ieeA.compiler import LaTeXCompiler
-from ieeA.downloader.arxiv import ArxivDownloader
-from ieeA.parser.latex_parser import LaTeXParser
-from ieeA.rules.config import load_config
-from ieeA.rules.glossary import load_glossary
-from ieeA.rules.examples import load_examples
-from ieeA.translator import get_sdk_client
-from ieeA.translator.pipeline import TranslationPipeline
-from ieeA.validator.engine import ValidationEngine
+from ieeet.compiler import LaTeXCompiler
+from ieeet.downloader.arxiv import ArxivDownloader
+from ieeet.parser.latex_parser import LaTeXParser
+from ieeet.rules.config import load_config
+from ieeet.rules.glossary import load_glossary
+from ieeet.translator import get_provider
+from ieeet.translator.pipeline import TranslationPipeline
+from ieeet.validator.engine import ValidationEngine
 
 app = typer.Typer(
-    name="ieeA",
-    help="ieeA - arXiv Paper Translator",
+    name="ieeet",
+    help="ieeT - IEEE/arXiv Translator CLI",
     add_completion=False,
     no_args_is_help=True,
 )
@@ -42,7 +41,7 @@ app.add_typer(glossary_app, name="glossary")
 
 console = Console()
 
-CONFIG_DIR = Path.home() / ".ieeA"
+CONFIG_DIR = Path.home() / ".ieeet"
 CONFIG_FILE = CONFIG_DIR / "config.yaml"
 GLOSSARY_FILE = CONFIG_DIR / "glossary.yaml"
 
@@ -54,32 +53,16 @@ def ensure_config_dir():
 @app.command()
 def translate(
     arxiv_url: str = typer.Argument(..., help="arXiv ID or URL to translate"),
-    output_dir: Path = typer.Option(
-        Path("output"), "-o", "--output-dir", help="Directory to save results"
-    ),
-    sdk: Optional[str] = typer.Option(
-        None, help="SDK to use (openai, anthropic, or None for direct HTTP)"
+    output_dir: Path = typer.Option(Path("output"), help="Directory to save results"),
+    llm: Optional[str] = typer.Option(
+        None, help="LLM provider (openai, claude, qwen, doubao)"
     ),
     model: Optional[str] = typer.Option(None, help="Model name to use"),
-    key: Optional[str] = typer.Option(None, help="API Key"),
-    endpoint: Optional[str] = typer.Option(None, help="API endpoint URL"),
+    api_key: Optional[str] = typer.Option(
+        None, envvar="IEEET_API_KEY", help="API Key for the provider"
+    ),
     no_compile: bool = typer.Option(False, help="Skip PDF compilation"),
     keep_source: bool = typer.Option(False, help="Keep downloaded source files"),
-    concurrency: int = typer.Option(
-        5,
-        "-c",
-        "--concurrency",
-        help="Max concurrent API requests (lower = safer for rate limits)",
-    ),
-    high_quality: bool = typer.Option(
-        False,
-        "--high-quality",
-        "-hq",
-        help="启用高质量翻译模式，为每个 chunk 提供摘要上下文",
-    ),
-    abstract: Optional[str] = typer.Option(
-        None, "--abstract", help="手动提供摘要文本（覆盖自动提取）"
-    ),
 ):
     """
     Translate an arXiv paper to Chinese.
@@ -88,23 +71,22 @@ def translate(
     config = load_config()
 
     # Overrides
-    sdk_name = sdk or config.llm.sdk
-    model_name = model or config.llm.get_model()
-    key_val = key or config.llm.key
-    endpoint_val = endpoint or config.llm.endpoint
+    provider_name = llm or config.llm.provider
+    model_name = model or config.llm.model
+    api_key_val = api_key or config.llm.api_key or os.getenv(config.llm.api_key_env)
 
-    if sdk_name is not None and not key_val:
+    if not api_key_val:
         console.print(
-            f"[bold red]Error:[/bold red] API key not found. "
-            f"Please set llm.key in config or use --key."
+            f"[bold red]Error:[/bold red] API key not found for {provider_name}. "
+            f"Please set {config.llm.api_key_env} or use --api-key."
         )
         raise typer.Exit(code=1)
 
     console.print(
         Panel.fit(
-            f"[bold blue]ieeA Translation Pipeline[/bold blue]\n"
+            f"[bold blue]ieeT Translation Pipeline[/bold blue]\n"
             f"Target: [cyan]{arxiv_url}[/cyan]\n"
-            f"SDK: [green]{sdk_name or 'HTTP'}[/green] ({model_name})\n"
+            f"Provider: [green]{provider_name}[/green] ({model_name})\n"
             f"Output: [yellow]{output_dir}[/yellow]",
             title="Starting Job",
         )
@@ -151,43 +133,25 @@ def translate(
             # 3. Translate
             console.print("\n[bold]Translating...[/bold]")
             glossary = load_glossary()
-            provider = get_sdk_client(
-                sdk_name,
+            provider = get_provider(
+                provider_name,
                 model=model_name,
-                key=key_val,
-                endpoint=endpoint_val,
+                api_key=api_key_val,
+                base_url=config.llm.base_url,
                 temperature=config.llm.temperature,
             )
-
-            # Prepare high-quality mode parameters
-            abstract_text = None
-            examples = []
-            if high_quality:
-                # Get abstract: CLI argument > extracted abstract > fallback
-                abstract_text = abstract or getattr(doc, "abstract", "") or ""
-                # Load few-shot examples
-                examples_path = getattr(config.translation, "examples_path", None)
-                examples = (
-                    load_examples(examples_path) if examples_path else load_examples()
-                )
-                console.print(
-                    f"[cyan]High-quality mode enabled: {len(examples)} examples loaded[/cyan]"
-                )
-
             pipeline = TranslationPipeline(
                 provider=provider,
                 glossary=glossary,
                 state_file=output_dir
                 / download_result.arxiv_id
                 / "translation_state.json",
-                few_shot_examples=examples,
-                abstract_context=abstract_text,
             )
 
             chunk_data = [{"chunk_id": c.id, "content": c.content} for c in doc.chunks]
 
             console.print(
-                f"[bold]Translating {len(chunk_data)} chunks (max {concurrency} concurrent)...[/bold]"
+                f"[bold]Translating {len(chunk_data)} chunks (max 20 concurrent)...[/bold]"
             )
 
             with Progress(
@@ -208,7 +172,7 @@ def translate(
                 translated_chunks = await pipeline.translate_document(
                     chunks=chunk_data,
                     context="Academic Paper",
-                    max_concurrent=concurrency,
+                    max_concurrent=20,
                     progress_callback=update_progress,
                 )
 
@@ -315,7 +279,7 @@ def config_show():
 def config_set(key: str, value: str):
     """
     Set a configuration value (dot-separated).
-    Example: ieeA config set llm.model gpt-4
+    Example: ieeet config set llm.model gpt-4
     """
     ensure_config_dir()
 

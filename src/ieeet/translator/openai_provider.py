@@ -2,7 +2,6 @@
 import os
 from typing import Optional, Dict, List, Any, cast
 from .llm_base import LLMProvider
-from .prompts import build_system_prompt
 
 openai = None
 try:
@@ -37,8 +36,8 @@ class OpenAIProvider(LLMProvider):
             )
 
         self.client = openai.AsyncOpenAI(
-            api_key=api_key,
-            base_url=base_url,
+            api_key=api_key or os.getenv("OPENAI_API_KEY"),
+            base_url=base_url or os.getenv("OPENAI_BASE_URL"),
         )
 
     async def translate(
@@ -50,11 +49,25 @@ class OpenAIProvider(LLMProvider):
     ) -> str:
         messages = []
 
-        system_content = build_system_prompt(
-            glossary_hints=glossary_hints,
-            context=context,
-            few_shot_examples=few_shot_examples,
-        )
+        # System message construction
+        system_content = """你是专业的学术论文翻译专家。你的任务是将英文学术文本改写为流畅自然的中文。
+
+## 核心规则
+1. 这是"改写"任务，不是逐词翻译。目标是让中文读者能流畅阅读
+2. 保持学术严谨性和专业术语准确性
+3. 绝对不要修改以下内容（必须原样保留）：
+   - LaTeX 命令：\\cite{...}, \\ref{...}, \\label{...}, $...$, \\textbf{...} 等
+   - 占位符：[[MATH_0]], [[REF_1]], [[MACRO_2]] 等格式的标记
+   - 数学公式和方程
+4. 只输出翻译结果，不要添加任何解释、注释或元信息
+5. 如果输入只包含占位符（如 [[MACRO_0]]），直接原样返回该占位符"""
+
+        if context:
+            system_content += f"\n\n## 上下文\n{context}"
+
+        if glossary_hints:
+            glossary_str = "\n".join([f"- {k}: {v}" for k, v in glossary_hints.items()])
+            system_content += f"\n\n## 术语表\n{glossary_str}"
 
         messages.append({"role": "system", "content": system_content})
 
