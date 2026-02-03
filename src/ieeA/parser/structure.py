@@ -45,6 +45,9 @@ class LaTeXDocument:
     chunks: List[Chunk]
     body_template: str = ""
     abstract: Optional[str] = None
+    # Map of global placeholders (e.g., "[[CITE_1]]") to original LaTeX content
+    # These are stored at document level as they don't belong to any specific chunk
+    global_placeholders: Dict[str, str] = field(default_factory=dict)
 
     def reconstruct(self, translated_chunks: Optional[Dict[str, str]] = None) -> str:
         """
@@ -80,11 +83,28 @@ class LaTeXDocument:
                 for placeholder, original in chunk.preserved_elements.items():
                     result = result.replace(placeholder, original)
 
-            return preamble_result + result
+            full_result = preamble_result + result
+        else:
+            body_parts = []
+            for chunk in self.chunks:
+                trans_text = (
+                    translated_chunks.get(chunk.id) if translated_chunks else None
+                )
+                body_parts.append(chunk.reconstruct(trans_text))
 
-        body_parts = []
-        for chunk in self.chunks:
-            trans_text = translated_chunks.get(chunk.id) if translated_chunks else None
-            body_parts.append(chunk.reconstruct(trans_text))
+            full_result = preamble_result + "".join(body_parts)
 
-        return preamble_result + "".join(body_parts)
+        # Restore global placeholders
+        # Use iterative replacement to handle nested placeholders
+        # (e.g., footnote containing cite: [[FOOTNOTE_2]] contains [[CITE_1]])
+        max_iterations = 10  # Prevent infinite loops
+        for _ in range(max_iterations):
+            replacements_made = False
+            for placeholder, original in self.global_placeholders.items():
+                if placeholder in full_result:
+                    full_result = full_result.replace(placeholder, original)
+                    replacements_made = True
+            if not replacements_made:
+                break
+
+        return full_result
