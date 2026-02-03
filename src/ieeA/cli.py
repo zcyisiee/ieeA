@@ -66,7 +66,7 @@ def translate(
     no_compile: bool = typer.Option(False, help="Skip PDF compilation"),
     keep_source: bool = typer.Option(False, help="Keep downloaded source files"),
     concurrency: int = typer.Option(
-        5,
+        50,
         "-c",
         "--concurrency",
         help="Max concurrent API requests (lower = safer for rate limits)",

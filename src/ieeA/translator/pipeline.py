@@ -255,7 +255,7 @@ class TranslationPipeline:
         self,
         chunks: List[Dict[str, str]],
         context: Optional[str] = None,
-        max_concurrent: int = 20,
+        max_concurrent: int = 50,
         progress_callback: Optional[Callable[[int, int], None]] = None,
     ) -> List[TranslatedChunk]:
         """
