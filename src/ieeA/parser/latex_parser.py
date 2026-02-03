@@ -57,6 +57,7 @@ class LaTeXParser:
     def __init__(self):
         self.chunks: List[Chunk] = []
         self.protected_counter = 0
+        self.placeholder_map: Dict[str, str] = {}
 
     def extract_abstract(self, content: str) -> Optional[str]:
         """Extract abstract content from LaTeX document.
@@ -95,6 +96,7 @@ class LaTeXParser:
 
         self.chunks = []
         self.protected_counter = 0
+        self.placeholder_map = {}
 
         preamble = self._extract_title_from_preamble(preamble)
         preamble = self._inject_chinese_support(preamble)
@@ -106,6 +108,7 @@ class LaTeXParser:
             chunks=self.chunks,
             body_template=body_template,
             abstract=abstract,
+            global_placeholders=self.placeholder_map,
         )
 
     def _protect_author_block(self, text: str) -> str:
@@ -300,6 +303,7 @@ class LaTeXParser:
         def replacer(match):
             self.protected_counter += 1
             placeholder = f"[[{prefix}_{self.protected_counter}]]"
+            self.placeholder_map[placeholder] = match.group(0)
             return placeholder
 
         return pattern.sub(replacer, text)
