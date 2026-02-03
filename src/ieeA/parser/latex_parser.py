@@ -42,6 +42,7 @@ class LaTeXParser:
         "description",
     }
 
+    # NOTE: caption 不在此列表中，因为它在 _extract_captions() 中单独处理
     SECTION_COMMANDS = {
         "title",
         "section",
@@ -51,7 +52,6 @@ class LaTeXParser:
         "subparagraph",
         "chapter",
         "part",
-        "caption",
     }
 
     def __init__(self):
