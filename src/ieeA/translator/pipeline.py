@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from ..rules.glossary import Glossary
 from .llm_base import LLMProvider
-from .prompts import build_translation_prompt
+from .prompts import build_translation_prompt, build_batch_translation_text
 
 
 class TranslatedChunk(BaseModel):
@@ -236,6 +236,80 @@ class TranslationPipeline:
             },
         )
 
+    async def translate_batch(
+        self,
+        chunks: List[Dict[str, str]],
+        context: Optional[str] = None,
+    ) -> List[TranslatedChunk]:
+        preprocessed_chunks = []
+        mappings = []
+        for chunk_data in chunks:
+            preprocessed_text, mapping = self._preprocessor.preprocess(
+                chunk_data["content"]
+            )
+            preprocessed_chunks.append(
+                {"chunk_id": chunk_data["chunk_id"], "content": preprocessed_text}
+            )
+            mappings.append(mapping)
+
+        batch_text = build_batch_translation_text(preprocessed_chunks)
+        glossary_hints = self._build_glossary_hints()
+
+        merged_context = context
+        if self.abstract_context:
+            if context:
+                merged_context = (
+                    f"{context}\n\nDocument Abstract:\n{self.abstract_context}"
+                )
+            else:
+                merged_context = f"Document Abstract:\n{self.abstract_context}"
+
+        batch_instruction = "请翻译以下编号内容，保持相同的编号格式返回。"
+        if merged_context:
+            merged_context = f"{batch_instruction}\n\n{merged_context}"
+        else:
+            merged_context = batch_instruction
+
+        raw_response = await self._call_with_retry(
+            text=batch_text,
+            context=merged_context,
+            glossary_hints=glossary_hints,
+        )
+
+        pattern = r"\[(\d+)\]\s*(.+?)(?=\[\d+\]|$)"
+        matches = re.findall(pattern, raw_response, re.DOTALL)
+
+        if len(matches) != len(chunks):
+            return []
+
+        results = []
+        for i, (idx_str, translated_text) in enumerate(matches):
+            idx = int(idx_str) - 1
+            if idx < 0 or idx >= len(chunks):
+                return []
+
+            final_translation = self._preprocessor.postprocess(
+                translated_text.strip(), mappings[idx]
+            )
+
+            results.append(
+                TranslatedChunk(
+                    source=chunks[idx]["content"],
+                    translation=final_translation,
+                    chunk_id=chunks[idx]["chunk_id"],
+                    metadata={
+                        "had_glossary_terms": len(mappings[idx]) > 0,
+                        "glossary_terms_count": len(mappings[idx]),
+                        "batch_translated": True,
+                    },
+                )
+            )
+
+        result_map = {r.chunk_id: r for r in results}
+        ordered_results = [result_map[c["chunk_id"]] for c in chunks]
+
+        return ordered_results
+
     def _load_state(self) -> Dict[str, Any]:
         """Load intermediate state from file."""
         if self.state_file and self.state_file.exists():
@@ -280,18 +354,103 @@ class TranslationPipeline:
             chunk = TranslatedChunk(**result_data)
             results_map[chunk.chunk_id] = chunk
 
-        # Filter out already completed chunks
-        pending_chunks = [c for c in chunks if c["chunk_id"] not in completed_ids]
+        # Separate pure placeholder chunks from translatable chunks
+        placeholder_pattern = re.compile(r"^\[\[[A-Z_]+_\d+\]\]$")
+        placeholder_chunks = []
+        translatable_chunks = []
 
-        if not pending_chunks:
+        for c in chunks:
+            if c["chunk_id"] not in completed_ids:
+                if placeholder_pattern.fullmatch(c["content"].strip()):
+                    placeholder_chunks.append(c)
+                else:
+                    translatable_chunks.append(c)
+
+        # Create TranslatedChunk objects for pure placeholders (no LLM call)
+        for chunk_data in placeholder_chunks:
+            chunk_id = chunk_data["chunk_id"]
+            content = chunk_data["content"]
+            placeholder_result = TranslatedChunk(
+                source=content,
+                translation=content,
+                chunk_id=chunk_id,
+                metadata={"skipped_placeholder": True},
+            )
+            results_map[chunk_id] = placeholder_result
+            state["completed"].append(chunk_id)
+            state["results"].append(placeholder_result.model_dump())
+
+        if not translatable_chunks:
+            self._save_state(state)
             return [results_map[chunk_data["chunk_id"]] for chunk_data in chunks]
 
-        # Semaphore for concurrency control
-        semaphore = asyncio.Semaphore(max_concurrent)
+        short_chunks = []
+        long_chunks = []
+        for c in translatable_chunks:
+            if len(c["content"]) < 100:
+                short_chunks.append(c)
+            else:
+                long_chunks.append(c)
 
+        batches = []
+        for i in range(0, len(short_chunks), 10):
+            batches.append(short_chunks[i : i + 10])
+
+        semaphore = asyncio.Semaphore(max_concurrent)
         completed_count = 0
         progress_lock = asyncio.Lock()
-        total_pending = len(pending_chunks)
+        total_pending = len(translatable_chunks)
+
+        async def translate_batch_with_semaphore(
+            batch_chunks: List[Dict[str, str]],
+        ) -> List[TranslatedChunk]:
+            nonlocal completed_count
+            async with semaphore:
+                try:
+                    batch_results = await self.translate_batch(
+                        chunks=batch_chunks,
+                        context=context,
+                    )
+
+                    if not batch_results:
+                        fallback_results = []
+                        for chunk_data in batch_chunks:
+                            result = await self.translate_chunk(
+                                chunk=chunk_data["content"],
+                                chunk_id=chunk_data["chunk_id"],
+                                context=context,
+                            )
+                            fallback_results.append(result)
+                        batch_results = fallback_results
+
+                    async with progress_lock:
+                        completed_count += len(batch_chunks)
+                        if progress_callback:
+                            try:
+                                progress_callback(completed_count, total_pending)
+                            except Exception:
+                                pass
+
+                    return batch_results
+                except Exception:
+                    fallback_results = []
+                    for chunk_data in batch_chunks:
+                        result = await self.translate_chunk(
+                            chunk=chunk_data["content"],
+                            chunk_id=chunk_data["chunk_id"],
+                            context=context,
+                        )
+                        fallback_results.append(result)
+
+                    async with progress_lock:
+                        completed_count += len(batch_chunks)
+                        if progress_callback:
+                            try:
+                                progress_callback(completed_count, total_pending)
+                            except Exception:
+                                pass
+
+                    return fallback_results
 
         async def translate_with_semaphore(
             chunk_data: Dict[str, str],
@@ -316,20 +475,38 @@ class TranslationPipeline:
 
                 return result
 
-        # Execute all translations concurrently
-        tasks = [translate_with_semaphore(c) for c in pending_chunks]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        batch_tasks = [translate_batch_with_semaphore(batch) for batch in batches]
+        long_tasks = [translate_with_semaphore(c) for c in long_chunks]
 
-        # Process results and update state
+        all_tasks = batch_tasks + long_tasks
+        results = await asyncio.gather(*all_tasks, return_exceptions=True)
+
         for i, result in enumerate(results):
-            chunk_id = pending_chunks[i]["chunk_id"]
             if isinstance(result, Exception):
-                raise RuntimeError(f"Translation failed for chunk {chunk_id}: {result}")
+                if i < len(batches):
+                    batch = batches[i]
+                    chunk_ids = [c["chunk_id"] for c in batch]
+                    raise RuntimeError(
+                        f"Batch translation failed for chunks {chunk_ids}: {result}"
+                    )
+                else:
+                    chunk_idx = i - len(batches)
+                    chunk_id = long_chunks[chunk_idx]["chunk_id"]
+                    raise RuntimeError(
+                        f"Translation failed for chunk {chunk_id}: {result}"
+                    )
 
-            success_result = cast(TranslatedChunk, result)
-            results_map[chunk_id] = success_result
-            state["completed"].append(chunk_id)
-            state["results"].append(success_result.model_dump())
+            if i < len(batches):
+                batch_results = cast(List[TranslatedChunk], result)
+                for translated_chunk in batch_results:
+                    results_map[translated_chunk.chunk_id] = translated_chunk
+                    state["completed"].append(translated_chunk.chunk_id)
+                    state["results"].append(translated_chunk.model_dump())
+            else:
+                success_result = cast(TranslatedChunk, result)
+                results_map[success_result.chunk_id] = success_result
+                state["completed"].append(success_result.chunk_id)
+                state["results"].append(success_result.model_dump())
 
         # Save final state
         self._save_state(state)

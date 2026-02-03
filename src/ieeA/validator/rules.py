@@ -1,43 +1,55 @@
 import re
 from typing import List, Tuple, Set, Dict, Any
 
+
 class BuiltInRules:
     @staticmethod
     def check_braces(text: str) -> List[str]:
         """Check for balanced braces and brackets."""
         stack = []
         errors = []
-        mapping = {')': '(', ']': '[', '}': '{'}
-        
-        # Simple stack-based check. 
-        # Note: This is a naive check that doesn't ignore escaped braces.
-        # Enhancing to ignore escaped chars.
-        
+        mapping = {"]": "[", "}": "{"}
+
         i = 0
         while i < len(text):
             char = text[i]
-            
-            # Skip escaped characters
-            if char == '\\':
-                i += 2
-                continue
-                
-            if char in '({[':
+
+            if char == "\\":
+                if i + 1 < len(text):
+                    next_char = text[i + 1]
+                    if next_char in "{}":
+                        i += 2
+                        continue
+                    elif next_char == "\\":
+                        i += 2
+                        continue
+                    else:
+                        i += 1
+                        while i < len(text) and text[i].isalpha():
+                            i += 1
+                        continue
+                else:
+                    i += 1
+                    continue
+
+            if char in "{[":
                 stack.append((char, i))
-            elif char in ')}]':
+            elif char in "}]":
                 if not stack:
                     errors.append(f"Unmatched closing brace '{char}' at position {i}")
                 else:
                     last_open, _ = stack.pop()
                     if mapping[char] != last_open:
-                        errors.append(f"Mismatched brace '{char}' at {i}, expected closing for '{last_open}'")
-            
+                        errors.append(
+                            f"Mismatched brace '{char}' at {i}, expected closing for '{last_open}'"
+                        )
+
             i += 1
-            
+
         if stack:
             for char, pos in stack:
                 errors.append(f"Unmatched opening brace '{char}' at position {pos}")
-                
+
         return errors
 
     @staticmethod
@@ -54,16 +66,16 @@ class BuiltInRules:
         """Ensure all citations in original exist in translated."""
         orig_cites = BuiltInRules.extract_commands(original, "cite")
         trans_cites = BuiltInRules.extract_commands(translated, "cite")
-        
+
         errors = []
         missing = orig_cites - trans_cites
         extra = trans_cites - orig_cites
-        
+
         if missing:
             errors.append(f"Missing citations: {', '.join(missing)}")
         if extra:
             errors.append(f"Unexpected citations: {', '.join(extra)}")
-            
+
         return errors
 
     @staticmethod
@@ -71,13 +83,13 @@ class BuiltInRules:
         """Ensure all refs in original exist in translated."""
         orig_refs = BuiltInRules.extract_commands(original, "ref")
         trans_refs = BuiltInRules.extract_commands(translated, "ref")
-        
+
         errors = []
         missing = orig_refs - trans_refs
         # Extra refs might be okay if added by translator for clarity, but usually not.
         if missing:
             errors.append(f"Missing references: {', '.join(missing)}")
-            
+
         return errors
 
     @staticmethod
@@ -86,19 +98,29 @@ class BuiltInRules:
         # Simple check for counts of $ and $$
         # A more robust check would parse, but this catches obvious errors.
         errors = []
-        
-        orig_inline = original.count('$')
-        trans_inline = translated.count('$')
-        
+
+        # Remove placeholders [[...]] before counting
+        orig_cleaned = re.sub(r"\[\[[A-Z_]+_\d+\]\]", "", original)
+        trans_cleaned = re.sub(r"\[\[[A-Z_]+_\d+\]\]", "", translated)
+
+        # Remove escaped dollar signs \$ before counting
+        orig_cleaned = orig_cleaned.replace(r"\$", "")
+        trans_cleaned = trans_cleaned.replace(r"\$", "")
+
+        orig_inline = orig_cleaned.count("$")
+        trans_inline = trans_cleaned.count("$")
+
         # We expect even numbers of $ usually
         if trans_inline % 2 != 0:
             errors.append("Odd number of '$' delimiters in translated text.")
-            
+
         # We might expect the same number of math blocks, but sometimes they get merged/split?
         # Strictly speaking they should match if text structure is preserved.
         if orig_inline != trans_inline:
-            errors.append(f"Math delimiter count mismatch: Original {orig_inline}, Translated {trans_inline}")
-            
+            errors.append(
+                f"Math delimiter count mismatch: Original {orig_inline}, Translated {trans_inline}"
+            )
+
         return errors
 
     @staticmethod
@@ -107,16 +129,16 @@ class BuiltInRules:
         # Heuristic: Chinese usually 0.6-0.8 of English characters
         if not original.strip():
             return []
-            
+
         len_orig = len(original)
         len_trans = len(translated)
-        
+
         ratio = len_trans / len_orig if len_orig > 0 else 0
-        
+
         # These bounds are heuristics and might need tuning
         if ratio < 0.2:
             return [f"Translation suspiciously short (Ratio: {ratio:.2f})"]
         if ratio > 1.5:
             return [f"Translation suspiciously long (Ratio: {ratio:.2f})"]
-            
+
         return []

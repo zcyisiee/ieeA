@@ -80,6 +80,12 @@ def translate(
     abstract: Optional[str] = typer.Option(
         None, "--abstract", help="手动提供摘要文本（覆盖自动提取）"
     ),
+    verbose: bool = typer.Option(
+        False,
+        "--verbose",
+        "-v",
+        help="启用详细日志输出到控制台",
+    ),
 ):
     """
     Translate an arXiv paper to Chinese.

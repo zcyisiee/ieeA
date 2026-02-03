@@ -110,3 +110,21 @@ def build_system_prompt(
         system_content += f"\n\n## 术语表\n{glossary_str}"
 
     return system_content
+
+
+def build_batch_translation_text(chunks: List[Dict[str, str]]) -> str:
+    """Build batch translation input text with numbered format.
+
+    Args:
+        chunks: List of chunks with 'chunk_id' and 'content' keys.
+
+    Returns:
+        Formatted text like:
+        [1] First content
+        [2] Second content
+        [3] Third content
+    """
+    lines = []
+    for idx, chunk in enumerate(chunks, 1):
+        lines.append(f"[{idx}] {chunk['content']}")
+    return "\n".join(lines)
