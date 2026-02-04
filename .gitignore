@@ -5,6 +5,7 @@ htmlcov/
 coverage.xml
 .tox/
 .nox/
+debug/
 
 # Type Checking
 .mypy_cache/
