@@ -429,28 +429,53 @@ class LaTeXParser:
         return "".join(result)
 
     def _protect_commands(self, text: str) -> str:
-        # Simple commands without nested braces
-        simple_patterns = [
-            (r"(\\cite\{[^}]*\})", "CITE"),
-            (r"(\\ref\{[^}]*\})", "REF"),
-            (r"(\\eqref\{[^}]*\})", "REF"),
-            (r"(\\label\{[^}]*\})", "LABEL"),
-            (r"(\\url\{[^}]*\})", "URL"),
-            (r"(\\includegraphics(?:\[[^\]]*\])?\{[^}]*\})", "GRAPHICS"),
-        ]
-        for pattern_str, prefix in simple_patterns:
-            pattern = re.compile(pattern_str)
-            text = self._replace_with_placeholder(text, pattern, prefix)
-
-        # Commands that may contain nested braces - use brace counting
-        nested_commands = [
+        commands_with_brace_counting = [
+            ("cite", "CITE"),
+            ("ref", "REF"),
+            ("eqref", "REF"),
+            ("label", "LABEL"),
+            ("url", "URL"),
             ("footnote", "FOOTNOTE"),
             ("href", "HREF"),
         ]
-        for cmd, prefix in nested_commands:
+        for cmd, prefix in commands_with_brace_counting:
             text = self._protect_nested_command(text, cmd, prefix)
 
+        text = self._protect_includegraphics(text)
+
         return text
+
+    def _protect_includegraphics(self, text: str) -> str:
+        pattern = re.compile(r"(\\includegraphics(?:\[[^\]]*\])?\s*\{)")
+        result = []
+        pos = 0
+
+        for match in pattern.finditer(text):
+            result.append(text[pos : match.start()])
+            start = match.end()
+            brace_count = 1
+            i = start
+
+            while i < len(text) and brace_count > 0:
+                if text[i] == "{":
+                    brace_count += 1
+                elif text[i] == "}":
+                    brace_count -= 1
+                i += 1
+
+            if brace_count == 0:
+                full_command = match.group(0) + text[start:i]
+                self.protected_counter += 1
+                placeholder = f"[[GRAPHICS_{self.protected_counter}]]"
+                self.placeholder_map[placeholder] = full_command
+                result.append(placeholder)
+                pos = i
+            else:
+                result.append(match.group(0))
+                pos = match.end()
+
+        result.append(text[pos:])
+        return "".join(result)
 
     def _protect_nested_command(self, text: str, cmd: str, prefix: str) -> str:
         """Protect commands that may contain nested braces using brace counting."""
