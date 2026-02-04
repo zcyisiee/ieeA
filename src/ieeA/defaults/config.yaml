@@ -16,7 +16,10 @@ paths:
   cache_dir: .cache
 
 fonts:
-  auto_detect: true
+  auto_detect: false
+  main: Source Han Serif SC
+  sans: Source Han Sans SC
+  mono: Source Han Mono SC
 
 translation:
   quality_mode: standard
