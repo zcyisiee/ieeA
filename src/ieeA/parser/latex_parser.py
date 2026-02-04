@@ -91,6 +91,7 @@ class LaTeXParser:
             content = f.read()
 
         flattened_content = self._flatten_latex(content, base_dir)
+        flattened_content = self._remove_comments(flattened_content)
         abstract = self.extract_abstract(flattened_content)
         preamble, body_content = self._split_preamble_body(flattened_content)
 
@@ -514,6 +515,52 @@ class LaTeXParser:
             if os.path.exists(path):
                 return path
         return None
+
+    def _remove_comments(self, content: str) -> str:
+        r"""精准删除LaTeX注释，保留必要的结构。
+
+        规则：
+        1. 删除整行注释（以%开头，前面只有空白）
+        2. 删除行尾注释（%及其后内容，但保留转义的\%）
+        3. 保留 %! 开头的编译器指令（如 %!TEX）
+        4. 保留 verbatim/lstlisting 环境中的内容
+        """
+        lines = content.split("\n")
+        result = []
+        in_verbatim = False
+        verbatim_envs = {"verbatim", "lstlisting", "minted", "comment"}
+
+        for line in lines:
+            # 检测 verbatim 环境的开始/结束
+            for env in verbatim_envs:
+                if f"\\begin{{{env}}}" in line:
+                    in_verbatim = True
+                if f"\\end{{{env}}}" in line:
+                    in_verbatim = False
+
+            # verbatim 环境内保持原样
+            if in_verbatim:
+                result.append(line)
+                continue
+
+            # 保留编译器指令（%!TEX, %!BIB 等）
+            stripped = line.lstrip()
+            if stripped.startswith("%!"):
+                result.append(line)
+                continue
+
+            # 整行注释：跳过
+            if stripped.startswith("%"):
+                continue
+
+            # 行尾注释：删除 % 及其后内容（但保留 \%）
+            cleaned = re.sub(r"(?<!\\)%.*$", "", line)
+
+            # 保留非空行或原本就是空行
+            if cleaned.strip() or not line.strip():
+                result.append(cleaned.rstrip())
+
+        return "\n".join(result)
 
     def _split_preamble_body(self, content: str) -> Tuple[str, str]:
         match = re.search(r"\\begin\{document\}", content)

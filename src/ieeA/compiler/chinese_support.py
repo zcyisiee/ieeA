@@ -143,6 +143,16 @@ def inject_chinese_support(latex_source: str, font_config: Optional[Any] = None)
             if cfg_mono:
                 mono_font = cfg_mono
 
+    latex_source = re.sub(
+        r"\\usepackage\s*\[T1\]\s*\{fontenc\}\s*\n?", "", latex_source
+    )
+    latex_source = re.sub(
+        r"\\usepackage\s*\[utf8\]\s*\{inputenc\}\s*\n?", "", latex_source
+    )
+    latex_source = re.sub(
+        r"\\usepackage\s*\[utf8\]\s*\{inputenc\}\s*\n?", "", latex_source
+    )
+
     injection = (
         "\n% Auto-injected Chinese Support\n"
         r"\usepackage{xeCJK}" + "\n"
@@ -151,11 +161,19 @@ def inject_chinese_support(latex_source: str, font_config: Optional[Any] = None)
         f"\\setCJKmonofont{{{mono_font}}}\n"
     )
 
-    # Find position right before \begin{document}
+    # Inject immediately after \documentclass (more canonical position)
+    docclass_match = re.search(
+        r"(\\documentclass\s*(?:\[[^\]]*\])?\s*\{[^}]+\}\s*\n?)", latex_source
+    )
+    if docclass_match:
+        insert_pos = docclass_match.end()
+        return latex_source[:insert_pos] + injection + latex_source[insert_pos:]
+
+    # Fallback: inject before \begin{document}
     begin_doc_match = re.search(r"\\begin\{document\}", latex_source)
     if begin_doc_match:
         insert_pos = begin_doc_match.start()
         return latex_source[:insert_pos] + injection + "\n" + latex_source[insert_pos:]
 
-    # Fallback: append at end if no \begin{document} found
+    # Last resort: append at end if no \begin{document} found
     return latex_source + "\n" + injection
