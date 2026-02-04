@@ -198,6 +198,7 @@ def translate(
                 / "translation_state.json",
                 few_shot_examples=examples,
                 abstract_context=abstract_text,
+                custom_system_prompt=config.translation.custom_system_prompt,
             )
 
             chunk_data = [{"chunk_id": c.id, "content": c.content} for c in doc.chunks]

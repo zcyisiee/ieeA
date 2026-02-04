@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from ..rules.glossary import Glossary
 from .llm_base import LLMProvider
-from .prompts import build_translation_prompt, build_batch_translation_text
+from .prompts import build_batch_translation_text
 
 
 class TranslatedChunk(BaseModel):
@@ -108,6 +108,7 @@ class TranslationPipeline:
         state_file: Optional[Union[str, Path]] = None,
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
         abstract_context: Optional[str] = None,
+        custom_system_prompt: Optional[str] = None,
     ):
         """
         Initialize the translation pipeline.
@@ -121,6 +122,7 @@ class TranslationPipeline:
             state_file: Optional file path to save/load intermediate state.
             few_shot_examples: Optional few-shot examples for the prompt.
             abstract_context: Optional abstract text for high-quality mode context.
+            custom_system_prompt: Optional custom system prompt to replace default style.
         """
         self.provider = provider
         self.glossary = glossary or Glossary()
@@ -130,6 +132,7 @@ class TranslationPipeline:
         self.state_file = Path(state_file) if state_file else None
         self.few_shot_examples = few_shot_examples or []
         self.abstract_context = abstract_context
+        self.custom_system_prompt = custom_system_prompt
 
         self._preprocessor = GlossaryPreprocessor(self.glossary)
 
@@ -166,6 +169,7 @@ class TranslationPipeline:
                     context=context,
                     glossary_hints=glossary_hints,
                     few_shot_examples=self.few_shot_examples,
+                    custom_system_prompt=self.custom_system_prompt,
                 )
                 return result
             except Exception as e:

@@ -169,7 +169,11 @@ class TestBatchTranslationIntegration:
 
         # Mock translate to return malformed batch response
         async def mock_translate(
-            text, context=None, glossary_hints=None, few_shot_examples=None
+            text,
+            context=None,
+            glossary_hints=None,
+            few_shot_examples=None,
+            custom_system_prompt=None,
         ):
             if "[1]" in text and "[2]" in text:
                 # 返回格式错误的响应

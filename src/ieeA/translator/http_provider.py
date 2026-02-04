@@ -26,6 +26,7 @@ class DirectHTTPProvider(LLMProvider):
         context: Optional[str] = None,
         glossary_hints: Optional[Dict[str, str]] = None,
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
+        custom_system_prompt: Optional[str] = None,
     ) -> str:
         messages = []
 
@@ -33,6 +34,7 @@ class DirectHTTPProvider(LLMProvider):
             glossary_hints=glossary_hints,
             context=context,
             few_shot_examples=few_shot_examples,
+            custom_system_prompt=custom_system_prompt,
         )
 
         messages.append({"role": "system", "content": system_content})

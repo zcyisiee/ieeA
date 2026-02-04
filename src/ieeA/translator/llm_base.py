@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Dict, Any, Union
 
+
 class LLMProvider(ABC):
     """Abstract base class for LLM providers."""
 
@@ -11,11 +12,12 @@ class LLMProvider(ABC):
 
     @abstractmethod
     async def translate(
-        self, 
-        text: str, 
-        context: Optional[str] = None, 
+        self,
+        text: str,
+        context: Optional[str] = None,
         glossary_hints: Optional[Dict[str, str]] = None,
-        few_shot_examples: Optional[List[Dict[str, str]]] = None
+        few_shot_examples: Optional[List[Dict[str, str]]] = None,
+        custom_system_prompt: Optional[str] = None,
     ) -> str:
         """
         Translate the given text.
