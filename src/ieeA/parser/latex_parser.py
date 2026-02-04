@@ -309,12 +309,58 @@ class LaTeXParser:
 
         return pattern.sub(replacer, text)
 
+    def _extract_section_command(self, text: str, cmd: str) -> str:
+        """Extract section commands with brace counting to handle nested braces."""
+        pattern = re.compile(r"(\\" + cmd + r")(\*?)(\s*\{)")
+        result = []
+        pos = 0
+
+        for match in pattern.finditer(text):
+            result.append(text[pos : match.start()])
+            start = match.end()
+            brace_count = 1
+            i = start
+
+            while i < len(text) and brace_count > 0:
+                if text[i] == "{":
+                    brace_count += 1
+                elif text[i] == "}":
+                    brace_count -= 1
+                i += 1
+
+            if brace_count == 0:
+                content = text[start : i - 1]
+                if not content.strip() or content.startswith("[["):
+                    result.append(match.group(0) + content + "}")
+                else:
+                    chunk_id = str(uuid.uuid4())
+                    placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
+                    chunk = Chunk(
+                        id=chunk_id,
+                        content=content,
+                        latex_wrapper="%s",
+                        context=cmd,
+                        preserved_elements={},
+                    )
+                    self.chunks.append(chunk)
+                    result.append(
+                        match.group(1)
+                        + match.group(2)
+                        + match.group(3)
+                        + placeholder
+                        + "}"
+                    )
+                pos = i
+            else:
+                result.append(match.group(0))
+                pos = match.end()
+
+        result.append(text[pos:])
+        return "".join(result)
+
     def _extract_translatable_content(self, text: str) -> str:
         for cmd in self.SECTION_COMMANDS:
-            pattern = re.compile(r"(\\" + cmd + r")(\*?)(\{)([^}]+)(\})")
-            text = self._create_chunk_for_pattern(
-                text, pattern, cmd, groups=(1, 2, 3, 4, 5), content_group=4
-            )
+            text = self._extract_section_command(text, cmd)
 
         for env in self.TRANSLATABLE_ENVIRONMENTS:
             pattern = re.compile(
@@ -420,6 +466,8 @@ class LaTeXParser:
             r"^\\section",
             r"^\\subsection",
             r"^\\subsubsection",
+            r"^\\paragraph",
+            r"^\\subparagraph",
             r"^\\chapter",
             r"^\\part",
             r"^\\title",
