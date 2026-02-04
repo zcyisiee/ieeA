@@ -62,7 +62,7 @@ class GlossaryPreprocessor:
                 # Replace from end to start to preserve indices
                 for match in reversed(matches):
                     self._placeholder_counter += 1
-                    placeholder = f"{{{{GLOSS_{self._placeholder_counter:03d}}}}}"
+                    placeholder = f"[[GLOSS_{self._placeholder_counter:03d}]]"
                     mapping[placeholder] = term
                     result = (
                         result[: match.start()] + placeholder + result[match.end() :]
