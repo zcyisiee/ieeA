@@ -1,13 +1,12 @@
 import os
 import re
 import uuid
-from typing import Optional, Tuple, List, Dict
+from typing import Optional, Tuple, List, Dict, Set
 
 from .structure import LaTeXDocument, Chunk
 
 
 def is_placeholder_only(content: str) -> bool:
-    """Check if content is only a placeholder (no translatable text)."""
     return bool(re.fullmatch(r"\[\[[A-Z_]+_\d+\]\]", content.strip()))
 
 
@@ -57,10 +56,13 @@ class LaTeXParser:
         "part",
     }
 
-    def __init__(self):
+    def __init__(self, extra_protected_envs: Optional[List[str]] = None):
         self.chunks: List[Chunk] = []
         self.protected_counter = 0
         self.placeholder_map: Dict[str, str] = {}
+        self._protected_envs: Set[str] = set(self.PROTECTED_ENVIRONMENTS)
+        if extra_protected_envs:
+            self._protected_envs.update(extra_protected_envs)
 
     def extract_abstract(self, content: str) -> Optional[str]:
         """Extract abstract content from LaTeX document.
@@ -284,7 +286,7 @@ class LaTeXParser:
         return result
 
     def _protect_math_environments(self, text: str) -> str:
-        for env in self.PROTECTED_ENVIRONMENTS:
+        for env in self._protected_envs:
             pattern = re.compile(
                 r"(\\begin\{"
                 + re.escape(env)
@@ -297,10 +299,47 @@ class LaTeXParser:
         return text
 
     def _protect_inline_math(self, text: str) -> str:
-        pattern = re.compile(
-            r"(?<!\\)(\$\$.*?\$\$|(?<!\\)\$[^$]+?(?<!\\)\$)", re.DOTALL
-        )
-        text = self._replace_with_placeholder(text, pattern, "MATH")
+        result = []
+        i = 0
+        n = len(text)
+
+        while i < n:
+            if i < n - 1 and text[i] == "\\" and text[i + 1] == "$":
+                result.append(text[i : i + 2])
+                i += 2
+                continue
+
+            if text[i] == "$":
+                is_display = i + 1 < n and text[i + 1] == "$"
+                delim = "$$" if is_display else "$"
+                start = i
+                i += len(delim)
+
+                while i < n:
+                    if text[i] == "\\" and i + 1 < n and text[i + 1] == "$":
+                        i += 2
+                        continue
+                    if is_display and i + 1 < n and text[i : i + 2] == "$$":
+                        i += 2
+                        break
+                    if not is_display and text[i] == "$":
+                        i += 1
+                        break
+                    i += 1
+
+                math_content = text[start:i]
+                if "\n\n" not in math_content:
+                    self.protected_counter += 1
+                    placeholder = f"[[MATH_{self.protected_counter}]]"
+                    self.placeholder_map[placeholder] = math_content
+                    result.append(placeholder)
+                else:
+                    result.append(math_content)
+            else:
+                result.append(text[i])
+                i += 1
+
+        text = "".join(result)
 
         pattern = re.compile(r"(\\\[.*?\\\]|\\\(.*?\\\))", re.DOTALL)
         text = self._replace_with_placeholder(text, pattern, "MATH")

@@ -38,6 +38,7 @@ src/ieeA/validator/engine.py
 src/ieeA/validator/rules.py
 tests/test_batch_translation.py
 tests/test_glossary_preprocessor.py
+tests/test_parser_chunk_consistency.py
 tests/test_placeholder_restoration.py
 tests/test_translation_logger.py
 tests/test_validator_fixes.py

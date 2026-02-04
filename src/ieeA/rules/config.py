@@ -66,12 +66,20 @@ class TranslationConfig(BaseModel):
     examples_path: Optional[str] = None  # User-defined few-shot examples path
 
 
+class ParserConfig(BaseModel):
+    """LaTeX parser configuration."""
+
+    extra_protected_environments: List[str] = Field(default_factory=list)
+    extra_translatable_environments: List[str] = Field(default_factory=list)
+
+
 class Config(BaseModel):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     compilation: CompilationConfig = Field(default_factory=CompilationConfig)
     paths: PathsConfig = Field(default_factory=PathsConfig)
     fonts: FontConfig = Field(default_factory=FontConfig)
     translation: TranslationConfig = Field(default_factory=TranslationConfig)
+    parser: ParserConfig = Field(default_factory=ParserConfig)
 
 
 def load_defaults() -> Dict[str, Any]:
