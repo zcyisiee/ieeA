@@ -33,6 +33,9 @@ class LaTeXParser:
         "lstlisting",
         "verbatim",
         "minted",
+        "algorithm",
+        "algorithm2e",
+        "algorithmic",
     }
 
     TRANSLATABLE_ENVIRONMENTS = {
@@ -290,11 +293,13 @@ class LaTeXParser:
                 + r"\})",
                 re.DOTALL,
             )
-            text = self._replace_with_placeholder(text, pattern, "MATHENV")
+            text = self._replace_with_placeholder(text, pattern, "MATHENV", force=True)
         return text
 
     def _protect_inline_math(self, text: str) -> str:
-        pattern = re.compile(r"(\$\$.*?\$\$|\$[^$]+?\$)", re.DOTALL)
+        pattern = re.compile(
+            r"(?<!\\)(\$\$.*?\$\$|(?<!\\)\$[^$]+?(?<!\\)\$)", re.DOTALL
+        )
         text = self._replace_with_placeholder(text, pattern, "MATH")
 
         pattern = re.compile(r"(\\\[.*?\\\]|\\\(.*?\\\))", re.DOTALL)
@@ -318,12 +323,11 @@ class LaTeXParser:
         return text
 
     def _replace_with_placeholder(
-        self, text: str, pattern: re.Pattern, prefix: str
+        self, text: str, pattern: re.Pattern, prefix: str, force: bool = False
     ) -> str:
         def replacer(match):
             matched_text = match.group(0)
-            # Skip if match contains existing chunk placeholders
-            if "{{CHUNK_" in matched_text:
+            if not force and "{{CHUNK_" in matched_text:
                 return matched_text
 
             self.protected_counter += 1
