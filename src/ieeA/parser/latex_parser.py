@@ -194,26 +194,46 @@ class LaTeXParser:
 
     def _extract_title_from_preamble(self, preamble: str) -> str:
         """Extract title from preamble and create translatable chunk."""
-        pattern = re.compile(r"(\\title\s*\{)([^}]+)(\})")
+        pattern = re.compile(r"(\\title\s*\{)")
+        result = []
+        pos = 0
 
-        def replacer(match):
-            prefix, content, suffix = match.group(1), match.group(2), match.group(3)
-            if not content.strip() or content.startswith("[["):
-                return match.group(0)
+        for match in pattern.finditer(preamble):
+            result.append(preamble[pos : match.start()])
+            start = match.end()
+            brace_count = 1
+            i = start
 
-            chunk_id = str(uuid.uuid4())
-            placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
-            chunk = Chunk(
-                id=chunk_id,
-                content=content.strip(),
-                latex_wrapper="%s",
-                context="title",
-                preserved_elements={},
-            )
-            self.chunks.append(chunk)
-            return f"{prefix}{placeholder}{suffix}"
+            while i < len(preamble) and brace_count > 0:
+                if preamble[i] == "{":
+                    brace_count += 1
+                elif preamble[i] == "}":
+                    brace_count -= 1
+                i += 1
 
-        return pattern.sub(replacer, preamble)
+            if brace_count == 0:
+                content = preamble[start : i - 1]
+                if not content.strip() or content.startswith("[["):
+                    result.append(match.group(0) + content + "}")
+                else:
+                    chunk_id = str(uuid.uuid4())
+                    placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
+                    chunk = Chunk(
+                        id=chunk_id,
+                        content=content.strip(),
+                        latex_wrapper="%s",
+                        context="title",
+                        preserved_elements={},
+                    )
+                    self.chunks.append(chunk)
+                    result.append(match.group(1) + placeholder + "}")
+                pos = i
+            else:
+                result.append(match.group(0))
+                pos = match.end()
+
+        result.append(preamble[pos:])
+        return "".join(result)
 
     def _extract_captions(self, text: str) -> str:
         """Extract caption content for translation before environment protection."""
