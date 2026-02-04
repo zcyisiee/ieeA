@@ -392,9 +392,41 @@ class LaTeXParser:
 
         text = "".join(result)
 
-        pattern = re.compile(r"(\\\[.*?\\\]|\\\(.*?\\\))", re.DOTALL)
-        text = self._replace_with_placeholder(text, pattern, "MATH")
+        text = self._protect_display_math_delimiters(text, r"\[", r"\]")
+        text = self._protect_display_math_delimiters(text, r"\(", r"\)")
         return text
+
+    def _protect_display_math_delimiters(
+        self, text: str, open_delim: str, close_delim: str
+    ) -> str:
+        open_escaped = re.escape(open_delim)
+        pattern = re.compile(r"(" + open_escaped + r")")
+        result = []
+        pos = 0
+
+        for match in pattern.finditer(text):
+            result.append(text[pos : match.start()])
+            start = match.start()
+            i = match.end()
+            delim_len = len(open_delim)
+
+            while i < len(text):
+                if text[i : i + len(close_delim)] == close_delim:
+                    i += len(close_delim)
+                    full_math = text[start:i]
+                    self.protected_counter += 1
+                    placeholder = f"[[MATH_{self.protected_counter}]]"
+                    self.placeholder_map[placeholder] = full_math
+                    result.append(placeholder)
+                    pos = i
+                    break
+                i += 1
+            else:
+                result.append(match.group(0))
+                pos = match.end()
+
+        result.append(text[pos:])
+        return "".join(result)
 
     def _protect_commands(self, text: str) -> str:
         # Simple commands without nested braces
