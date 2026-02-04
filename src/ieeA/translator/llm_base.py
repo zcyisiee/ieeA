@@ -1,13 +1,23 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .logger import TranslationLogger
 
 
 class LLMProvider(ABC):
     """Abstract base class for LLM providers."""
 
-    def __init__(self, model: str, api_key: Optional[str] = None, **kwargs):
+    def __init__(
+        self,
+        model: str,
+        api_key: Optional[str] = None,
+        logger: Optional["TranslationLogger"] = None,
+        **kwargs,
+    ):
         self.model = model
         self.api_key = api_key
+        self.logger = logger
         self.kwargs = kwargs
 
     @abstractmethod
