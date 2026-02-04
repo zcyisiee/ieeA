@@ -172,6 +172,7 @@ def translate(
                 model=model_name,
                 key=key_val,
                 endpoint=endpoint_val,
+                logger=translation_logger,
                 temperature=config.llm.temperature,
             )
 
@@ -199,6 +200,7 @@ def translate(
                 few_shot_examples=examples,
                 abstract_context=abstract_text,
                 custom_system_prompt=config.translation.custom_system_prompt,
+                logger=translation_logger,
             )
 
             chunk_data = [{"chunk_id": c.id, "content": c.content} for c in doc.chunks]
