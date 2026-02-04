@@ -30,6 +30,7 @@ class TranslationLogger:
             "timestamp": datetime.now().isoformat(),
             "hq_mode": hq_mode,
             "source_file": "",
+            "prompt_config": {},
             "chunks": [],
             "batches": [],
             "skipped": [],
@@ -79,6 +80,40 @@ class TranslationLogger:
             console.print(
                 f"[dim]Chunk {chunk_id}: {chunk_type} ({length} chars)"
                 f"{f' [batch: {batch_id}]' if batched else ''}[/dim]"
+            )
+
+    def log_prompt_config(
+        self,
+        system_prompt: str,
+        custom_system_prompt: Optional[str],
+        glossary_terms: Optional[Dict[str, str]],
+        few_shot_count: int,
+        context: Optional[str],
+    ):
+        """Log prompt configuration.
+
+        Args:
+            system_prompt: The base system prompt used
+            custom_system_prompt: Custom system prompt override (if any)
+            glossary_terms: Glossary terms dictionary (if any)
+            few_shot_count: Number of few-shot examples used
+            context: Additional context provided (if any)
+        """
+        prompt_config_entry = {
+            "system_prompt": system_prompt,
+            "custom_system_prompt": custom_system_prompt,
+            "glossary_terms": glossary_terms,
+            "few_shot_count": few_shot_count,
+            "context": context,
+            "timestamp": datetime.now().isoformat(),
+        }
+        self.log_data["prompt_config"] = prompt_config_entry
+
+        if self.verbose:
+            console.print(
+                f"[dim]Prompt config: {few_shot_count} few-shot examples"
+                f"{', custom prompt' if custom_system_prompt else ''}"
+                f"{f', {len(glossary_terms)} glossary terms' if glossary_terms else ''}[/dim]"
             )
 
     def log_skip(self, chunk_id: str, reason: str, content: str):
