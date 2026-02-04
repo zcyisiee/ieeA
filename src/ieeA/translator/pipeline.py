@@ -4,13 +4,16 @@ import asyncio
 import json
 import re
 from pathlib import Path
-from typing import Optional, Dict, List, Any, Union, Callable, cast
+from typing import Optional, Dict, List, Any, Union, Callable, cast, TYPE_CHECKING
 
 from pydantic import BaseModel, Field
 
 from ..rules.glossary import Glossary
 from .llm_base import LLMProvider
 from .prompts import build_batch_translation_text
+
+if TYPE_CHECKING:
+    from .logger import TranslationLogger
 
 
 class TranslatedChunk(BaseModel):
@@ -109,6 +112,7 @@ class TranslationPipeline:
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
         abstract_context: Optional[str] = None,
         custom_system_prompt: Optional[str] = None,
+        logger: Optional["TranslationLogger"] = None,
     ):
         """
         Initialize the translation pipeline.
@@ -123,6 +127,7 @@ class TranslationPipeline:
             few_shot_examples: Optional few-shot examples for the prompt.
             abstract_context: Optional abstract text for high-quality mode context.
             custom_system_prompt: Optional custom system prompt to replace default style.
+            logger: Optional logger for tracking translation progress.
         """
         self.provider = provider
         self.glossary = glossary or Glossary()
@@ -133,6 +138,7 @@ class TranslationPipeline:
         self.few_shot_examples = few_shot_examples or []
         self.abstract_context = abstract_context
         self.custom_system_prompt = custom_system_prompt
+        self.logger = logger
 
         self._preprocessor = GlossaryPreprocessor(self.glossary)
 
@@ -374,6 +380,11 @@ class TranslationPipeline:
         for chunk_data in placeholder_chunks:
             chunk_id = chunk_data["chunk_id"]
             content = chunk_data["content"]
+
+            # Log skip
+            if self.logger:
+                self.logger.log_skip(chunk_id, "pure_placeholder", content)
+
             placeholder_result = TranslatedChunk(
                 source=content,
                 translation=content,
@@ -398,7 +409,14 @@ class TranslationPipeline:
 
         batches = []
         for i in range(0, len(short_chunks), 10):
-            batches.append(short_chunks[i : i + 10])
+            batch = short_chunks[i : i + 10]
+            batches.append(batch)
+
+            # Log batch creation
+            if self.logger:
+                batch_id = f"batch_{i // 10}"
+                total_chars = sum(len(c["content"]) for c in batch)
+                self.logger.log_batch(batch_id, "short_chunks", len(batch), total_chars)
 
         semaphore = asyncio.Semaphore(max_concurrent)
         completed_count = 0
@@ -407,6 +425,7 @@ class TranslationPipeline:
 
         async def translate_batch_with_semaphore(
             batch_chunks: List[Dict[str, str]],
+            batch_index: int,
         ) -> List[TranslatedChunk]:
             nonlocal completed_count
             async with semaphore:
@@ -427,6 +446,18 @@ class TranslationPipeline:
                             fallback_results.append(result)
                         batch_results = fallback_results
 
+                    # Log each chunk in the batch
+                    if self.logger:
+                        batch_id = f"batch_{batch_index}"
+                        for chunk_data in batch_chunks:
+                            self.logger.log_chunk(
+                                chunk_data["chunk_id"],
+                                "short",
+                                len(chunk_data["content"]),
+                                batched=True,
+                                batch_id=batch_id,
+                            )
+
                     async with progress_lock:
                         completed_count += len(batch_chunks)
                         if progress_callback:
@@ -446,6 +477,18 @@ class TranslationPipeline:
                         )
                         fallback_results.append(result)
 
+                    # Log each chunk in the batch (fallback case)
+                    if self.logger:
+                        batch_id = f"batch_{batch_index}"
+                        for chunk_data in batch_chunks:
+                            self.logger.log_chunk(
+                                chunk_data["chunk_id"],
+                                "short",
+                                len(chunk_data["content"]),
+                                batched=True,
+                                batch_id=batch_id,
+                            )
+
                     async with progress_lock:
                         completed_count += len(batch_chunks)
                         if progress_callback:
@@ -462,6 +505,11 @@ class TranslationPipeline:
             async with semaphore:
                 chunk_id = chunk_data["chunk_id"]
                 content = chunk_data["content"]
+
+                # Log long chunk
+                if self.logger:
+                    self.logger.log_chunk(chunk_id, "long", len(content), batched=False)
+
                 result = await self.translate_chunk(
                     chunk=content,
                     chunk_id=chunk_id,
@@ -479,7 +527,9 @@ class TranslationPipeline:
 
                 return result
 
-        batch_tasks = [translate_batch_with_semaphore(batch) for batch in batches]
+        batch_tasks = [
+            translate_batch_with_semaphore(batch, i) for i, batch in enumerate(batches)
+        ]
         long_tasks = [translate_with_semaphore(c) for c in long_chunks]
 
         all_tasks = batch_tasks + long_tasks
