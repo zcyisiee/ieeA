@@ -307,16 +307,47 @@ class LaTeXParser:
 
     def _protect_math_environments(self, text: str) -> str:
         for env in self._protected_envs:
-            pattern = re.compile(
-                r"(\\begin\{"
-                + re.escape(env)
-                + r"\}.*?\\end\{"
-                + re.escape(env)
-                + r"\})",
-                re.DOTALL,
-            )
-            text = self._replace_with_placeholder(text, pattern, "MATHENV", force=True)
+            text = self._protect_single_environment(text, env)
         return text
+
+    def _protect_single_environment(self, text: str, env: str) -> str:
+        begin_pattern = re.compile(r"(\\begin\{" + re.escape(env) + r"\})")
+        result = []
+        pos = 0
+
+        for match in begin_pattern.finditer(text):
+            result.append(text[pos : match.start()])
+            start = match.start()
+            env_count = 1
+            i = match.end()
+
+            while i < len(text) and env_count > 0:
+                if text[i:].startswith(r"\begin{" + env + "}"):
+                    env_count += 1
+                    i += len(r"\begin{" + env + "}")
+                elif text[i:].startswith(r"\end{" + env + "}"):
+                    env_count -= 1
+                    if env_count == 0:
+                        i += len(r"\end{" + env + "}")
+                        break
+                    else:
+                        i += len(r"\end{" + env + "}")
+                else:
+                    i += 1
+
+            if env_count == 0:
+                full_env = text[start:i]
+                self.protected_counter += 1
+                placeholder = f"[[MATHENV_{self.protected_counter}]]"
+                self.placeholder_map[placeholder] = full_env
+                result.append(placeholder)
+                pos = i
+            else:
+                result.append(match.group(0))
+                pos = match.end()
+
+        result.append(text[pos:])
+        return "".join(result)
 
     def _protect_inline_math(self, text: str) -> str:
         result = []
