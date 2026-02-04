@@ -37,9 +37,18 @@ class OpenAIProvider(LLMProvider):
                 "openai package is required for OpenAIProvider. Please install it with `pip install openai`."
             )
 
+        # Set timeout to prevent hanging on slow/unresponsive endpoints
+        # Default: 60s for connect, 300s for read (long for batch translations)
+        timeout_config = openai.Timeout(
+            connect=60.0,
+            read=300.0,
+            write=60.0,
+            pool=60.0,
+        )
         self.client = openai.AsyncOpenAI(
             api_key=api_key,
             base_url=base_url,
+            timeout=timeout_config,
         )
 
     async def translate(

@@ -1,27 +1,34 @@
-# Few-shot translation examples for high-quality academic translation
-# These examples demonstrate the desired translation style and quality
+# Few-shot examples for English→Chinese academic translation (AI/ML domain)
+# Each example demonstrates natural Chinese academic prose, avoiding translationese
 
 examples:
-  # Example 1: Academic motivation paragraph
-  - source: "We propose a novel approach to address the challenge of long-context language modeling. Our method leverages sparse attention mechanisms to reduce computational complexity while maintaining model expressiveness."
-    target: "本文提出一种新方法来解决长上下文语言建模的挑战。我们的方法利用稀疏注意力机制来降低计算复杂度，同时保持模型的表达能力。"
-  
-  # Example 2: Experimental results description
-  - source: "Experimental results demonstrate that our method achieves state-of-the-art performance on multiple benchmarks, outperforming previous approaches by a significant margin. Specifically, we observe a 15% improvement in accuracy on the GLUE benchmark."
-    target: "实验结果表明，我们的方法在多个基准测试中达到了最先进的性能，显著优于以前的方法。具体而言，我们在 GLUE 基准测试中观察到准确率提高了 15%。"
-  
-  # Example 3: Methodology description with key insights
-  - source: "The key insight behind our approach is that not all tokens contribute equally to the final prediction. By identifying and focusing on the most relevant tokens, we can dramatically reduce the computational cost without sacrificing accuracy."
-    target: "我们方法的核心洞察是，并非所有标记对最终预测的贡献都相同。通过识别并关注最相关的标记，我们可以在不牺牲准确性的情况下显著降低计算成本。"
-  
-  # Example 4: Technical implementation detail
-  - source: "We implement this idea using a learnable gating mechanism that assigns importance scores to each token. The attention computation is then restricted to the top-k tokens based on these scores."
-    target: "我们使用可学习的门控机制来实现这一想法，该机制为每个标记分配重要性分数。然后，根据这些分数将注意力计算限制在前 k 个标记上。"
-  
-  # Example 5: Mathematical/formula description
-  - source: "Given an input sequence of length n, the standard self-attention mechanism has a time complexity of O(n²). Our sparse attention reduces this to O(n·k), where k is the sparsity parameter."
-    target: "给定长度为 n 的输入序列，标准自注意力机制的时间复杂度为 O(n²)。我们的稀疏注意力将其降低到 O(n·k)，其中 k 是稀疏参数。"
-  
-  # Example 6: Limitations and future work
-  - source: "While our approach shows promising results, there are several limitations that warrant future investigation. First, the optimal sparsity level may vary across different tasks and datasets."
-    target: "尽管我们的方法显示出良好的结果，但仍有几个局限性值得未来研究。首先，最优稀疏级别可能因不同任务和数据集而异。"
+  # Example 1: Research motivation (避免 "解决...的挑战" 这类生硬表达)
+  - source: |
+      Large language models have demonstrated remarkable capabilities across various tasks. However, their computational cost grows quadratically with sequence length, making it prohibitively expensive to process long documents.
+    target: |
+      大语言模型在各类任务中展现出卓越的能力。然而，其计算开销随序列长度呈平方级增长，导致处理长文档的代价极为高昂。
+
+  # Example 2: Method overview (重组句式，符合中文 "先总后分" 的表达习惯)
+  - source: |
+      The key insight behind our approach is that attention patterns in trained Transformers tend to be sparse, with most tokens attending primarily to a small subset of other tokens. We exploit this observation by introducing a learnable routing mechanism.
+    target: |
+      我们的方法基于一个关键观察：在训练好的 Transformer 中，Attention 模式通常是稀疏的——大多数 Token 主要关注少量其他 Token。基于这一发现，我们引入了可学习的路由机制。
+
+  # Example 3: Technical description with math (保持术语一致性)
+  - source: |
+      Given input embeddings \(X \in \mathbb{R}^{n \times d}\), we first compute query, key, and value matrices through linear projections. The attention weights are then calculated as \(\text{softmax}(QK^\top / \sqrt{d_k})\), where \(d_k\) denotes the key dimension.
+    target: |
+      给定输入 Embedding \(X \in \mathbb{R}^{n \times d}\)，首先通过线性投影计算 Query、Key 和 Value 矩阵。Attention 权重的计算方式为 \(\text{softmax}(QK^\top / \sqrt{d_k})\)，其中 \(d_k\) 表示 Key 的维度。
+    note: Q/K/V 等核心术语保留英文；"denotes" 译为 "表示" 而非 "代表"
+
+  # Example 4: Experimental results (避免 "显著优于" 的滥用)
+  - source: |
+      As shown in Table 2, our method consistently outperforms all baselines across different model scales. Notably, the performance gap widens as the sequence length increases, suggesting that our sparse attention mechanism is particularly effective for long-context scenarios.
+    target: |
+      如表 2 所示，在不同模型规模下，本文方法均优于所有基线。值得注意的是，随着序列长度增加，性能差距进一步拉大，表明我们的稀疏 Attention 机制在长上下文场景中尤为有效。
+
+  # Example 5: Limitation discussion (避免 "遭受/面临...的限制" 等翻译腔)
+  - source: |
+      It is worth noting that this approach suffers from the limitation of requiring task-specific tuning of the sparsity hyperparameter. Additionally, the routing overhead becomes non-negligible when the sparsity ratio is low.
+    target: |
+      需要指出的是，该方法的主要局限在于稀疏度超参数需要针对具体任务进行调优。此外，当稀疏比例较低时，路由带来的额外开销不可忽视。
