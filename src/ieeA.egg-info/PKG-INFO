@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: ieeA
-Version: 0.9.0
+Version: 1.0.0
 Summary: arXiv 论文翻译工具 - 将英文 LaTeX 论文翻译成中文，保留数学公式和文档结构
 Author: ieeA Team
 License: GPL-3.0-or-later
@@ -9,7 +9,6 @@ Project-URL: Repository, https://github.com/ieeA/ieeA
 Keywords: arxiv,latex,translation,chinese,llm,academic,paper
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Science/Research
-Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
@@ -18,7 +17,6 @@ Classifier: Topic :: Text Processing :: Markup :: LaTeX
 Classifier: Topic :: Scientific/Engineering
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
-License-File: LICENSE
 Requires-Dist: pylatexenc
 Requires-Dist: typer
 Requires-Dist: rich
@@ -32,7 +30,6 @@ Requires-Dist: ruff; extra == "dev"
 Requires-Dist: mypy; extra == "dev"
 Requires-Dist: build; extra == "dev"
 Requires-Dist: twine; extra == "dev"
-Dynamic: license-file
 
 # ieeA - arXiv 论文翻译工具
 
@@ -80,20 +77,23 @@ ieeA translate https://arxiv.org/abs/2301.07041 --verbose
 ### 2. 解析 (Parser)
 将 LaTeX 文档解析为可翻译的文本块 (Chunk)，同时保护不应翻译的元素。
 
-#### Chunk 划分依据
+#### Chunk 划分依据（实际规则）
 
-| 类型 | 处理方式 | 示例 |
-|------|----------|------|
-| **保护环境** | 替换为占位符，不翻译 | `equation`, `align`, `tikzpicture`, `verbatim` |
-| **可翻译环境** | 整体提取为一个 Chunk | `abstract`, `itemize`, `enumerate` |
-| **结构命令** | 提取参数内容为 Chunk | `\title{}`, `\section{}`, `\caption{}` |
-| **保护命令** | 替换为占位符，不翻译 | `\cite{}`, `\ref{}`, `\label{}`, `$...$` |
-| **段落文本** | 按空行分割，长度>20字符的段落作为 Chunk | 正文段落 |
+| 类型 | 处理方式 | 方法 | 示例 |
+|------|----------|------|------|
+| **作者块** | 保护为占位符，不翻译 | 正则 + 大括号计数 | `\author{...}` → `[[AUTHOR_n]]` |
+| **caption** | 提取为 Chunk | 正则 + 大括号计数 | `\caption{...}` → `{{CHUNK_uuid}}` |
+| **保护环境** | 保护为占位符 | 正则 + 环境嵌套计数 | `equation`, `align`, `tikzpicture` → `[[MATHENV_n]]` |
+| **行内数学** | 保护为占位符 | 手写扫描 | `$...$`, `\(...\)`, `\[...\]` → `[[MATH_n]]` |
+| **保护命令** | 保护为占位符 | 正则 + 大括号计数 | `\cite{}`, `\ref{}`, `\label{}`, `\url{}`, `\footnote{}` |
+| **结构命令** | 提取参数为 Chunk | 正则 + 大括号计数 | `\title{}`, `\section{}` |
+| **可翻译环境** | 环境内容提取为 Chunk | 正则 + 环境嵌套计数 | `abstract`, `itemize`, `enumerate` |
+| **段落文本** | 按空行分段，长度>20字符提取为 Chunk | 行级扫描 + 阈值 | 正文段落 |
 
-#### 处理顺序
+#### 处理顺序（源码顺序）
 ```
-原文 -> 提取标题 -> 提取caption -> 保护数学环境 -> 保护行内公式 
-     -> 保护命令(\cite等) -> 提取可翻译环境 -> 分割段落 -> Chunks
+原文 -> 保护作者块 -> 提取caption -> 保护数学环境 -> 保护行内公式
+     -> 保护命令(\cite等) -> 提取结构命令 -> 提取可翻译环境 -> 分割段落 -> Chunks
 ```
 
 ### 3. 翻译 (Translator)

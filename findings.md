@@ -1,53 +1,34 @@
-# Findings & Decisions
+# Findings
 
-## Requirements
-- 梳理项目配置项
-- 生成 ~/.ieeA 可配置参数模板
-- 在 README 中用中文简洁说明
-- 同步旧文档 `docs/configuration.md`
+## Session Catchup
+- Attempt 1 failed: $CLAUDE_PLUGIN_ROOT not set; /scripts/session-catchup.py missing.
+- Attempt 2 ran absolute path; script returned no output (assume no unsynced context).
 
-## Research Findings
-- 已读取 planning-with-files 模板（task_plan/findings/progress），用于创建计划文件
-- 发现 README 位置：`README.md`
-- 发现配置相关文件：`src/ieeA/rules/config.py`、`src/ieeA/defaults/config.yaml`、`docs/configuration.md`
-- 默认配置文件 `src/ieeA/defaults/config.yaml` 包含：
-  - llm: sdk, models, endpoint, key, temperature, max_tokens
-  - compilation: engine, timeout, clean_aux
-  - paths: output_dir, cache_dir
-  - fonts: auto_detect
-  - translation: quality_mode, examples_path
-- 配置模型定义 `src/ieeA/rules/config.py` 还支持：
-  - llm.models 可为字符串或列表；sdk 仅允许 openai/anthropic/None
-  - fonts: main, sans, mono, auto_detect
-  - translation: custom_system_prompt, custom_user_prompt, preserve_terms, quality_mode, examples_path
-  - parser: extra_protected_environments, extra_translatable_environments
-- CLI 会读取 `config.llm.key`，在 sdk 非空时必须提供（可通过 --key 覆盖）。
-- 高质量模式会读取 `translation.examples_path` 并加载 few-shot 示例。
-- 外部公开资料未找到 ieeA 配置文档，需以代码为准。
-- `docs/configuration.md` 内容与当前代码配置字段不一致（疑似旧版 ieeT 文档）。
-- 已将 `docs/configuration.md` 更新为当前 ieeA 配置字段与 CLI 覆盖方式。
+## Initial Grep Findings
+- Citation validation messages in `src/ieeA/validator/rules.py` (Missing/Unexpected citations).
+- Validation entry point in `src/ieeA/validator/engine.py` calls `check_citations`.
+- Docs mention missing citations in `docs/troubleshooting.md`.
+- README and `docs/custom-rules.md` mention citation preservation; `src/ieeA/parser/chunker.py` protects cite/ref/label macros.
 
-## Technical Decisions
-| Decision | Rationale |
-|----------|-----------|
-| 使用 README 新增配置模板段落 | 与用户要求一致 |
+## Evidence From Output
+- `output/hq/2406.03007/main.tex:326` contains `\cite{achiam2023gpt}`, `\cite{liu2024information}`, `\cite{zhuang2024toolqa}`, `\cite{gupta2023visual}`.
+- `output/hq/2406.03007/main_translated.tex:145` replaces these with numeric `\cite{96..101}`.
 
-## Issues Encountered
-| Issue | Resolution |
-|-------|------------|
-| session-catchup 使用环境变量失败 | 改用 /Users/zhengcaiyi/.config/... 绝对路径 |
+## Prompt + Placeholder Format
+- `src/ieeA/translator/prompts.py` FORMAT_RULES already mentions preserving `\cite{...}` and placeholders like `[[MATH_0]]`.
+- Placeholder patterns include `[[PREFIX_N]]` (e.g., CITE/REF/LABEL/MATH) and chunk placeholders `{{CHUNK_uuid}}` in parser/structure.
 
-## Resources
-- /Users/zhengcaiyi/.config/opencode/skills/planning-with-files/templates/task_plan.md
-- /Users/zhengcaiyi/.config/opencode/skills/planning-with-files/templates/findings.md
-- /Users/zhengcaiyi/.config/opencode/skills/planning-with-files/templates/progress.md
-- /Users/zhengcaiyi/Desktop/博0/杂项/写点小玩意/iee翻译/ieeA/README.md
-- /Users/zhengcaiyi/Desktop/博0/杂项/写点小玩意/iee翻译/ieeA/src/ieeA/rules/config.py
-- /Users/zhengcaiyi/Desktop/博0/杂项/写点小玩意/iee翻译/ieeA/src/ieeA/defaults/config.yaml
-- /Users/zhengcaiyi/Desktop/博0/杂项/写点小玩意/iee翻译/ieeA/docs/configuration.md
+## CHUNK Placeholder Exposure
+- Chunk content passed to LLM is `chunk.content` (see `src/ieeA/translator/pipeline.py`).
+- `{{CHUNK_uuid}}` is primarily used in the body template, but `_maybe_chunk_paragraph` stores the full paragraph (including any `{{CHUNK_...}}`) as `chunk.content`, so CHUNK placeholders can appear in LLM input if they are embedded in paragraph text.
 
-## Visual/Browser Findings
-- 无
-## 2026-02-04
-- task_plan.md indicates a prior task completed: config template in README.
-- README includes compilation config (engine: xelatex, timeout, clean_aux).
+## Env/Command Configuration
+- Protected environments and translatable environments are hardcoded in `src/ieeA/parser/latex_parser.py` (PROTECTED_ENVIRONMENTS, TRANSLATABLE_ENVIRONMENTS, SECTION_COMMANDS).
+- Config fields for extra environments exist in `src/ieeA/rules/config.py` and docs (`README.md`, `docs/configuration.md`).
+- Protected commands are defined in `_protect_commands` in `src/ieeA/parser/latex_parser.py` (cite/ref/eqref/label/url/footnote/href).
+- `\textbf{}` is not protected by the current parser; it appears only in prompt rules and deprecated `src/ieeA/parser/chunker.py` comments.
+
+## Parser Flow Order
+- `_process_body` runs: protect author -> extract captions -> protect math environments -> protect inline math -> protect commands -> extract translatable content.
+- Protected environments become `[[MATHENV_n]]`; inline math becomes `[[MATH_n]]`; protected commands become `[[CITE_n]]`, `[[REF_n]]`, etc.
+- Translatable content extraction then creates `{{CHUNK_uuid}}` placeholders for titles/sections/captions/environments/paragraphs.
