@@ -302,9 +302,14 @@ class LaTeXParser:
         self, text: str, pattern: re.Pattern, prefix: str
     ) -> str:
         def replacer(match):
+            matched_text = match.group(0)
+            # Skip if match contains existing chunk placeholders
+            if "{{CHUNK_" in matched_text:
+                return matched_text
+
             self.protected_counter += 1
             placeholder = f"[[{prefix}_{self.protected_counter}]]"
-            self.placeholder_map[placeholder] = match.group(0)
+            self.placeholder_map[placeholder] = matched_text
             return placeholder
 
         return pattern.sub(replacer, text)
