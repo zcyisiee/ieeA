@@ -104,6 +104,25 @@ class LaTeXParser:
 
         body_template = self._process_body(body_content)
 
+        # Consistency check: all chunks should have placeholders
+        import warnings
+
+        chunk_ids_in_preamble = set(re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", preamble))
+        chunk_ids_in_body = set(
+            re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", body_template)
+        )
+        all_placeholder_ids = chunk_ids_in_preamble | chunk_ids_in_body
+        chunk_ids_created = set(c.id for c in self.chunks)
+        protected_chunk_ids = set(c.id for c in self.chunks if c.context == "protected")
+
+        orphan_ids = chunk_ids_created - all_placeholder_ids - protected_chunk_ids
+        if orphan_ids:
+            warnings.warn(
+                f"LaTeX Parser: {len(orphan_ids)} chunk(s) created without placeholders. "
+                f"This may cause untranslated content in output.",
+                UserWarning,
+            )
+
         return LaTeXDocument(
             preamble=preamble,
             chunks=self.chunks,
