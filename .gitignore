@@ -36,3 +36,5 @@ papers_cache/
 tests/__pycache__/
 src/ieeA/__pycache__/
 .sisyphus/
+
+.git_corrupted

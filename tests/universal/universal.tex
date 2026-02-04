@@ -1,0 +1,136 @@
+%!TEX TS-program = xelatex
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{tikz}
+\usepackage{fancyvrb}
+\usepackage{xparse}
+\usepackage{xcolor}
+
+\renewcommand{\includegraphics}[2][]{\fbox{#2}}
+
+\NewDocumentEnvironment{minted}{O{} m}
+{\VerbatimEnvironment\begin{Verbatim}}
+{\end{Verbatim}}
+
+\title{Universal Parser Test: $E=mc^2$ and \textbf{Bold}}
+\author{Author One \and Author Two}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This abstract contains text for chunking, a citation \cite{key1}, a label \label{abs:core}, and inline math $a^2 + b^2 = c^2$.
+\end{abstract}
+
+\section{Intro and Escapes}\label{sec:intro}
+This paragraph includes escaped characters: \{ \} \$ \% \& \# \_ \^{} \~{} and a URL \url{https://example.com/path?x=1&y=2}. It is long enough to become a chunk.
+
+Unicode sample: naive cafe, resume, and accented characters like café, naïve, and résumé for UTF-8 coverage.
+
+\paragraph{A short paragraph}
+More text in a paragraph with \textbf{bold}, \emph{emphasis}, and a footnote\footnote{Footnote with a cite \cite{key2} and math $x+y$.}.
+
+\subsection{Lists}
+\begin{itemize}
+\item First item references Section~\ref{sec:intro} and uses \textit{formatting}.
+\item Second item includes \href{https://example.com}{a link} and math $x_1$.
+\end{itemize}
+
+\begin{enumerate}
+\item Enumerated item with $f(x)=x^2$ and \label{itm:first}.
+\end{enumerate}
+
+\section{Math and Environments}\label{sec:math}
+Inline math $x + y$ and \(z = 1\) appear here.
+Display math:
+\[
+x = y + z
+\]
+\begin{equation}
+E = mc^2
+\end{equation}
+\begin{align}
+a &= b \\
+c &= d
+\end{align}
+\begin{gather}
+u = v \\
+w = z
+\end{gather}
+\begin{multline}
+x + y + z + t + u + v \\
++ w + r
+\end{multline}
+\begin{equation}
+\begin{split}
+p &= q + r \\
+s &= t
+\end{split}
+\end{equation}
+
+\section{Figures and Tables}
+\begin{figure}
+\centering
+\includegraphics[width=0.4\textwidth]{example-image}
+\caption{Figure caption with math $k^2$ and \textbf{bold} text.}
+\label{fig:sample}
+\end{figure}
+
+\begin{table}
+\centering
+\caption{Table caption with a reference to Fig.~\ref{fig:sample}.}
+\label{tab:sample}
+\begin{tabular}{|l|c|r|}
+\hline
+Left & Center & Right \\
+\hline
+A & B & C \\
+1 & 2 & 3 \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Protected Blocks}
+\begin{verbatim}
+$not math$ \textbf{not bold} % not a comment here
+\end{verbatim}
+
+\begin{lstlisting}[language=Python]
+def f(x):
+    return x**2  # $not math$
+\end{lstlisting}
+
+\begin{minted}[linenos]{python}
+print("hello $world$")
+\end{minted}
+
+\begin{algorithm}
+\begin{algorithmic}
+\STATE Initialize $x \leftarrow 0$
+\STATE Update $x \leftarrow x + 1$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{tikzpicture}
+\draw (0,0) -- (1,1);
+\node at (0.5,0.5) {$x$};
+\end{tikzpicture}
+
+\section{Input Include}
+This line precedes an input.
+\input{includes/extra}
+This line follows the input.
+
+\begin{thebibliography}{9}
+\bibitem{key1} A. Author. Title of the first reference. 2024.
+\bibitem{key2} B. Author. Title of the second reference. 2023.
+\bibitem{key3} C. Author. Title of the third reference. 2022.
+\end{thebibliography}
+
+\end{document}

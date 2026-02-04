@@ -580,14 +580,63 @@ class LaTeXParser:
             text = self._extract_section_command(text, cmd)
 
         for env in self.TRANSLATABLE_ENVIRONMENTS:
-            pattern = re.compile(
-                r"(\\begin\{" + env + r"\})(.*?)(\\end\{" + env + r"\})", re.DOTALL
-            )
-            text = self._create_chunk_for_env(text, pattern, env)
+            text = self._extract_translatable_environment(text, env)
 
         text = self._chunk_paragraphs(text)
 
         return text
+
+    def _extract_translatable_environment(self, text: str, env: str) -> str:
+        begin_pattern = re.compile(r"(\\begin\{" + re.escape(env) + r"\})")
+        result = []
+        pos = 0
+
+        for match in begin_pattern.finditer(text):
+            if match.start() < pos:
+                continue
+            result.append(text[pos : match.start()])
+            begin_tag = match.group(1)
+            start = match.end()
+            env_count = 1
+            i = start
+
+            while i < len(text) and env_count > 0:
+                if text[i:].startswith(r"\begin{" + env + "}"):
+                    env_count += 1
+                    i += len(r"\begin{" + env + "}")
+                elif text[i:].startswith(r"\end{" + env + "}"):
+                    env_count -= 1
+                    if env_count == 0:
+                        end_tag = r"\end{" + env + "}"
+                        i += len(end_tag)
+                        content = text[start : i - len(end_tag)]
+
+                        if content.strip():
+                            chunk_id = str(uuid.uuid4())
+                            placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
+                            chunk = Chunk(
+                                id=chunk_id,
+                                content=content.strip(),
+                                latex_wrapper="%s",
+                                context=env,
+                                preserved_elements={},
+                            )
+                            self.chunks.append(chunk)
+                            result.append(f"{begin_tag}\n{placeholder}\n{end_tag}")
+                        else:
+                            result.append(match.group(0) + content + end_tag)
+                        pos = i
+                        break
+                    else:
+                        i += len(r"\end{" + env + "}")
+                else:
+                    i += 1
+            else:
+                result.append(match.group(0))
+                pos = match.end()
+
+        result.append(text[pos:])
+        return "".join(result)
 
     def _create_chunk_for_pattern(
         self,

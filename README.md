@@ -75,24 +75,54 @@ ieeA translate https://arxiv.org/abs/2301.07041 --verbose
 
 配置文件位置：`~/.ieeA/config.yaml`
 
+完整配置模板（按需删减，留空表示使用默认值）：
+
 ```yaml
-# LLM 配置
 llm:
-  provider: openai
-  model: gpt-4o-mini
-  api_key: your-api-key          # 或使用 api_key_env 指定环境变量
-  base_url: https://api.openai.com/v1  # 可选，用于 OpenRouter 等代理
+  # SDK: openai | anthropic | null（null 表示直连 HTTP）
+  sdk: null
+  # 模型名或列表（列表时取第一个）
+  models: openai/gpt-5-mini
+  # API Key（当 sdk 非空时必填）
+  key: ""
+  # 可选：自定义接口地址
+  endpoint: https://openrouter.ai/api/v1/chat/completions
   temperature: 0.1
   max_tokens: 4000
 
-# 编译配置
 compilation:
   engine: xelatex
-  timeout: 300
+  timeout: 120
+  clean_aux: true
 
-# 自定义翻译提示词（可选）
+paths:
+  output_dir: output
+  cache_dir: .cache
+
+fonts:
+  # 自动检测中文字体
+  auto_detect: true
+  # 手动指定字体（可选）
+  main: null
+  sans: null
+  mono: null
+
 translation:
-  custom_system_prompt: "你是专业的学术翻译专家..."
+  # 自定义提示词（可选）
+  custom_system_prompt: null
+  custom_user_prompt: null
+  # 额外保留原文的术语列表（不翻译）
+  preserve_terms: []
+  # 翻译质量：standard 或 high
+  quality_mode: standard
+  # Few-shot 示例文件路径（可选）
+  examples_path: null
+
+parser:
+  # 额外保护的 LaTeX 环境（不翻译）
+  extra_protected_environments: []
+  # 额外可翻译的 LaTeX 环境
+  extra_translatable_environments: []
 ```
 
 ### 术语表
