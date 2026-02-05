@@ -801,6 +801,7 @@ class LaTeXParser:
 
     def _flatten_latex(self, content: str, base_dir: str) -> str:
         def replace_input(match):
+            prefix = match.group(1)  # 保留前导字符（换行符或非%字符）
             filename = match.group(3)
             target_path = self._resolve_path(base_dir, filename)
 
@@ -809,7 +810,7 @@ class LaTeXParser:
                     with open(target_path, "r", encoding="utf-8") as f:
                         sub_content = f.read()
                     sub_dir = os.path.dirname(target_path)
-                    return self._flatten_latex(sub_content, sub_dir)
+                    return prefix + self._flatten_latex(sub_content, sub_dir)
                 except Exception as e:
                     print(f"Warning: Could not read included file {target_path}: {e}")
                     return match.group(0)
