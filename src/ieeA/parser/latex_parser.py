@@ -296,19 +296,27 @@ class LaTeXParser:
     def _process_body(self, body: str) -> str:
         result = body
 
-        result = self._protect_author_block(result)
-        result = self._extract_captions(result)
-        result = self._protect_math_environments(result)
+        result = self._extract_pre_protection_chunks(result)
+        result = self._protect_environments(result)
         result = self._protect_inline_math(result)
         result = self._protect_commands(result)
-        result = self._extract_translatable_content(result)
+        result = self._extract_translatable_text(result)
 
         return result
 
-    def _protect_math_environments(self, text: str) -> str:
+    def _extract_pre_protection_chunks(self, text: str) -> str:
+        text = self._protect_author_block(text)
+        text = self._extract_captions(text)
+        return text
+
+    def _protect_environments(self, text: str) -> str:
         for env in self._protected_envs:
             text = self._protect_single_environment(text, env)
         return text
+
+    # Backward-compatible alias for existing internal/external calls.
+    def _protect_math_environments(self, text: str) -> str:
+        return self._protect_environments(text)
 
     def _protect_single_environment(self, text: str, env: str) -> str:
         begin_pattern = re.compile(r"(\\begin\{" + re.escape(env) + r"\})")
@@ -575,7 +583,7 @@ class LaTeXParser:
         result.append(text[pos:])
         return "".join(result)
 
-    def _extract_translatable_content(self, text: str) -> str:
+    def _extract_translatable_text(self, text: str) -> str:
         for cmd in self.SECTION_COMMANDS:
             text = self._extract_section_command(text, cmd)
 
@@ -585,6 +593,10 @@ class LaTeXParser:
         text = self._chunk_paragraphs(text)
 
         return text
+
+    # Backward-compatible alias for existing internal/external calls.
+    def _extract_translatable_content(self, text: str) -> str:
+        return self._extract_translatable_text(text)
 
     def _extract_translatable_environment(self, text: str, env: str) -> str:
         begin_pattern = re.compile(r"(\\begin\{" + re.escape(env) + r"\})")
