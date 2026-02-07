@@ -35,6 +35,8 @@ class LaTeXParser:
         "algorithm",
         "algorithm2e",
         "algorithmic",
+        "table",
+        "table*",
     }
 
     TRANSLATABLE_ENVIRONMENTS = {
@@ -121,7 +123,22 @@ class LaTeXParser:
         chunk_ids_in_body = set(
             re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", body_template)
         )
-        all_placeholder_ids = chunk_ids_in_preamble | chunk_ids_in_body
+        nested_chunk_ids = set()
+        for chunk in self.chunks:
+            nested_chunk_ids.update(
+                re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", chunk.content)
+            )
+        chunk_ids_in_global_placeholders = set()
+        for original in self.placeholder_map.values():
+            chunk_ids_in_global_placeholders.update(
+                re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", original)
+            )
+        all_placeholder_ids = (
+            chunk_ids_in_preamble
+            | chunk_ids_in_body
+            | nested_chunk_ids
+            | chunk_ids_in_global_placeholders
+        )
         chunk_ids_created = set(c.id for c in self.chunks)
         protected_chunk_ids = set(c.id for c in self.chunks if c.context == "protected")
 
@@ -416,10 +433,14 @@ class LaTeXParser:
             result.append(text[pos:cmd_start])
 
             stripped = content.strip()
+            is_existing_chunk_placeholder = bool(
+                re.fullmatch(r"\{\{CHUNK_[a-f0-9-]+\}\}", stripped)
+                or re.fullmatch(r"\{CHUNK_[a-f0-9-]+\}", stripped)
+            )
             if (
                 stripped
                 and not stripped.startswith("[[")
-                and not stripped.startswith("{{CHUNK_")
+                and not is_existing_chunk_placeholder
             ):
                 chunk_id = str(uuid.uuid4())
                 placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
@@ -594,7 +615,6 @@ class LaTeXParser:
             ("eqref", "REF"),
             ("label", "LABEL"),
             ("url", "URL"),
-            ("footnote", "FOOTNOTE"),
             ("href", "HREF"),
         ]
         for cmd, prefix in commands_with_brace_counting:
@@ -741,9 +761,90 @@ class LaTeXParser:
         for env in self.TRANSLATABLE_ENVIRONMENTS:
             text = self._extract_translatable_environment(text, env)
 
+        text, footnote_chunks = self._extract_footnote_commands(text)
         text = self._chunk_paragraphs(text)
+        # Keep footnote chunks after paragraph chunks so nested placeholders are
+        # restored in the correct order during reconstruction.
+        self.chunks.extend(footnote_chunks)
 
         return text
+
+    def _parse_footnote_command_at(
+        self, text: str, cmd_start: int
+    ) -> Tuple[Optional[int], Optional[int], Optional[str], Optional[str]]:
+        """Parse \\footnote command and return body boundaries and wrapper prefix."""
+        if not text.startswith("\\footnote", cmd_start):
+            return None, None, None, None
+
+        cursor = cmd_start + len("\\footnote")
+        cursor = self._skip_whitespace(text, cursor)
+
+        if cursor < len(text) and text[cursor] == "[":
+            _, opt_end = self._parse_balanced_group(text, cursor, "[", "]")
+            if opt_end is None:
+                return None, None, None, None
+            cursor = self._skip_whitespace(text, opt_end)
+
+        if cursor >= len(text) or text[cursor] != "{":
+            return None, None, None, None
+
+        content, body_end = self._parse_balanced_group(text, cursor, "{", "}")
+        if content is None or body_end is None:
+            return None, None, None, None
+
+        wrapper_prefix = text[cmd_start:cursor]
+        return cursor, body_end, content, wrapper_prefix
+
+    def _extract_footnote_commands(self, text: str) -> Tuple[str, List[Chunk]]:
+        """Extract \\footnote{...} as translatable chunks."""
+        command_pattern = re.compile(r"\\footnote(?![A-Za-z])")
+        result = []
+        pos = 0
+        created_chunks: List[Chunk] = []
+
+        for match in command_pattern.finditer(text):
+            cmd_start = match.start()
+            body_start, body_end, content, wrapper_prefix = self._parse_footnote_command_at(
+                text, cmd_start
+            )
+            if (
+                body_start is None
+                or body_end is None
+                or content is None
+                or wrapper_prefix is None
+            ):
+                continue
+
+            result.append(text[pos:cmd_start])
+
+            stripped = content.strip()
+            is_existing_chunk_placeholder = bool(
+                re.fullmatch(r"\{\{CHUNK_[a-f0-9-]+\}\}", stripped)
+                or re.fullmatch(r"\{CHUNK_[a-f0-9-]+\}", stripped)
+            )
+            if (
+                stripped
+                and not stripped.startswith("[[")
+                and not is_existing_chunk_placeholder
+            ):
+                chunk_id = str(uuid.uuid4())
+                placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
+                chunk = Chunk(
+                    id=chunk_id,
+                    content=stripped,
+                    latex_wrapper=wrapper_prefix + "{%s}",
+                    context="footnote",
+                    preserved_elements={},
+                )
+                created_chunks.append(chunk)
+                result.append(placeholder)
+            else:
+                result.append(text[cmd_start:body_end])
+
+            pos = body_end
+
+        result.append(text[pos:])
+        return "".join(result), created_chunks
 
     # Backward-compatible alias for existing internal/external calls.
     def _extract_translatable_content(self, text: str) -> str:
