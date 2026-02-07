@@ -497,7 +497,7 @@ class LaTeXParser:
             if env_count == 0:
                 full_env = text[start:i]
                 self.protected_counter += 1
-                placeholder = f"[[MATHENV_{self.protected_counter}]]"
+                placeholder = f"[[ENV_{self.protected_counter}]]"
                 self.placeholder_map[placeholder] = full_env
                 result.append(placeholder)
                 pos = i

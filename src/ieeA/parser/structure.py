@@ -69,7 +69,7 @@ class LaTeXDocument:
 
         # Step 1: Restore global placeholders FIRST
         # This exposes any {{CHUNK_...}} that were inside protected environments
-        # (e.g., caption inside algorithm: [[MATHENV_1]] contains {{CHUNK_abc}})
+        # (e.g., caption inside algorithm: [[ENV_1]] contains {{CHUNK_abc}})
         max_iterations = 10
         for _ in range(max_iterations):
             replacements_made = False
