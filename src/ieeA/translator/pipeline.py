@@ -101,6 +101,13 @@ class TranslationPipeline:
     preprocessing and postprocessing.
     """
 
+    NEWLINE_SOFT_TOKEN = "[[SL]]"
+    NEWLINE_PARA_TOKEN = "[[PL]]"
+    NEWLINE_SOFT_RAW_TOKEN = "[[SL_RAW]]"
+    NEWLINE_PARA_RAW_TOKEN = "[[PL_RAW]]"
+    NEWLINE_SOFT_RAW_SENTINEL = "[[__IEEA_SL_RAW__]]"
+    NEWLINE_PARA_RAW_SENTINEL = "[[__IEEA_PL_RAW__]]"
+
     def __init__(
         self,
         provider: LLMProvider,
@@ -113,22 +120,9 @@ class TranslationPipeline:
         abstract_context: Optional[str] = None,
         custom_system_prompt: Optional[str] = None,
         logger: Optional["TranslationLogger"] = None,
+        batch_short_threshold: int = 300,
+        batch_max_chars: int = 2000,
     ):
-        """
-        Initialize the translation pipeline.
-
-        Args:
-            provider: The LLM provider to use for translation.
-            glossary: Optional glossary for term translation.
-            max_retries: Maximum number of retry attempts on failure.
-            retry_delay: Base delay between retries (exponential backoff).
-            rate_limit_delay: Delay between API calls for rate limiting.
-            state_file: Optional file path to save/load intermediate state.
-            few_shot_examples: Optional few-shot examples for the prompt.
-            abstract_context: Optional abstract text for high-quality mode context.
-            custom_system_prompt: Optional custom system prompt to replace default style.
-            logger: Optional logger for tracking translation progress.
-        """
         self.provider = provider
         self.glossary = glossary or Glossary()
         self.max_retries = max_retries
@@ -139,12 +133,95 @@ class TranslationPipeline:
         self.abstract_context = abstract_context
         self.custom_system_prompt = custom_system_prompt
         self.logger = logger
+        self.batch_short_threshold = batch_short_threshold
+        self.batch_max_chars = batch_max_chars
 
         self._preprocessor = GlossaryPreprocessor(self.glossary)
 
     def _build_glossary_hints(self) -> Dict[str, str]:
         """Build glossary hints dictionary from glossary."""
         return {term: entry.target for term, entry in self.glossary.terms.items()}
+
+    def _assert_no_token_collision(self, text: str) -> None:
+        """Ensure newline control tokens do not exist before encoding."""
+        if self.NEWLINE_SOFT_TOKEN in text or self.NEWLINE_PARA_TOKEN in text:
+            raise ValueError(
+                "Newline token collision unresolved before encoding: "
+                f"{self.NEWLINE_SOFT_TOKEN}/{self.NEWLINE_PARA_TOKEN}"
+            )
+
+    def _escape_newline_token_literals(self, text: str) -> str:
+        """Escape literal [[SL]]/[[PL]] in source text before newline encoding."""
+        escaped = text.replace(
+            self.NEWLINE_SOFT_RAW_TOKEN, self.NEWLINE_SOFT_RAW_SENTINEL
+        )
+        escaped = escaped.replace(
+            self.NEWLINE_PARA_RAW_TOKEN, self.NEWLINE_PARA_RAW_SENTINEL
+        )
+        escaped = escaped.replace(self.NEWLINE_SOFT_TOKEN, self.NEWLINE_SOFT_RAW_TOKEN)
+        escaped = escaped.replace(self.NEWLINE_PARA_TOKEN, self.NEWLINE_PARA_RAW_TOKEN)
+        return escaped
+
+    def _restore_escaped_newline_token_literals(self, text: str) -> str:
+        """Restore literal [[SL]]/[[PL]] after decoding newline tokens."""
+        restored = text.replace(self.NEWLINE_SOFT_RAW_TOKEN, self.NEWLINE_SOFT_TOKEN)
+        restored = restored.replace(
+            self.NEWLINE_PARA_RAW_TOKEN, self.NEWLINE_PARA_TOKEN
+        )
+        restored = restored.replace(
+            self.NEWLINE_SOFT_RAW_SENTINEL, self.NEWLINE_SOFT_RAW_TOKEN
+        )
+        restored = restored.replace(
+            self.NEWLINE_PARA_RAW_SENTINEL, self.NEWLINE_PARA_RAW_TOKEN
+        )
+        return restored
+
+    def _count_newline_breaks(self, text: str) -> tuple[int, int]:
+        """Count newline breaks using greedy paragraph-first matching."""
+        sl_count = 0
+        pl_count = 0
+        i = 0
+        while i < len(text):
+            if text.startswith("\n\n", i):
+                pl_count += 1
+                i += 2
+                continue
+            if text[i] == "\n":
+                sl_count += 1
+            i += 1
+        return sl_count, pl_count
+
+    def _encode_newlines_for_llm(self, text: str) -> tuple[str, Dict[str, int]]:
+        """Encode newlines to stable control tokens before LLM translation."""
+        normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+        escaped = self._escape_newline_token_literals(normalized)
+        self._assert_no_token_collision(escaped)
+
+        sl_count, pl_count = self._count_newline_breaks(escaped)
+        encoded = []
+        i = 0
+        while i < len(escaped):
+            if escaped.startswith("\n\n", i):
+                encoded.append(self.NEWLINE_PARA_TOKEN)
+                i += 2
+                continue
+            if escaped[i] == "\n":
+                encoded.append(self.NEWLINE_SOFT_TOKEN)
+                i += 1
+                continue
+            encoded.append(escaped[i])
+            i += 1
+
+        return "".join(encoded), {
+            "source_sl_count": sl_count,
+            "source_pl_count": pl_count,
+        }
+
+    def _decode_newlines_from_llm(self, text: str) -> str:
+        """Decode control tokens back to newlines after LLM translation."""
+        decoded = text.replace(self.NEWLINE_PARA_TOKEN, "\n\n")
+        decoded = decoded.replace(self.NEWLINE_SOFT_TOKEN, "\n")
+        return self._restore_escaped_newline_token_literals(decoded)
 
     async def _call_with_retry(
         self,
@@ -212,6 +289,7 @@ class TranslationPipeline:
         """
         # Preprocess: Replace glossary terms with placeholders
         preprocessed_text, mapping = self._preprocessor.preprocess(chunk)
+        encoded_text, source_breaks = self._encode_newlines_for_llm(preprocessed_text)
 
         # Build glossary hints for the prompt
         glossary_hints = self._build_glossary_hints()
@@ -228,13 +306,16 @@ class TranslationPipeline:
 
         # Call LLM with retry
         raw_translation = await self._call_with_retry(
-            text=preprocessed_text,
+            text=encoded_text,
             context=merged_context,
             glossary_hints=glossary_hints,
         )
 
-        # Postprocess: Restore placeholders with translated terms
-        final_translation = self._preprocessor.postprocess(raw_translation, mapping)
+        decoded_translation = self._decode_newlines_from_llm(raw_translation)
+        final_translation = self._preprocessor.postprocess(decoded_translation, mapping)
+        decoded_sl_count, decoded_pl_count = self._count_newline_breaks(
+            final_translation
+        )
 
         return TranslatedChunk(
             source=chunk,
@@ -243,6 +324,11 @@ class TranslationPipeline:
             metadata={
                 "had_glossary_terms": len(mapping) > 0,
                 "glossary_terms_count": len(mapping),
+                "newline_codec_applied": True,
+                "source_sl_count": source_breaks["source_sl_count"],
+                "source_pl_count": source_breaks["source_pl_count"],
+                "decoded_sl_count": decoded_sl_count,
+                "decoded_pl_count": decoded_pl_count,
             },
         )
 
@@ -253,14 +339,17 @@ class TranslationPipeline:
     ) -> List[TranslatedChunk]:
         preprocessed_chunks = []
         mappings = []
+        source_breaks = []
         for chunk_data in chunks:
             preprocessed_text, mapping = self._preprocessor.preprocess(
                 chunk_data["content"]
             )
+            encoded_text, break_meta = self._encode_newlines_for_llm(preprocessed_text)
             preprocessed_chunks.append(
-                {"chunk_id": chunk_data["chunk_id"], "content": preprocessed_text}
+                {"chunk_id": chunk_data["chunk_id"], "content": encoded_text}
             )
             mappings.append(mapping)
+            source_breaks.append(break_meta)
 
         batch_text = build_batch_translation_text(preprocessed_chunks)
         glossary_hints = self._build_glossary_hints()
@@ -298,8 +387,14 @@ class TranslationPipeline:
             if idx < 0 or idx >= len(chunks):
                 return []
 
+            decoded_translation = self._decode_newlines_from_llm(
+                translated_text.strip()
+            )
             final_translation = self._preprocessor.postprocess(
-                translated_text.strip(), mappings[idx]
+                decoded_translation, mappings[idx]
+            )
+            decoded_sl_count, decoded_pl_count = self._count_newline_breaks(
+                final_translation
             )
 
             results.append(
@@ -311,6 +406,11 @@ class TranslationPipeline:
                         "had_glossary_terms": len(mappings[idx]) > 0,
                         "glossary_terms_count": len(mappings[idx]),
                         "batch_translated": True,
+                        "newline_codec_applied": True,
+                        "source_sl_count": source_breaks[idx]["source_sl_count"],
+                        "source_pl_count": source_breaks[idx]["source_pl_count"],
+                        "decoded_sl_count": decoded_sl_count,
+                        "decoded_pl_count": decoded_pl_count,
                     },
                 )
             )
@@ -341,6 +441,7 @@ class TranslationPipeline:
         context: Optional[str] = None,
         max_concurrent: int = 50,
         progress_callback: Optional[Callable[[int, int], None]] = None,
+        batch_stats_callback: Optional[Callable[[int, int, int], None]] = None,
     ) -> List[TranslatedChunk]:
         """
         Translate a document consisting of multiple chunks with concurrent requests.
@@ -399,24 +500,55 @@ class TranslationPipeline:
             self._save_state(state)
             return [results_map[chunk_data["chunk_id"]] for chunk_data in chunks]
 
+        # 分离短chunks和长chunks
+        # 短chunks (<threshold字符) 将被合并成batches
+        # 长chunks (>=threshold字符) 单独翻译
+        SHORT_THRESHOLD = self.batch_short_threshold
+        MAX_BATCH_CHARS = self.batch_max_chars
+
         short_chunks = []
         long_chunks = []
         for c in translatable_chunks:
-            if len(c["content"]) < 100:
+            if len(c["content"]) < SHORT_THRESHOLD:
                 short_chunks.append(c)
             else:
                 long_chunks.append(c)
 
+        # 贪心装箱：按字符预算打包短chunks
         batches = []
-        for i in range(0, len(short_chunks), 10):
-            batch = short_chunks[i : i + 10]
-            batches.append(batch)
+        current_batch = []
+        current_len = 0
 
-            # Log batch creation
+        for chunk in short_chunks:
+            chunk_len = len(chunk["content"])
+            # 如果加入当前chunk会超过预算，先flush当前batch
+            if current_len + chunk_len > MAX_BATCH_CHARS and current_batch:
+                batches.append(current_batch)
+                # Log batch creation
+                if self.logger:
+                    batch_id = f"batch_{len(batches) - 1}"
+                    total_chars = current_len
+                    self.logger.log_batch(
+                        batch_id, "short_chunks", len(current_batch), total_chars
+                    )
+                current_batch = []
+                current_len = 0
+            current_batch.append(chunk)
+            current_len += chunk_len
+
+        # flush剩余的batch
+        if current_batch:
+            batches.append(current_batch)
             if self.logger:
-                batch_id = f"batch_{i // 10}"
-                total_chars = sum(len(c["content"]) for c in batch)
-                self.logger.log_batch(batch_id, "short_chunks", len(batch), total_chars)
+                batch_id = f"batch_{len(batches) - 1}"
+                self.logger.log_batch(
+                    batch_id, "short_chunks", len(current_batch), current_len
+                )
+
+        # 回调：报告合并统计 (batches数, 长chunks数, 总API调用数)
+        total_api_calls = len(batches) + len(long_chunks)
+        if batch_stats_callback:
+            batch_stats_callback(len(batches), len(long_chunks), total_api_calls)
 
         semaphore = asyncio.Semaphore(max_concurrent)
         completed_count = 0

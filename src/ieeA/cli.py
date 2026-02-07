@@ -145,7 +145,10 @@ def translate(
                 console=console,
             ) as progress:
                 task = progress.add_task("Parsing LaTeX...", total=None)
-                parser = LaTeXParser()
+                parser = LaTeXParser(
+                    extra_protected_envs=config.parser.extra_protected_environments,
+                    font_config=config.fonts,
+                )
                 try:
                     doc = parser.parse_file(str(download_result.main_tex))
                     progress.update(
@@ -201,6 +204,8 @@ def translate(
                 abstract_context=abstract_text,
                 custom_system_prompt=config.translation.custom_system_prompt,
                 logger=translation_logger,
+                batch_short_threshold=config.translation.batch_short_threshold,
+                batch_max_chars=config.translation.batch_max_chars,
             )
 
             chunk_data = [{"chunk_id": c.id, "content": c.content} for c in doc.chunks]
@@ -208,6 +213,13 @@ def translate(
             console.print(
                 f"[bold]Translating {len(chunk_data)} chunks (max {concurrency} concurrent)...[/bold]"
             )
+
+            batch_stats = {"batches": 0, "long_chunks": 0, "total_calls": 0}
+
+            def on_batch_stats(num_batches: int, num_long: int, total_calls: int):
+                batch_stats["batches"] = num_batches
+                batch_stats["long_chunks"] = num_long
+                batch_stats["total_calls"] = total_calls
 
             with Progress(
                 SpinnerColumn(),
@@ -229,6 +241,14 @@ def translate(
                     context="Academic Paper",
                     max_concurrent=concurrency,
                     progress_callback=update_progress,
+                    batch_stats_callback=on_batch_stats,
+                )
+
+            if batch_stats["total_calls"] > 0:
+                console.print(
+                    f"[cyan]Batch optimization: {len(chunk_data)} chunks → "
+                    f"{batch_stats['total_calls']} API calls "
+                    f"({batch_stats['batches']} batches + {batch_stats['long_chunks']} long chunks)[/cyan]"
                 )
 
             results = [tc.model_dump() for tc in translated_chunks]
@@ -281,8 +301,6 @@ def translate(
                     compiler = LaTeXCompiler(timeout=config.compilation.timeout)
                     try:
                         latex_source = out_file.read_text(encoding="utf-8")
-                        # Inject Chinese font support before compilation
-                        latex_source = compiler.inject_chinese_support(latex_source)
                         # Save the final version that will be compiled (for debugging)
                         out_file.write_text(latex_source, encoding="utf-8")
                         pdf_path = (

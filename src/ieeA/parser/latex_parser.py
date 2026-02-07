@@ -35,6 +35,8 @@ class LaTeXParser:
         "algorithm",
         "algorithm2e",
         "algorithmic",
+        "table",
+        "table*",
     }
 
     TRANSLATABLE_ENVIRONMENTS = {
@@ -43,10 +45,14 @@ class LaTeXParser:
         "enumerate",
         "description",
     }
+    CAPTION_NO_SCAN_ENVIRONMENTS = {
+        "verbatim",
+        "lstlisting",
+        "minted",
+    }
 
     # NOTE: caption 不在此列表中，因为它在 _extract_captions() 中单独处理
     SECTION_COMMANDS = {
-        "title",
         "section",
         "subsection",
         "subsubsection",
@@ -56,10 +62,15 @@ class LaTeXParser:
         "part",
     }
 
-    def __init__(self, extra_protected_envs: Optional[List[str]] = None):
+    def __init__(
+        self,
+        extra_protected_envs: Optional[List[str]] = None,
+        font_config: Optional[object] = None,
+    ):
         self.chunks: List[Chunk] = []
         self.protected_counter = 0
         self.placeholder_map: Dict[str, str] = {}
+        self.font_config = font_config
         self._protected_envs: Set[str] = set(self.PROTECTED_ENVIRONMENTS)
         if extra_protected_envs:
             self._protected_envs.update(extra_protected_envs)
@@ -104,8 +115,9 @@ class LaTeXParser:
         self.protected_counter = 0
         self.placeholder_map = {}
 
-        preamble = self._extract_title_from_preamble(preamble)
+        preamble = self._extract_title_command(preamble)
         preamble = self._inject_chinese_support(preamble)
+        body_content = self._extract_title_command(body_content)
 
         body_template = self._process_body(body_content)
 
@@ -116,7 +128,22 @@ class LaTeXParser:
         chunk_ids_in_body = set(
             re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", body_template)
         )
-        all_placeholder_ids = chunk_ids_in_preamble | chunk_ids_in_body
+        nested_chunk_ids = set()
+        for chunk in self.chunks:
+            nested_chunk_ids.update(
+                re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", chunk.content)
+            )
+        chunk_ids_in_global_placeholders = set()
+        for original in self.placeholder_map.values():
+            chunk_ids_in_global_placeholders.update(
+                re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", original)
+            )
+        all_placeholder_ids = (
+            chunk_ids_in_preamble
+            | chunk_ids_in_body
+            | nested_chunk_ids
+            | chunk_ids_in_global_placeholders
+        )
         chunk_ids_created = set(c.id for c in self.chunks)
         protected_chunk_ids = set(c.id for c in self.chunks if c.context == "protected")
 
@@ -187,57 +214,14 @@ class LaTeXParser:
         return "".join(result)
 
     def _inject_chinese_support(self, preamble: str) -> str:
-        """Inject Chinese support using auto-detected system fonts."""
+        """Inject Chinese support using configured or detected fonts."""
         from ..compiler.chinese_support import inject_chinese_support
 
-        return inject_chinese_support(preamble)
+        return inject_chinese_support(preamble, self.font_config)
 
-    def _extract_title_from_preamble(self, preamble: str) -> str:
-        """Extract title from preamble and create translatable chunk."""
+    def _extract_title_command(self, text: str) -> str:
+        """Extract \\title{...} command content and create title chunks."""
         pattern = re.compile(r"(\\title\s*\{)")
-        result = []
-        pos = 0
-
-        for match in pattern.finditer(preamble):
-            result.append(preamble[pos : match.start()])
-            start = match.end()
-            brace_count = 1
-            i = start
-
-            while i < len(preamble) and brace_count > 0:
-                if preamble[i] == "{":
-                    brace_count += 1
-                elif preamble[i] == "}":
-                    brace_count -= 1
-                i += 1
-
-            if brace_count == 0:
-                content = preamble[start : i - 1]
-                if not content.strip() or content.startswith("[["):
-                    result.append(match.group(0) + content + "}")
-                else:
-                    chunk_id = str(uuid.uuid4())
-                    placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
-                    chunk = Chunk(
-                        id=chunk_id,
-                        content=content.strip(),
-                        latex_wrapper="%s",
-                        context="title",
-                        preserved_elements={},
-                    )
-                    self.chunks.append(chunk)
-                    result.append(match.group(1) + placeholder + "}")
-                pos = i
-            else:
-                result.append(match.group(0))
-                pos = match.end()
-
-        result.append(preamble[pos:])
-        return "".join(result)
-
-    def _extract_captions(self, text: str) -> str:
-        """Extract caption content for translation before environment protection."""
-        pattern = re.compile(r"(\\caption)(\*?)(\s*\[[^\]]*\])?\s*\{")
         result = []
         pos = 0
 
@@ -256,35 +240,25 @@ class LaTeXParser:
 
             if brace_count == 0:
                 content = text[start : i - 1]
+                stripped_content = content.strip()
                 if (
-                    content.strip()
-                    and not content.startswith("[[")
-                    and not content.startswith("{{CHUNK_")
-                    and len(content.strip()) > 10
+                    not stripped_content
+                    or stripped_content.startswith("[[")
+                    or stripped_content.startswith("{{CHUNK_")
                 ):
+                    result.append(match.group(0) + content + "}")
+                else:
                     chunk_id = str(uuid.uuid4())
                     placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
                     chunk = Chunk(
                         id=chunk_id,
-                        content=content.strip(),
+                        content=stripped_content,
                         latex_wrapper="%s",
-                        context="caption",
+                        context="title",
                         preserved_elements={},
                     )
                     self.chunks.append(chunk)
-                    optional_short = match.group(3) if match.group(3) else ""
-                    # Build caption string without f-string brace escaping issues
-                    caption_str = (
-                        match.group(1)
-                        + match.group(2)
-                        + optional_short
-                        + "{"
-                        + placeholder
-                        + "}"
-                    )
-                    result.append(caption_str)
-                else:
-                    result.append(match.group(0) + content + "}")
+                    result.append(match.group(1) + placeholder + "}")
                 pos = i
             else:
                 result.append(match.group(0))
@@ -293,22 +267,233 @@ class LaTeXParser:
         result.append(text[pos:])
         return "".join(result)
 
+    def _skip_whitespace(self, text: str, index: int) -> int:
+        i = index
+        while i < len(text) and text[i].isspace():
+            i += 1
+        return i
+
+    def _parse_balanced_group(
+        self, text: str, start: int, open_char: str, close_char: str
+    ) -> Tuple[Optional[str], Optional[int]]:
+        """Parse a balanced group and return (inner_content, end_index)."""
+        if start >= len(text) or text[start] != open_char:
+            return None, None
+
+        depth = 1
+        i = start + 1
+        while i < len(text):
+            ch = text[i]
+            if ch == "\\":
+                # Skip escaped character so \\{ and \\} don't affect nesting.
+                i += 2
+                continue
+            if ch == open_char:
+                depth += 1
+            elif ch == close_char:
+                depth -= 1
+                if depth == 0:
+                    return text[start + 1 : i], i + 1
+            i += 1
+        return None, None
+
+    def _parse_environment_token_at(
+        self, text: str, index: int, token: str
+    ) -> Tuple[Optional[str], Optional[int]]:
+        """Parse \\begin{env} or \\end{env} at index and return (env, end_idx)."""
+        prefix = "\\" + token
+        if not text.startswith(prefix, index):
+            return None, None
+
+        i = self._skip_whitespace(text, index + len(prefix))
+        env_name, end_idx = self._parse_balanced_group(text, i, "{", "}")
+        if env_name is None or end_idx is None:
+            return None, None
+        return env_name.strip(), end_idx
+
+    def _find_environment_end(
+        self, text: str, search_start: int, env_name: str
+    ) -> Optional[int]:
+        """Find matching \\end{env_name} from search_start with nesting support."""
+        depth = 1
+        i = search_start
+        while i < len(text):
+            begin_env, begin_end = self._parse_environment_token_at(text, i, "begin")
+            if begin_env is not None and begin_end is not None:
+                if begin_env == env_name:
+                    depth += 1
+                i = begin_end
+                continue
+
+            end_env, end_end = self._parse_environment_token_at(text, i, "end")
+            if end_env is not None and end_end is not None:
+                if end_env == env_name:
+                    depth -= 1
+                    if depth == 0:
+                        return end_end
+                i = end_end
+                continue
+
+            i += 1
+        return None
+
+    def _build_caption_no_scan_ranges(self, text: str) -> List[Tuple[int, int]]:
+        """Build ranges where caption scanning should be disabled."""
+        ranges: List[Tuple[int, int]] = []
+        i = 0
+        while i < len(text):
+            env_name, begin_end = self._parse_environment_token_at(text, i, "begin")
+            if env_name is not None and begin_end is not None:
+                if env_name in self.CAPTION_NO_SCAN_ENVIRONMENTS:
+                    end_idx = self._find_environment_end(text, begin_end, env_name)
+                    if end_idx is None:
+                        end_idx = len(text)
+                    ranges.append((i, end_idx))
+                    i = end_idx
+                    continue
+                i = begin_end
+                continue
+            i += 1
+        return ranges
+
+    def _parse_caption_command_at(
+        self, text: str, cmd_start: int
+    ) -> Tuple[Optional[int], Optional[int], Optional[str], Optional[str]]:
+        """Parse caption family command at cmd_start.
+
+        Returns:
+            (body_start, body_end, content, replacement_prefix)
+            where replacement_prefix is text before body braces.
+        """
+        n = len(text)
+        if text.startswith("\\captionof", cmd_start):
+            cursor = cmd_start + len("\\captionof")
+            cursor = self._skip_whitespace(text, cursor)
+
+            # captionof requires first mandatory arg: {figure|table|...}
+            _, type_end = self._parse_balanced_group(text, cursor, "{", "}")
+            if type_end is None:
+                return None, None, None, None
+            cursor = self._skip_whitespace(text, type_end)
+        elif text.startswith("\\caption*", cmd_start):
+            cursor = cmd_start + len("\\caption*")
+            cursor = self._skip_whitespace(text, cursor)
+        elif text.startswith("\\caption", cmd_start):
+            cursor = cmd_start + len("\\caption")
+            cursor = self._skip_whitespace(text, cursor)
+        else:
+            return None, None, None, None
+
+        # Optional list entry argument (supports nested brackets)
+        if cursor < n and text[cursor] == "[":
+            _, opt_end = self._parse_balanced_group(text, cursor, "[", "]")
+            if opt_end is None:
+                return None, None, None, None
+            cursor = self._skip_whitespace(text, opt_end)
+
+        if cursor >= n or text[cursor] != "{":
+            return None, None, None, None
+
+        content, body_end = self._parse_balanced_group(text, cursor, "{", "}")
+        if content is None or body_end is None:
+            return None, None, None, None
+
+        replacement_prefix = text[cmd_start:cursor]
+        return cursor, body_end, content, replacement_prefix
+
+    def _extract_captions(self, text: str) -> str:
+        """Extract caption content for translation before environment protection."""
+        no_scan_ranges = self._build_caption_no_scan_ranges(text)
+        command_pattern = re.compile(r"\\caption(?:of)?\*?(?![A-Za-z])")
+
+        result = []
+        pos = 0
+        range_idx = 0
+
+        for match in command_pattern.finditer(text):
+            cmd_start = match.start()
+
+            while (
+                range_idx < len(no_scan_ranges)
+                and cmd_start >= no_scan_ranges[range_idx][1]
+            ):
+                range_idx += 1
+
+            if range_idx < len(no_scan_ranges):
+                start, end = no_scan_ranges[range_idx]
+                if start <= cmd_start < end:
+                    continue
+
+            body_start, body_end, content, replacement_prefix = (
+                self._parse_caption_command_at(text, cmd_start)
+            )
+            if (
+                body_start is None
+                or body_end is None
+                or content is None
+                or replacement_prefix is None
+            ):
+                continue
+
+            result.append(text[pos:cmd_start])
+
+            stripped = content.strip()
+            is_existing_chunk_placeholder = bool(
+                re.fullmatch(r"\{\{CHUNK_[a-f0-9-]+\}\}", stripped)
+                or re.fullmatch(r"\{CHUNK_[a-f0-9-]+\}", stripped)
+            )
+            if (
+                stripped
+                and not stripped.startswith("[[")
+                and not is_existing_chunk_placeholder
+            ):
+                chunk_id = str(uuid.uuid4())
+                placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
+                chunk = Chunk(
+                    id=chunk_id,
+                    content=stripped,
+                    latex_wrapper="%s",
+                    context="caption",
+                    preserved_elements={},
+                )
+                self.chunks.append(chunk)
+                result.append(replacement_prefix + "{" + placeholder + "}")
+            else:
+                result.append(text[cmd_start:body_end])
+
+            pos = body_end
+
+        result.append(text[pos:])
+        return "".join(result)
+
+    # Backward-compatible alias for existing internal/external calls.
+    def _extract_title_from_preamble(self, preamble: str) -> str:
+        return self._extract_title_command(preamble)
+
     def _process_body(self, body: str) -> str:
         result = body
 
-        result = self._protect_author_block(result)
-        result = self._extract_captions(result)
-        result = self._protect_math_environments(result)
+        result = self._extract_pre_protection_chunks(result)
+        result = self._protect_environments(result)
         result = self._protect_inline_math(result)
         result = self._protect_commands(result)
-        result = self._extract_translatable_content(result)
+        result = self._extract_translatable_text(result)
 
         return result
 
-    def _protect_math_environments(self, text: str) -> str:
+    def _extract_pre_protection_chunks(self, text: str) -> str:
+        text = self._protect_author_block(text)
+        text = self._extract_captions(text)
+        return text
+
+    def _protect_environments(self, text: str) -> str:
         for env in self._protected_envs:
             text = self._protect_single_environment(text, env)
         return text
+
+    # Backward-compatible alias for existing internal/external calls.
+    def _protect_math_environments(self, text: str) -> str:
+        return self._protect_environments(text)
 
     def _protect_single_environment(self, text: str, env: str) -> str:
         begin_pattern = re.compile(r"(\\begin\{" + re.escape(env) + r"\})")
@@ -338,7 +523,7 @@ class LaTeXParser:
             if env_count == 0:
                 full_env = text[start:i]
                 self.protected_counter += 1
-                placeholder = f"[[MATHENV_{self.protected_counter}]]"
+                placeholder = f"[[ENV_{self.protected_counter}]]"
                 self.placeholder_map[placeholder] = full_env
                 result.append(placeholder)
                 pos = i
@@ -435,7 +620,6 @@ class LaTeXParser:
             ("eqref", "REF"),
             ("label", "LABEL"),
             ("url", "URL"),
-            ("footnote", "FOOTNOTE"),
             ("href", "HREF"),
         ]
         for cmd, prefix in commands_with_brace_counting:
@@ -575,16 +759,101 @@ class LaTeXParser:
         result.append(text[pos:])
         return "".join(result)
 
-    def _extract_translatable_content(self, text: str) -> str:
+    def _extract_translatable_text(self, text: str) -> str:
         for cmd in self.SECTION_COMMANDS:
             text = self._extract_section_command(text, cmd)
 
         for env in self.TRANSLATABLE_ENVIRONMENTS:
             text = self._extract_translatable_environment(text, env)
 
+        text, footnote_chunks = self._extract_footnote_commands(text)
         text = self._chunk_paragraphs(text)
+        # Keep footnote chunks after paragraph chunks so nested placeholders are
+        # restored in the correct order during reconstruction.
+        self.chunks.extend(footnote_chunks)
 
         return text
+
+    def _parse_footnote_command_at(
+        self, text: str, cmd_start: int
+    ) -> Tuple[Optional[int], Optional[int], Optional[str], Optional[str]]:
+        """Parse \\footnote command and return body boundaries and wrapper prefix."""
+        if not text.startswith("\\footnote", cmd_start):
+            return None, None, None, None
+
+        cursor = cmd_start + len("\\footnote")
+        cursor = self._skip_whitespace(text, cursor)
+
+        if cursor < len(text) and text[cursor] == "[":
+            _, opt_end = self._parse_balanced_group(text, cursor, "[", "]")
+            if opt_end is None:
+                return None, None, None, None
+            cursor = self._skip_whitespace(text, opt_end)
+
+        if cursor >= len(text) or text[cursor] != "{":
+            return None, None, None, None
+
+        content, body_end = self._parse_balanced_group(text, cursor, "{", "}")
+        if content is None or body_end is None:
+            return None, None, None, None
+
+        wrapper_prefix = text[cmd_start:cursor]
+        return cursor, body_end, content, wrapper_prefix
+
+    def _extract_footnote_commands(self, text: str) -> Tuple[str, List[Chunk]]:
+        """Extract \\footnote{...} as translatable chunks."""
+        command_pattern = re.compile(r"\\footnote(?![A-Za-z])")
+        result = []
+        pos = 0
+        created_chunks: List[Chunk] = []
+
+        for match in command_pattern.finditer(text):
+            cmd_start = match.start()
+            body_start, body_end, content, wrapper_prefix = (
+                self._parse_footnote_command_at(text, cmd_start)
+            )
+            if (
+                body_start is None
+                or body_end is None
+                or content is None
+                or wrapper_prefix is None
+            ):
+                continue
+
+            result.append(text[pos:cmd_start])
+
+            stripped = content.strip()
+            is_existing_chunk_placeholder = bool(
+                re.fullmatch(r"\{\{CHUNK_[a-f0-9-]+\}\}", stripped)
+                or re.fullmatch(r"\{CHUNK_[a-f0-9-]+\}", stripped)
+            )
+            if (
+                stripped
+                and not stripped.startswith("[[")
+                and not is_existing_chunk_placeholder
+            ):
+                chunk_id = str(uuid.uuid4())
+                placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
+                chunk = Chunk(
+                    id=chunk_id,
+                    content=stripped,
+                    latex_wrapper=wrapper_prefix + "{%s}",
+                    context="footnote",
+                    preserved_elements={},
+                )
+                created_chunks.append(chunk)
+                result.append(placeholder)
+            else:
+                result.append(text[cmd_start:body_end])
+
+            pos = body_end
+
+        result.append(text[pos:])
+        return "".join(result), created_chunks
+
+    # Backward-compatible alias for existing internal/external calls.
+    def _extract_translatable_content(self, text: str) -> str:
+        return self._extract_translatable_text(text)
 
     def _extract_translatable_environment(self, text: str, env: str) -> str:
         begin_pattern = re.compile(r"(\\begin\{" + re.escape(env) + r"\})")
@@ -801,6 +1070,7 @@ class LaTeXParser:
 
     def _flatten_latex(self, content: str, base_dir: str) -> str:
         def replace_input(match):
+            prefix = match.group(1)  # 保留前导字符（换行符或非%字符）
             filename = match.group(3)
             target_path = self._resolve_path(base_dir, filename)
 
@@ -809,7 +1079,7 @@ class LaTeXParser:
                     with open(target_path, "r", encoding="utf-8") as f:
                         sub_content = f.read()
                     sub_dir = os.path.dirname(target_path)
-                    return self._flatten_latex(sub_content, sub_dir)
+                    return prefix + self._flatten_latex(sub_content, sub_dir)
                 except Exception as e:
                     print(f"Warning: Could not read included file {target_path}: {e}")
                     return match.group(0)

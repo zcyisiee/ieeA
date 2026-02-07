@@ -20,7 +20,20 @@ def test_universal_corpus_parses_and_reconstructs():
     chunk_ids_in_body = set(
         re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", doc.body_template)
     )
-    all_placeholder_ids = chunk_ids_in_preamble | chunk_ids_in_body
+    nested_chunk_ids = set()
+    for chunk in doc.chunks:
+        nested_chunk_ids.update(re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", chunk.content))
+    global_placeholder_chunk_ids = set()
+    for original in doc.global_placeholders.values():
+        global_placeholder_chunk_ids.update(
+            re.findall(r"\{\{CHUNK_([a-f0-9-]+)\}\}", original)
+        )
+    all_placeholder_ids = (
+        chunk_ids_in_preamble
+        | chunk_ids_in_body
+        | nested_chunk_ids
+        | global_placeholder_chunk_ids
+    )
     chunk_ids_created = {c.id for c in doc.chunks}
     protected_chunk_ids = {c.id for c in doc.chunks if c.context == "protected"}
 
@@ -33,11 +46,10 @@ def test_universal_corpus_parses_and_reconstructs():
     placeholder_keys = list(doc.global_placeholders.keys())
     expected_prefixes = [
         "MATH",
-        "MATHENV",
+        "ENV",
         "CITE",
         "REF",
         "LABEL",
-        "FOOTNOTE",
         "URL",
         "HREF",
         "GRAPHICS",
@@ -54,6 +66,7 @@ def test_universal_corpus_parses_and_reconstructs():
         "abstract",
         "itemize",
         "caption",
+        "footnote",
         "paragraph",
     }
     missing_contexts = expected_contexts - contexts

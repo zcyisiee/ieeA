@@ -57,13 +57,13 @@ class FontConfig(BaseModel):
 
 
 class TranslationConfig(BaseModel):
-    """Translation configuration."""
-
     custom_system_prompt: Optional[str] = None
     custom_user_prompt: Optional[str] = None
     preserve_terms: List[str] = Field(default_factory=list)
-    quality_mode: str = "standard"  # "standard" or "high"
-    examples_path: Optional[str] = None  # User-defined few-shot examples path
+    quality_mode: str = "standard"
+    examples_path: Optional[str] = None
+    batch_short_threshold: int = 300
+    batch_max_chars: int = 2000
 
 
 class ParserConfig(BaseModel):

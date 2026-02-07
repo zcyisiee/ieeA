@@ -55,49 +55,49 @@ class LaTeXDocument:
 
         Args:
             translated_chunks: Dict mapping chunk ID to translated text.
+
+        Reconstruction order (critical for nested structures):
+        1. Restore global_placeholders (exposes {{CHUNK_...}} inside protected envs)
+        2. Replace {{CHUNK_...}} with translated content
+        3. Restore chunk.preserved_elements
+        4. Restore global_placeholders AGAIN (for [[MATH_n]] etc inside chunks)
         """
         preamble_result = self.preamble
+        body_result = self.body_template if self.body_template else ""
 
+        full_result = preamble_result + body_result
+
+        # Step 1: Restore global placeholders FIRST
+        # This exposes any {{CHUNK_...}} that were inside protected environments
+        # (e.g., caption inside algorithm: [[ENV_1]] contains {{CHUNK_abc}})
+        max_iterations = 10
+        for _ in range(max_iterations):
+            replacements_made = False
+            for placeholder, original in self.global_placeholders.items():
+                if placeholder in full_result:
+                    full_result = full_result.replace(placeholder, original)
+                    replacements_made = True
+            if not replacements_made:
+                break
+
+        # Step 2: Replace {{CHUNK_...}} with translated content
+        # Now chunks that were inside protected envs are visible and can be translated
         for chunk in self.chunks:
             placeholder = f"{{{{CHUNK_{chunk.id}}}}}"
-            if placeholder in preamble_result:
+            if placeholder in full_result:
                 trans_text = (
                     translated_chunks.get(chunk.id) if translated_chunks else None
                 )
                 reconstructed = chunk.reconstruct(trans_text)
-                preamble_result = preamble_result.replace(placeholder, reconstructed)
+                full_result = full_result.replace(placeholder, reconstructed)
 
-        if self.body_template:
-            result = self.body_template
+        # Step 3: Restore chunk.preserved_elements (e.g., [[AUTHOR_1]])
+        for chunk in self.chunks:
+            for placeholder, original in chunk.preserved_elements.items():
+                full_result = full_result.replace(placeholder, original)
 
-            for chunk in self.chunks:
-                placeholder = f"{{{{CHUNK_{chunk.id}}}}}"
-                if placeholder in result:
-                    trans_text = (
-                        translated_chunks.get(chunk.id) if translated_chunks else None
-                    )
-                    reconstructed = chunk.reconstruct(trans_text)
-                    result = result.replace(placeholder, reconstructed)
-
-            for chunk in self.chunks:
-                for placeholder, original in chunk.preserved_elements.items():
-                    result = result.replace(placeholder, original)
-
-            full_result = preamble_result + result
-        else:
-            body_parts = []
-            for chunk in self.chunks:
-                trans_text = (
-                    translated_chunks.get(chunk.id) if translated_chunks else None
-                )
-                body_parts.append(chunk.reconstruct(trans_text))
-
-            full_result = preamble_result + "".join(body_parts)
-
-        # Restore global placeholders
-        # Use iterative replacement to handle nested placeholders
-        # (e.g., footnote containing cite: [[FOOTNOTE_2]] contains [[CITE_1]])
-        max_iterations = 10  # Prevent infinite loops
+        # Step 4: Restore global placeholders AGAIN
+        # Chunk content may contain [[MATH_n]], [[CITE_n]] etc that need restoration
         for _ in range(max_iterations):
             replacements_made = False
             for placeholder, original in self.global_placeholders.items():

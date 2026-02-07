@@ -38,7 +38,7 @@ class TestPlaceholderSkipping:
             "[[CITE_1]]",
             "[[REF_2]]",
             "[[MATH_3]]",
-            "[[MATHENV_4]]",
+            "[[ENV_4]]",
             "[[GRAPHICS_5]]",
             "[[LABEL_6]]",
             "[[FOOTNOTE_7]]",

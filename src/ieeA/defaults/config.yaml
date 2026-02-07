@@ -24,3 +24,5 @@ fonts:
 translation:
   quality_mode: standard
   examples_path: null
+  batch_short_threshold: 300
+  batch_max_chars: 2000

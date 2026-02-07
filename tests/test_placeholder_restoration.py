@@ -20,12 +20,11 @@ class TestPlaceholderRestoration:
             (r"Display \[x^2 + y^2 = z^2\] here", "MATH", r"\[x^2 + y^2 = z^2\]"),
             (
                 r"\begin{equation}x=y\end{equation}",
-                "MATHENV",
+                "ENV",
                 r"\begin{equation}x=y\end{equation}",
             ),
             (r"\includegraphics{fig.png}", "GRAPHICS", r"\includegraphics{fig.png}"),
             (r"Text \label{sec:intro} more", "LABEL", r"\label{sec:intro}"),
-            (r"Note\footnote{Important!} here", "FOOTNOTE", r"\footnote{Important!}"),
         ]
 
         for latex_content, placeholder_type, expected in global_placeholder_cases:
@@ -145,7 +144,7 @@ Note\footnote{This is important!} the result.
 
             # Should have multiple different placeholder types
             assert len(doc.global_placeholders) >= 5, (
-                "Should have at least 5 placeholders (cite, ref, math, mathenv, footnote, labels)"
+                "Should have at least 5 placeholders (cite, ref, math, mathenv, labels)"
             )
 
             reconstructed = doc.reconstruct()
@@ -233,14 +232,18 @@ This is a fact\footnote{See \cite{source2023} for details.} in the text.
             doc = parser.parse_file(temp_path)
 
             # Should have both footnote and cite placeholders in global_placeholders
-            assert len(doc.global_placeholders) >= 2, (
-                f"Should have placeholders for both footnote and cite, got: {doc.global_placeholders}"
+            assert len(doc.global_placeholders) >= 1, (
+                f"Should have placeholders for cite/math etc, got: {doc.global_placeholders}"
             )
 
-            # Verify we have the expected types
+            # Verify we have the expected global placeholder types
             placeholders_str = str(doc.global_placeholders)
-            assert "FOOTNOTE" in placeholders_str, "Should have FOOTNOTE placeholder"
             assert "CITE" in placeholders_str, "Should have CITE placeholder"
+
+            # Footnote should now be extracted as a translatable chunk
+            assert any(c.context == "footnote" for c in doc.chunks), (
+                "Should have footnote chunk context"
+            )
 
             reconstructed = doc.reconstruct()
 
