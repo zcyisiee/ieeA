@@ -201,6 +201,8 @@ def translate(
                 abstract_context=abstract_text,
                 custom_system_prompt=config.translation.custom_system_prompt,
                 logger=translation_logger,
+                batch_short_threshold=config.translation.batch_short_threshold,
+                batch_max_chars=config.translation.batch_max_chars,
             )
 
             chunk_data = [{"chunk_id": c.id, "content": c.content} for c in doc.chunks]

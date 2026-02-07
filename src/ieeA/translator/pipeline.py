@@ -120,22 +120,9 @@ class TranslationPipeline:
         abstract_context: Optional[str] = None,
         custom_system_prompt: Optional[str] = None,
         logger: Optional["TranslationLogger"] = None,
+        batch_short_threshold: int = 300,
+        batch_max_chars: int = 2000,
     ):
-        """
-        Initialize the translation pipeline.
-
-        Args:
-            provider: The LLM provider to use for translation.
-            glossary: Optional glossary for term translation.
-            max_retries: Maximum number of retry attempts on failure.
-            retry_delay: Base delay between retries (exponential backoff).
-            rate_limit_delay: Delay between API calls for rate limiting.
-            state_file: Optional file path to save/load intermediate state.
-            few_shot_examples: Optional few-shot examples for the prompt.
-            abstract_context: Optional abstract text for high-quality mode context.
-            custom_system_prompt: Optional custom system prompt to replace default style.
-            logger: Optional logger for tracking translation progress.
-        """
         self.provider = provider
         self.glossary = glossary or Glossary()
         self.max_retries = max_retries
@@ -146,6 +133,8 @@ class TranslationPipeline:
         self.abstract_context = abstract_context
         self.custom_system_prompt = custom_system_prompt
         self.logger = logger
+        self.batch_short_threshold = batch_short_threshold
+        self.batch_max_chars = batch_max_chars
 
         self._preprocessor = GlossaryPreprocessor(self.glossary)
 
@@ -512,10 +501,10 @@ class TranslationPipeline:
             return [results_map[chunk_data["chunk_id"]] for chunk_data in chunks]
 
         # 分离短chunks和长chunks
-        # 短chunks (<300字符) 将被合并成batches
-        # 长chunks (>=300字符) 单独翻译
-        SHORT_THRESHOLD = 300
-        MAX_BATCH_CHARS = 2000
+        # 短chunks (<threshold字符) 将被合并成batches
+        # 长chunks (>=threshold字符) 单独翻译
+        SHORT_THRESHOLD = self.batch_short_threshold
+        MAX_BATCH_CHARS = self.batch_max_chars
 
         short_chunks = []
         long_chunks = []
