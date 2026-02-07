@@ -62,10 +62,15 @@ class LaTeXParser:
         "part",
     }
 
-    def __init__(self, extra_protected_envs: Optional[List[str]] = None):
+    def __init__(
+        self,
+        extra_protected_envs: Optional[List[str]] = None,
+        font_config: Optional[object] = None,
+    ):
         self.chunks: List[Chunk] = []
         self.protected_counter = 0
         self.placeholder_map: Dict[str, str] = {}
+        self.font_config = font_config
         self._protected_envs: Set[str] = set(self.PROTECTED_ENVIRONMENTS)
         if extra_protected_envs:
             self._protected_envs.update(extra_protected_envs)
@@ -209,10 +214,10 @@ class LaTeXParser:
         return "".join(result)
 
     def _inject_chinese_support(self, preamble: str) -> str:
-        """Inject Chinese support using auto-detected system fonts."""
+        """Inject Chinese support using configured or detected fonts."""
         from ..compiler.chinese_support import inject_chinese_support
 
-        return inject_chinese_support(preamble)
+        return inject_chinese_support(preamble, self.font_config)
 
     def _extract_title_command(self, text: str) -> str:
         """Extract \\title{...} command content and create title chunks."""
@@ -804,8 +809,8 @@ class LaTeXParser:
 
         for match in command_pattern.finditer(text):
             cmd_start = match.start()
-            body_start, body_end, content, wrapper_prefix = self._parse_footnote_command_at(
-                text, cmd_start
+            body_start, body_end, content, wrapper_prefix = (
+                self._parse_footnote_command_at(text, cmd_start)
             )
             if (
                 body_start is None

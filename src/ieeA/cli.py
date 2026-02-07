@@ -145,7 +145,10 @@ def translate(
                 console=console,
             ) as progress:
                 task = progress.add_task("Parsing LaTeX...", total=None)
-                parser = LaTeXParser()
+                parser = LaTeXParser(
+                    extra_protected_envs=config.parser.extra_protected_environments,
+                    font_config=config.fonts,
+                )
                 try:
                     doc = parser.parse_file(str(download_result.main_tex))
                     progress.update(
@@ -298,8 +301,6 @@ def translate(
                     compiler = LaTeXCompiler(timeout=config.compilation.timeout)
                     try:
                         latex_source = out_file.read_text(encoding="utf-8")
-                        # Inject Chinese font support before compilation
-                        latex_source = compiler.inject_chinese_support(latex_source)
                         # Save the final version that will be compiled (for debugging)
                         out_file.write_text(latex_source, encoding="utf-8")
                         pdf_path = (
