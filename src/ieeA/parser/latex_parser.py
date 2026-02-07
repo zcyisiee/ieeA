@@ -43,6 +43,11 @@ class LaTeXParser:
         "enumerate",
         "description",
     }
+    CAPTION_NO_SCAN_ENVIRONMENTS = {
+        "verbatim",
+        "lstlisting",
+        "minted",
+    }
 
     # NOTE: caption 不在此列表中，因为它在 _extract_captions() 中单独处理
     SECTION_COMMANDS = {
@@ -240,60 +245,197 @@ class LaTeXParser:
         result.append(text[pos:])
         return "".join(result)
 
+    def _skip_whitespace(self, text: str, index: int) -> int:
+        i = index
+        while i < len(text) and text[i].isspace():
+            i += 1
+        return i
+
+    def _parse_balanced_group(
+        self, text: str, start: int, open_char: str, close_char: str
+    ) -> Tuple[Optional[str], Optional[int]]:
+        """Parse a balanced group and return (inner_content, end_index)."""
+        if start >= len(text) or text[start] != open_char:
+            return None, None
+
+        depth = 1
+        i = start + 1
+        while i < len(text):
+            ch = text[i]
+            if ch == "\\":
+                # Skip escaped character so \\{ and \\} don't affect nesting.
+                i += 2
+                continue
+            if ch == open_char:
+                depth += 1
+            elif ch == close_char:
+                depth -= 1
+                if depth == 0:
+                    return text[start + 1 : i], i + 1
+            i += 1
+        return None, None
+
+    def _parse_environment_token_at(
+        self, text: str, index: int, token: str
+    ) -> Tuple[Optional[str], Optional[int]]:
+        """Parse \\begin{env} or \\end{env} at index and return (env, end_idx)."""
+        prefix = "\\" + token
+        if not text.startswith(prefix, index):
+            return None, None
+
+        i = self._skip_whitespace(text, index + len(prefix))
+        env_name, end_idx = self._parse_balanced_group(text, i, "{", "}")
+        if env_name is None or end_idx is None:
+            return None, None
+        return env_name.strip(), end_idx
+
+    def _find_environment_end(
+        self, text: str, search_start: int, env_name: str
+    ) -> Optional[int]:
+        """Find matching \\end{env_name} from search_start with nesting support."""
+        depth = 1
+        i = search_start
+        while i < len(text):
+            begin_env, begin_end = self._parse_environment_token_at(text, i, "begin")
+            if begin_env is not None and begin_end is not None:
+                if begin_env == env_name:
+                    depth += 1
+                i = begin_end
+                continue
+
+            end_env, end_end = self._parse_environment_token_at(text, i, "end")
+            if end_env is not None and end_end is not None:
+                if end_env == env_name:
+                    depth -= 1
+                    if depth == 0:
+                        return end_end
+                i = end_end
+                continue
+
+            i += 1
+        return None
+
+    def _build_caption_no_scan_ranges(self, text: str) -> List[Tuple[int, int]]:
+        """Build ranges where caption scanning should be disabled."""
+        ranges: List[Tuple[int, int]] = []
+        i = 0
+        while i < len(text):
+            env_name, begin_end = self._parse_environment_token_at(text, i, "begin")
+            if env_name is not None and begin_end is not None:
+                if env_name in self.CAPTION_NO_SCAN_ENVIRONMENTS:
+                    end_idx = self._find_environment_end(text, begin_end, env_name)
+                    if end_idx is None:
+                        end_idx = len(text)
+                    ranges.append((i, end_idx))
+                    i = end_idx
+                    continue
+                i = begin_end
+                continue
+            i += 1
+        return ranges
+
+    def _parse_caption_command_at(
+        self, text: str, cmd_start: int
+    ) -> Tuple[Optional[int], Optional[int], Optional[str], Optional[str]]:
+        """Parse caption family command at cmd_start.
+
+        Returns:
+            (body_start, body_end, content, replacement_prefix)
+            where replacement_prefix is text before body braces.
+        """
+        n = len(text)
+        if text.startswith("\\captionof", cmd_start):
+            cursor = cmd_start + len("\\captionof")
+            cursor = self._skip_whitespace(text, cursor)
+
+            # captionof requires first mandatory arg: {figure|table|...}
+            _, type_end = self._parse_balanced_group(text, cursor, "{", "}")
+            if type_end is None:
+                return None, None, None, None
+            cursor = self._skip_whitespace(text, type_end)
+        elif text.startswith("\\caption*", cmd_start):
+            cursor = cmd_start + len("\\caption*")
+            cursor = self._skip_whitespace(text, cursor)
+        elif text.startswith("\\caption", cmd_start):
+            cursor = cmd_start + len("\\caption")
+            cursor = self._skip_whitespace(text, cursor)
+        else:
+            return None, None, None, None
+
+        # Optional list entry argument (supports nested brackets)
+        if cursor < n and text[cursor] == "[":
+            _, opt_end = self._parse_balanced_group(text, cursor, "[", "]")
+            if opt_end is None:
+                return None, None, None, None
+            cursor = self._skip_whitespace(text, opt_end)
+
+        if cursor >= n or text[cursor] != "{":
+            return None, None, None, None
+
+        content, body_end = self._parse_balanced_group(text, cursor, "{", "}")
+        if content is None or body_end is None:
+            return None, None, None, None
+
+        replacement_prefix = text[cmd_start:cursor]
+        return cursor, body_end, content, replacement_prefix
+
     def _extract_captions(self, text: str) -> str:
         """Extract caption content for translation before environment protection."""
-        pattern = re.compile(r"(\\caption)(\*?)(\s*\[[^\]]*\])?\s*\{")
+        no_scan_ranges = self._build_caption_no_scan_ranges(text)
+        command_pattern = re.compile(r"\\caption(?:of)?\*?(?![A-Za-z])")
+
         result = []
         pos = 0
+        range_idx = 0
 
-        for match in pattern.finditer(text):
-            result.append(text[pos : match.start()])
-            start = match.end()
-            brace_count = 1
-            i = start
+        for match in command_pattern.finditer(text):
+            cmd_start = match.start()
 
-            while i < len(text) and brace_count > 0:
-                if text[i] == "{":
-                    brace_count += 1
-                elif text[i] == "}":
-                    brace_count -= 1
-                i += 1
+            while (
+                range_idx < len(no_scan_ranges)
+                and cmd_start >= no_scan_ranges[range_idx][1]
+            ):
+                range_idx += 1
 
-            if brace_count == 0:
-                content = text[start : i - 1]
-                if (
-                    content.strip()
-                    and not content.startswith("[[")
-                    and not content.startswith("{{CHUNK_")
-                    and len(content.strip()) > 10
-                ):
-                    chunk_id = str(uuid.uuid4())
-                    placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
-                    chunk = Chunk(
-                        id=chunk_id,
-                        content=content.strip(),
-                        latex_wrapper="%s",
-                        context="caption",
-                        preserved_elements={},
-                    )
-                    self.chunks.append(chunk)
-                    optional_short = match.group(3) if match.group(3) else ""
-                    # Build caption string without f-string brace escaping issues
-                    caption_str = (
-                        match.group(1)
-                        + match.group(2)
-                        + optional_short
-                        + "{"
-                        + placeholder
-                        + "}"
-                    )
-                    result.append(caption_str)
-                else:
-                    result.append(match.group(0) + content + "}")
-                pos = i
+            if range_idx < len(no_scan_ranges):
+                start, end = no_scan_ranges[range_idx]
+                if start <= cmd_start < end:
+                    continue
+
+            body_start, body_end, content, replacement_prefix = (
+                self._parse_caption_command_at(text, cmd_start)
+            )
+            if (
+                body_start is None
+                or body_end is None
+                or content is None
+                or replacement_prefix is None
+            ):
+                continue
+
+            result.append(text[pos:cmd_start])
+
+            stripped = content.strip()
+            if (
+                stripped
+                and not stripped.startswith("[[")
+                and not stripped.startswith("{{CHUNK_")
+            ):
+                chunk_id = str(uuid.uuid4())
+                placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
+                chunk = Chunk(
+                    id=chunk_id,
+                    content=stripped,
+                    latex_wrapper="%s",
+                    context="caption",
+                    preserved_elements={},
+                )
+                self.chunks.append(chunk)
+                result.append(replacement_prefix + "{" + placeholder + "}")
             else:
-                result.append(match.group(0))
-                pos = match.end()
+                result.append(text[cmd_start:body_end])
+
+            pos = body_end
 
         result.append(text[pos:])
         return "".join(result)
