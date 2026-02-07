@@ -46,7 +46,6 @@ class LaTeXParser:
 
     # NOTE: caption 不在此列表中，因为它在 _extract_captions() 中单独处理
     SECTION_COMMANDS = {
-        "title",
         "section",
         "subsection",
         "subsubsection",
@@ -104,8 +103,9 @@ class LaTeXParser:
         self.protected_counter = 0
         self.placeholder_map = {}
 
-        preamble = self._extract_title_from_preamble(preamble)
+        preamble = self._extract_title_command(preamble)
         preamble = self._inject_chinese_support(preamble)
+        body_content = self._extract_title_command(body_content)
 
         body_template = self._process_body(body_content)
 
@@ -192,35 +192,40 @@ class LaTeXParser:
 
         return inject_chinese_support(preamble)
 
-    def _extract_title_from_preamble(self, preamble: str) -> str:
-        """Extract title from preamble and create translatable chunk."""
+    def _extract_title_command(self, text: str) -> str:
+        """Extract \\title{...} command content and create title chunks."""
         pattern = re.compile(r"(\\title\s*\{)")
         result = []
         pos = 0
 
-        for match in pattern.finditer(preamble):
-            result.append(preamble[pos : match.start()])
+        for match in pattern.finditer(text):
+            result.append(text[pos : match.start()])
             start = match.end()
             brace_count = 1
             i = start
 
-            while i < len(preamble) and brace_count > 0:
-                if preamble[i] == "{":
+            while i < len(text) and brace_count > 0:
+                if text[i] == "{":
                     brace_count += 1
-                elif preamble[i] == "}":
+                elif text[i] == "}":
                     brace_count -= 1
                 i += 1
 
             if brace_count == 0:
-                content = preamble[start : i - 1]
-                if not content.strip() or content.startswith("[["):
+                content = text[start : i - 1]
+                stripped_content = content.strip()
+                if (
+                    not stripped_content
+                    or stripped_content.startswith("[[")
+                    or stripped_content.startswith("{{CHUNK_")
+                ):
                     result.append(match.group(0) + content + "}")
                 else:
                     chunk_id = str(uuid.uuid4())
                     placeholder = f"{{{{CHUNK_{chunk_id}}}}}"
                     chunk = Chunk(
                         id=chunk_id,
-                        content=content.strip(),
+                        content=stripped_content,
                         latex_wrapper="%s",
                         context="title",
                         preserved_elements={},
@@ -232,7 +237,7 @@ class LaTeXParser:
                 result.append(match.group(0))
                 pos = match.end()
 
-        result.append(preamble[pos:])
+        result.append(text[pos:])
         return "".join(result)
 
     def _extract_captions(self, text: str) -> str:
@@ -292,6 +297,10 @@ class LaTeXParser:
 
         result.append(text[pos:])
         return "".join(result)
+
+    # Backward-compatible alias for existing internal/external calls.
+    def _extract_title_from_preamble(self, preamble: str) -> str:
+        return self._extract_title_command(preamble)
 
     def _process_body(self, body: str) -> str:
         result = body
