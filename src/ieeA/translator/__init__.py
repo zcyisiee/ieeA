@@ -5,6 +5,16 @@ from .anthropic_provider import AnthropicProvider
 from .http_provider import DirectHTTPProvider
 
 
+def _normalize_openai_base_url(endpoint: Optional[str]) -> Optional[str]:
+    """Normalize OpenAI-compatible base URL to avoid duplicate route suffix."""
+    if not endpoint:
+        return endpoint
+    suffix = "/chat/completions"
+    if endpoint.endswith(suffix):
+        return endpoint[: -len(suffix)]
+    return endpoint
+
+
 def get_sdk_client(
     sdk: Optional[str],
     model: str,
@@ -28,8 +38,9 @@ def get_sdk_client(
         An instance of LLMProvider.
     """
     if sdk == "openai":
+        normalized_endpoint = _normalize_openai_base_url(endpoint)
         return OpenAIProvider(
-            model=model, api_key=key, base_url=endpoint, logger=logger, **kwargs
+            model=model, api_key=key, base_url=normalized_endpoint, logger=logger, **kwargs
         )
     elif sdk == "anthropic":
         return AnthropicProvider(model=model, api_key=key, logger=logger, **kwargs)

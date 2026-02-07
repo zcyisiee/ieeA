@@ -209,6 +209,13 @@ def translate(
                 f"[bold]Translating {len(chunk_data)} chunks (max {concurrency} concurrent)...[/bold]"
             )
 
+            batch_stats = {"batches": 0, "long_chunks": 0, "total_calls": 0}
+
+            def on_batch_stats(num_batches: int, num_long: int, total_calls: int):
+                batch_stats["batches"] = num_batches
+                batch_stats["long_chunks"] = num_long
+                batch_stats["total_calls"] = total_calls
+
             with Progress(
                 SpinnerColumn(),
                 TextColumn("[bold blue]{task.description}"),
@@ -229,6 +236,14 @@ def translate(
                     context="Academic Paper",
                     max_concurrent=concurrency,
                     progress_callback=update_progress,
+                    batch_stats_callback=on_batch_stats,
+                )
+
+            if batch_stats["total_calls"] > 0:
+                console.print(
+                    f"[cyan]Batch optimization: {len(chunk_data)} chunks → "
+                    f"{batch_stats['total_calls']} API calls "
+                    f"({batch_stats['batches']} batches + {batch_stats['long_chunks']} long chunks)[/cyan]"
                 )
 
             results = [tc.model_dump() for tc in translated_chunks]

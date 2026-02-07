@@ -68,7 +68,7 @@ Outside math: $y = 2$
     stage2 = parser._protect_environments(stage1)
     stage3 = parser._protect_inline_math(stage2)
 
-    assert "[[MATHENV_" in stage2
+    assert "[[ENV_" in stage2
     assert "[[MATH_" in stage3
 
     math_values = [
@@ -108,7 +108,7 @@ After
 
     processed = parser._protect_environments(text)
 
-    assert "[[MATHENV_" in processed
+    assert "[[ENV_" in processed
     assert any(
         "\\begin{myenv}" in value for value in parser.placeholder_map.values()
     )

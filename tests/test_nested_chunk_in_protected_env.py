@@ -18,8 +18,8 @@ class TestNestedChunkInProtectedEnv:
 
         Processing order:
         1. _extract_captions() creates {{CHUNK_uuid}} for caption
-        2. _protect_math_environments() wraps algorithm in [[MATHENV_n]]
-        3. The {{CHUNK_uuid}} is now INSIDE [[MATHENV_n]]'s value
+        2. _protect_math_environments() wraps algorithm in [[ENV_n]]
+        3. The {{CHUNK_uuid}} is now INSIDE [[ENV_n]]'s value
 
         Expected behavior after fix:
         - When reconstructing, global_placeholders should be restored FIRST
@@ -61,10 +61,10 @@ class TestNestedChunkInProtectedEnv:
 
             # Verify algorithm environment was protected
             algorithm_placeholders = [
-                k for k in doc.global_placeholders.keys() if "MATHENV" in k
+                k for k in doc.global_placeholders.keys() if "ENV" in k
             ]
             assert len(algorithm_placeholders) >= 1, (
-                "Algorithm should be protected as MATHENV"
+                "Algorithm should be protected as ENV"
             )
 
             # Simulate translation: replace caption content with Chinese

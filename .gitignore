@@ -6,6 +6,7 @@ coverage.xml
 .tox/
 .nox/
 debug/
+tests/
 
 # Type Checking
 .mypy_cache/
