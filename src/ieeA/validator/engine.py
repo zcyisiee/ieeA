@@ -23,17 +23,25 @@ class ValidationEngine:
         pass
 
     def validate(
-        self, translated: str, original: str, rules: Optional[RuleSet] = None
+        self,
+        translated: str,
+        original: str,
+        rules: Optional[RuleSet] = None,
+        translated_chunks: Optional[List[Any]] = None,
+        source_chunk_start_lines: Optional[dict[str, int]] = None,
+        translation_chunk_start_lines: Optional[dict[str, int]] = None,
     ) -> ValidationResult:
         errors = []
 
         # 1. Structural Validation (Built-in)
-        # Braces
-        brace_errors = BuiltInRules.check_braces(translated)
-        for msg in brace_errors:
-            errors.append(
-                ValidationError(message=f"Unbalanced braces: {msg}", severity="error")
+        if translated_chunks is not None:
+            chunk_brace_errors = BuiltInRules.check_chunk_brace_structure(
+                translated_chunks=translated_chunks,
+                source_chunk_start_lines=source_chunk_start_lines or {},
+                translation_chunk_start_lines=translation_chunk_start_lines or {},
             )
+            for msg in chunk_brace_errors:
+                errors.append(ValidationError(message=msg, severity="error"))
 
         # Citations
         cite_errors = BuiltInRules.check_citations(original, translated)

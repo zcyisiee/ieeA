@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 import uuid
 
 
@@ -49,27 +49,17 @@ class LaTeXDocument:
     # These are stored at document level as they don't belong to any specific chunk
     global_placeholders: Dict[str, str] = field(default_factory=dict)
 
-    def reconstruct(self, translated_chunks: Optional[Dict[str, str]] = None) -> str:
-        """
-        Reconstructs the full document.
-
-        Args:
-            translated_chunks: Dict mapping chunk ID to translated text.
-
-        Reconstruction order (critical for nested structures):
-        1. Restore global_placeholders (exposes {{CHUNK_...}} inside protected envs)
-        2. Replace {{CHUNK_...}} with translated content
-        3. Restore chunk.preserved_elements
-        4. Restore global_placeholders AGAIN (for [[MATH_n]] etc inside chunks)
-        """
+    def _reconstruct_internal(
+        self,
+        translated_chunks: Optional[Dict[str, str]] = None,
+        collect_chunk_start_lines: bool = False,
+    ) -> Tuple[str, Dict[str, int]]:
         preamble_result = self.preamble
         body_result = self.body_template if self.body_template else ""
+        chunk_start_lines: Dict[str, int] = {}
 
         full_result = preamble_result + body_result
 
-        # Step 1: Restore global placeholders FIRST
-        # This exposes any {{CHUNK_...}} that were inside protected environments
-        # (e.g., caption inside algorithm: [[ENV_1]] contains {{CHUNK_abc}})
         max_iterations = 10
         for _ in range(max_iterations):
             replacements_made = False
@@ -80,8 +70,6 @@ class LaTeXDocument:
             if not replacements_made:
                 break
 
-        # Step 2: Replace {{CHUNK_...}} with translated content
-        # Now chunks that were inside protected envs are visible and can be translated
         for chunk in self.chunks:
             placeholder = f"{{{{CHUNK_{chunk.id}}}}}"
             if placeholder in full_result:
@@ -89,15 +77,16 @@ class LaTeXDocument:
                     translated_chunks.get(chunk.id) if translated_chunks else None
                 )
                 reconstructed = chunk.reconstruct(trans_text)
+                if collect_chunk_start_lines:
+                    start_marker = f"__IEEA_CHUNK_START_{chunk.id}__"
+                    end_marker = f"__IEEA_CHUNK_END_{chunk.id}__"
+                    reconstructed = f"{start_marker}{reconstructed}{end_marker}"
                 full_result = full_result.replace(placeholder, reconstructed)
 
-        # Step 3: Restore chunk.preserved_elements (e.g., [[AUTHOR_1]])
         for chunk in self.chunks:
             for placeholder, original in chunk.preserved_elements.items():
                 full_result = full_result.replace(placeholder, original)
 
-        # Step 4: Restore global placeholders AGAIN
-        # Chunk content may contain [[MATH_n]], [[CITE_n]] etc that need restoration
         for _ in range(max_iterations):
             replacements_made = False
             for placeholder, original in self.global_placeholders.items():
@@ -107,4 +96,33 @@ class LaTeXDocument:
             if not replacements_made:
                 break
 
+        if collect_chunk_start_lines:
+            for chunk in self.chunks:
+                start_marker = f"__IEEA_CHUNK_START_{chunk.id}__"
+                end_marker = f"__IEEA_CHUNK_END_{chunk.id}__"
+                marker_index = full_result.find(start_marker)
+                if marker_index == -1:
+                    continue
+                content_start = marker_index + len(start_marker)
+                chunk_start_lines[chunk.id] = (
+                    full_result.count("\n", 0, content_start) + 1
+                )
+                full_result = full_result.replace(start_marker, "", 1)
+                full_result = full_result.replace(end_marker, "", 1)
+
+        return full_result, chunk_start_lines
+
+    def reconstruct(self, translated_chunks: Optional[Dict[str, str]] = None) -> str:
+        full_result, _ = self._reconstruct_internal(
+            translated_chunks=translated_chunks,
+            collect_chunk_start_lines=False,
+        )
         return full_result
+
+    def reconstruct_with_chunk_start_lines(
+        self, translated_chunks: Optional[Dict[str, str]] = None
+    ) -> Tuple[str, Dict[str, int]]:
+        return self._reconstruct_internal(
+            translated_chunks=translated_chunks,
+            collect_chunk_start_lines=True,
+        )

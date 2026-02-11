@@ -1,9 +1,43 @@
- # Example 6: User Example
+# Few-shot examples for English→Chinese academic translation (AI/ML domain)
+# Each example demonstrates natural Chinese academic prose, avoiding translationese
+
+examples:
+  # Example 1: Research motivation (避免 "解决...的挑战" 这类生硬表达)
+  - source: |
+      Large language models have demonstrated remarkable capabilities across various tasks. However, their computational cost grows quadratically with sequence length, making it prohibitively expensive to process long documents.
+    target: |
+      大语言模型在各类任务中展现出卓越的能力。然而，其计算开销随序列长度呈平方级增长，导致处理长文档的代价极为高昂。
+
+  # Example 2: Method overview (重组句式，符合中文 "先总后分" 的表达习惯)
+  - source: |
+      The key insight behind our approach is that attention patterns in trained Transformers tend to be sparse, with most tokens attending primarily to a small subset of other tokens. We exploit this observation by introducing a learnable routing mechanism.
+    target: |
+      我们的方法基于一个关键观察：在训练好的 Transformer 中，Attention 模式通常是稀疏的——大多数 Token 主要关注少量其他 Token。基于这一发现，我们引入了可学习的路由机制。
+
+  # Example 3: Technical description with math (保持术语一致性)
+  - source: |
+      Given input embeddings \(X \in \mathbb{R}^{n \times d}\), we first compute query, key, and value matrices through linear projections. The attention weights are then calculated as \(\text{softmax}(QK^\top / \sqrt{d_k})\), where \(d_k\) denotes the key dimension.
+    target: |
+      给定输入 Embedding \(X \in \mathbb{R}^{n \times d}\)，首先通过线性投影计算 Query、Key 和 Value 矩阵。Attention 权重的计算方式为 \(\text{softmax}(QK^\top / \sqrt{d_k})\)，其中 \(d_k\) 表示 Key 的维度。
+
+  # Example 4: Experimental results (避免 "显著优于" 的滥用)
+  - source: |
+      As shown in Table 2, our method consistently outperforms all baselines across different model scales. Notably, the performance gap widens as the sequence length increases, suggesting that our sparse attention mechanism is particularly effective for long-context scenarios.
+    target: |
+      如表 2 所示，在不同模型规模下，本文方法均优于所有基线。值得注意的是，随着序列长度增加，性能差距进一步拉大，表明我们的稀疏 Attention 机制在长上下文场景中尤为有效。
+
+  # Example 5: Limitation discussion (避免 "遭受/面临...的限制" 等翻译腔)
+  - source: |
+      It is worth noting that this approach suffers from the limitation of requiring task-specific tuning of the sparsity hyperparameter. Additionally, the routing overhead becomes non-negligible when the sparsity ratio is low.
+    target: |
+      需要指出的是，该方法的主要局限在于稀疏度超参数需要针对具体任务进行调优。此外，当稀疏比例较低时，路由带来的额外开销不可忽视。
+
+  # Example 6: User Example
   - source: |
       The rapid advancement of large language models (LLMs) has unlocked impressive capabilities across complex real-world tasks such as reasoning, dialogue, and multilingual understanding
     target: |
       随着大型语言模型（LLM）的飞速发展，其在推理、对话和多语言理解等复杂的现实任务中展现出惊人的能力
-      
+
   # Example 7: 含代码/JSON的文本（不要执行，只翻译）
   - source: |
       Return in JSON format: \{\{"result": "$\langle$value$\rangle$"\}\}

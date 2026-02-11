@@ -1,8 +1,200 @@
 import re
-from typing import List, Tuple, Set, Dict, Any
+from typing import List, Tuple, Set, Dict, Any, Optional
 
 
 class BuiltInRules:
+    @staticmethod
+    def _is_escaped_brace(text: str, index: int) -> bool:
+        backslash_count = 0
+        cursor = index - 1
+        while cursor >= 0 and text[cursor] == "\\":
+            backslash_count += 1
+            cursor -= 1
+        return backslash_count % 2 == 1
+
+    @staticmethod
+    def _brace_text_tokens(text: str) -> List[Tuple[str, int]]:
+        tokens: List[Tuple[str, int]] = []
+        in_text = False
+        text_start = 0
+
+        for idx, char in enumerate(text):
+            if char in "{}" and not BuiltInRules._is_escaped_brace(text, idx):
+                if in_text:
+                    tokens.append(("T", text_start))
+                    in_text = False
+                tokens.append((char, idx))
+            else:
+                if not in_text:
+                    in_text = True
+                    text_start = idx
+
+        if in_text:
+            tokens.append(("T", text_start))
+
+        return tokens
+
+    @staticmethod
+    def _line_col_from_offset(text: str, offset: int) -> Tuple[int, int, str]:
+        if not text:
+            return 1, 1, ""
+
+        bounded_offset = max(0, min(offset, len(text)))
+        line_no = text.count("\n", 0, bounded_offset) + 1
+        line_start = text.rfind("\n", 0, bounded_offset) + 1
+        line_end = text.find("\n", bounded_offset)
+        if line_end == -1:
+            line_end = len(text)
+        line_text = text[line_start:line_end]
+        col_no = bounded_offset - line_start + 1
+        return line_no, col_no, line_text
+
+    @staticmethod
+    def _line_snippet_with_pointer(
+        line_text: str,
+        col_no: int,
+        window: int = 30,
+    ) -> Tuple[str, int]:
+        if not line_text:
+            return "", 1
+
+        bounded_col = max(1, min(col_no, len(line_text)))
+        center = bounded_col - 1
+        start = max(0, center - window)
+        end = min(len(line_text), center + window + 1)
+
+        snippet = line_text[start:end]
+        pointer_pos = (center - start) + 1
+
+        if start > 0:
+            snippet = f"...{snippet}"
+            pointer_pos += 3
+        if end < len(line_text):
+            snippet = f"{snippet}..."
+
+        return snippet, pointer_pos
+
+    @staticmethod
+    def _find_first_brace_structure_mismatch(
+        source: str,
+        translation: str,
+    ) -> Optional[Dict[str, Any]]:
+        source_tokens = BuiltInRules._brace_text_tokens(source)
+        translation_tokens = BuiltInRules._brace_text_tokens(translation)
+
+        idx = 0
+        min_len = min(len(source_tokens), len(translation_tokens))
+        while idx < min_len and source_tokens[idx][0] == translation_tokens[idx][0]:
+            idx += 1
+
+        if idx == len(source_tokens) and idx == len(translation_tokens):
+            return None
+
+        source_kind = source_tokens[idx][0] if idx < len(source_tokens) else "<EOF>"
+        translation_kind = (
+            translation_tokens[idx][0] if idx < len(translation_tokens) else "<EOF>"
+        )
+
+        source_offset = (
+            source_tokens[idx][1] if idx < len(source_tokens) else len(source)
+        )
+        translation_offset = (
+            translation_tokens[idx][1]
+            if idx < len(translation_tokens)
+            else len(translation)
+        )
+
+        return {
+            "source_kind": source_kind,
+            "translation_kind": translation_kind,
+            "source_offset": source_offset,
+            "translation_offset": translation_offset,
+        }
+
+    @staticmethod
+    def _format_chunk_structure_mismatch(
+        source: str,
+        translation: str,
+        source_offset: int,
+        translation_offset: int,
+        source_chunk_start_line: int,
+        translation_chunk_start_line: int,
+    ) -> str:
+        source_local_line, source_col, source_line_text = (
+            BuiltInRules._line_col_from_offset(source, source_offset)
+        )
+        translation_local_line, translation_col, translation_line_text = (
+            BuiltInRules._line_col_from_offset(translation, translation_offset)
+        )
+
+        source_global_line = source_chunk_start_line + source_local_line - 1
+        translation_global_line = (
+            translation_chunk_start_line + translation_local_line - 1
+        )
+
+        source_snippet, _ = BuiltInRules._line_snippet_with_pointer(
+            source_line_text, source_col
+        )
+        translation_snippet, translation_pointer_pos = (
+            BuiltInRules._line_snippet_with_pointer(
+                translation_line_text, translation_col
+            )
+        )
+
+        translation_prefix = f"translation: {translation_global_line}行: "
+        pointer_line = (
+            " " * (len(translation_prefix) + translation_pointer_pos - 1) + "⬆️"
+        )
+
+        return (
+            f"source: {source_global_line}行: {source_snippet}\n"
+            f"translation: {translation_global_line}行: {translation_snippet}\n"
+            f"{pointer_line}"
+        )
+
+    @staticmethod
+    def check_chunk_brace_structure(
+        translated_chunks: List[Any],
+        source_chunk_start_lines: Dict[str, int],
+        translation_chunk_start_lines: Dict[str, int],
+    ) -> List[str]:
+        errors: List[str] = []
+
+        for chunk in translated_chunks:
+            chunk_id = getattr(chunk, "chunk_id", None)
+            source = getattr(chunk, "source", None)
+            translation = getattr(chunk, "translation", None)
+
+            if not isinstance(chunk_id, str):
+                continue
+            if not isinstance(source, str) or not isinstance(translation, str):
+                continue
+
+            mismatch = BuiltInRules._find_first_brace_structure_mismatch(
+                source, translation
+            )
+            if mismatch is None:
+                continue
+
+            source_start_line = source_chunk_start_lines.get(chunk_id, 1)
+            translation_start_line = translation_chunk_start_lines.get(chunk_id, 1)
+            detail = BuiltInRules._format_chunk_structure_mismatch(
+                source=source,
+                translation=translation,
+                source_offset=mismatch["source_offset"],
+                translation_offset=mismatch["translation_offset"],
+                source_chunk_start_line=source_start_line,
+                translation_chunk_start_line=translation_start_line,
+            )
+
+            errors.append(
+                "Chunk brace structure mismatch "
+                f"(chunk_id={chunk_id}, source_token={mismatch['source_kind']}, "
+                f"translation_token={mismatch['translation_kind']}):\n{detail}"
+            )
+
+        return errors
+
     @staticmethod
     def check_braces(text: str) -> List[str]:
         """Check for balanced braces and brackets."""

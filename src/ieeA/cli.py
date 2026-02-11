@@ -256,7 +256,9 @@ def translate(
 
             # Reconstruct
             translated_map = {r["chunk_id"]: r["translation"] for r in results}
-            translated_tex = doc.reconstruct(translated_map)
+            translated_tex, translated_chunk_start_lines = (
+                doc.reconstruct_with_chunk_start_lines(translated_map)
+            )
 
             # Save
             out_file = download_result.main_tex.parent / "main_translated.tex"
@@ -274,9 +276,17 @@ def translate(
             validator = ValidationEngine()
 
             # Extract original text for validation
-            original_full = doc.reconstruct()
+            original_full, source_chunk_start_lines = (
+                doc.reconstruct_with_chunk_start_lines()
+            )
 
-            val_result = validator.validate(translated_tex, original_full)
+            val_result = validator.validate(
+                translated_tex,
+                original_full,
+                translated_chunks=translated_chunks,
+                source_chunk_start_lines=source_chunk_start_lines,
+                translation_chunk_start_lines=translated_chunk_start_lines,
+            )
 
             if val_result.valid:
                 console.print("[green]Validation Passed[/green]")
