@@ -1,5 +1,4 @@
 import httpx
-import time
 from typing import Optional, Dict, List
 from .llm_base import LLMProvider
 from .prompts import build_system_prompt
@@ -38,15 +37,6 @@ class DirectHTTPProvider(LLMProvider):
             custom_system_prompt=custom_system_prompt,
         )
 
-        if self.logger:
-            self.logger.log_prompt_config(
-                system_prompt=system_content,
-                custom_system_prompt=custom_system_prompt,
-                glossary_terms=glossary_hints,
-                few_shot_count=len(few_shot_examples) if few_shot_examples else 0,
-                context=context,
-            )
-
         messages.append({"role": "system", "content": system_content})
 
         # Few-shot examples
@@ -74,15 +64,12 @@ class DirectHTTPProvider(LLMProvider):
         }
 
         try:
-            start_time = time.time()
             response = await self.client.post(
                 self.endpoint,
                 json=request_body,
                 headers=headers,
             )
             response.raise_for_status()
-            if self.logger:
-                self.logger.add_llm_time(time.time() - start_time)
             data = response.json()
             content = data["choices"][0]["message"]["content"]
             return content.strip()

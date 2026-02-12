@@ -20,7 +20,6 @@ def get_sdk_client(
     model: str,
     key: Optional[str] = None,
     endpoint: Optional[str] = None,
-    logger: Optional[Any] = None,
     **kwargs: Any,
 ) -> LLMProvider:
     """
@@ -31,7 +30,6 @@ def get_sdk_client(
         model: The model name to use.
         key: Optional API key.
         endpoint: Optional API endpoint URL.
-        logger: Optional TranslationLogger instance.
         **kwargs: Additional keyword arguments to pass to the provider constructor.
 
     Returns:
@@ -40,14 +38,12 @@ def get_sdk_client(
     if sdk == "openai":
         normalized_endpoint = _normalize_openai_base_url(endpoint)
         return OpenAIProvider(
-            model=model, api_key=key, base_url=normalized_endpoint, logger=logger, **kwargs
+            model=model, api_key=key, base_url=normalized_endpoint, **kwargs
         )
     elif sdk == "anthropic":
-        return AnthropicProvider(model=model, api_key=key, logger=logger, **kwargs)
+        return AnthropicProvider(model=model, api_key=key, **kwargs)
     elif sdk is None:
-        return DirectHTTPProvider(
-            model=model, api_key=key, endpoint=endpoint, logger=logger, **kwargs
-        )
+        return DirectHTTPProvider(model=model, api_key=key, endpoint=endpoint, **kwargs)
     else:
         raise ValueError(f"Unknown sdk: {sdk}. Supported: openai, anthropic, None")
 

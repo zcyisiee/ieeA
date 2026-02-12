@@ -27,7 +27,6 @@ from ieeA.rules.glossary import load_glossary
 from ieeA.rules.examples import load_examples
 from ieeA.translator import get_sdk_client
 from ieeA.translator.pipeline import TranslationPipeline
-from ieeA.translator.logger import TranslationLogger
 from ieeA.validator.engine import ValidationEngine
 
 app = typer.Typer(
@@ -80,12 +79,6 @@ def translate(
     ),
     abstract: Optional[str] = typer.Option(
         None, "--abstract", help="手动提供摘要文本（覆盖自动提取）"
-    ),
-    verbose: bool = typer.Option(
-        False,
-        "--verbose",
-        "-v",
-        help="启用详细日志输出到控制台",
     ),
 ):
     """
@@ -159,15 +152,6 @@ def translate(
                     raise
 
             # 3. Translate
-            # Initialize translation logger
-            translation_logger = TranslationLogger(
-                output_dir=output_dir / download_result.arxiv_id,
-                verbose=verbose,
-                hq_mode=high_quality,
-            )
-            translation_logger.set_source_file(str(download_result.main_tex))
-            translation_logger.start_timing()
-
             console.print("\n[bold]Translating...[/bold]")
             glossary = load_glossary()
             provider = get_sdk_client(
@@ -175,7 +159,6 @@ def translate(
                 model=model_name,
                 key=key_val,
                 endpoint=endpoint_val,
-                logger=translation_logger,
                 temperature=config.llm.temperature,
             )
 
@@ -203,7 +186,8 @@ def translate(
                 few_shot_examples=examples,
                 abstract_context=abstract_text,
                 custom_system_prompt=config.translation.custom_system_prompt,
-                logger=translation_logger,
+                model_name=model_name,
+                hq_mode=high_quality,
                 batch_short_threshold=config.translation.batch_short_threshold,
                 batch_max_chars=config.translation.batch_max_chars,
             )
@@ -264,12 +248,6 @@ def translate(
             out_file = download_result.main_tex.parent / "main_translated.tex"
             out_file.write_text(translated_tex, encoding="utf-8")
             console.print(f"[green]Translation saved to {out_file}[/green]")
-
-            # Save translation log
-            log_path = translation_logger.save()
-            if log_path:
-                if verbose:
-                    console.print(f"[green]Log saved to {log_path}[/green]")
 
             # 4. Validate
             console.print("\n[bold]Validating...[/bold]")

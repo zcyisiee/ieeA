@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: ieeA
-Version: 1.0.4.dev0+g7a328f54a.d20260211
+Version: 1.0.4.dev1+g270935e8b.d20260212
 Summary: arXiv 论文翻译工具 - 将英文 LaTeX 论文翻译成中文，保留数学公式和文档结构
 Author: ieeA Team
 License: GPL-3.0-or-later

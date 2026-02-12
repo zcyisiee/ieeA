@@ -1,19 +1,17 @@
-"""Translation pipeline with glossary preprocessing and postprocessing."""
+"""Translation pipeline with dynamic glossary hints."""
 
 import asyncio
 import json
 import re
+from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, List, Any, Union, Callable, cast, TYPE_CHECKING
+from typing import Optional, Dict, List, Any, Union, Callable, cast
 
 from pydantic import BaseModel, Field
 
 from ..rules.glossary import Glossary
 from .llm_base import LLMProvider
 from .prompts import build_batch_translation_text
-
-if TYPE_CHECKING:
-    from .logger import TranslationLogger
 
 
 class TranslatedChunk(BaseModel):
@@ -25,80 +23,10 @@ class TranslatedChunk(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class GlossaryPreprocessor:
-    """Preprocessor that replaces glossary terms with placeholders."""
-
-    def __init__(self, glossary: Glossary):
-        self.glossary = glossary
-        self._placeholder_counter = 0
-
-    def preprocess(self, text: str) -> tuple[str, Dict[str, str]]:
-        """
-        Replace glossary terms with numbered placeholders.
-
-        Args:
-            text: The input text to preprocess.
-
-        Returns:
-            A tuple of (preprocessed_text, mapping) where mapping maps
-            placeholders back to original terms.
-        """
-        if not text:
-            return "", {}
-
-        mapping: Dict[str, str] = {}
-        result = text
-
-        # Sort terms by length (longest first) to handle overlapping terms
-        terms = sorted(self.glossary.terms.keys(), key=len, reverse=True)
-
-        for term in terms:
-            if term in result:
-                # Find all occurrences and replace them
-                # Use word boundary-aware replacement for case sensitivity
-                pattern = re.escape(term)
-                matches = list(re.finditer(pattern, result))
-
-                # Replace from end to start to preserve indices
-                for match in reversed(matches):
-                    self._placeholder_counter += 1
-                    placeholder = f"[[GLOSS_{self._placeholder_counter:03d}]]"
-                    mapping[placeholder] = term
-                    result = (
-                        result[: match.start()] + placeholder + result[match.end() :]
-                    )
-
-        return result, mapping
-
-    def postprocess(self, text: str, mapping: Dict[str, str]) -> str:
-        """
-        Restore placeholders with their translated glossary terms.
-
-        Args:
-            text: The translated text with placeholders.
-            mapping: The mapping from placeholders to original terms.
-
-        Returns:
-            The text with placeholders replaced by translations.
-        """
-        result = text
-
-        for placeholder, original_term in mapping.items():
-            entry = self.glossary.get(original_term)
-            if entry:
-                translation = entry.target
-            else:
-                # Fallback to original term if not found
-                translation = original_term
-            result = result.replace(placeholder, translation)
-
-        return result
-
-
 class TranslationPipeline:
     """
-    Translation pipeline that orchestrates chunk translation with glossary
-    preprocessing and postprocessing.
+    Translation pipeline that orchestrates chunk translation with dynamic
+    glossary hints.
     """
 
     NEWLINE_SOFT_TOKEN = "[[SL]]"
@@ -119,7 +47,8 @@ class TranslationPipeline:
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
         abstract_context: Optional[str] = None,
         custom_system_prompt: Optional[str] = None,
-        logger: Optional["TranslationLogger"] = None,
+        model_name: str = "unknown",
+        hq_mode: bool = False,
         batch_short_threshold: int = 300,
         batch_max_chars: int = 2000,
     ):
@@ -132,15 +61,23 @@ class TranslationPipeline:
         self.few_shot_examples = few_shot_examples or []
         self.abstract_context = abstract_context
         self.custom_system_prompt = custom_system_prompt
-        self.logger = logger
+        self.model_name = model_name
+        self.hq_mode = hq_mode
         self.batch_short_threshold = batch_short_threshold
         self.batch_max_chars = batch_max_chars
+        self._started_at: Optional[str] = None
 
-        self._preprocessor = GlossaryPreprocessor(self.glossary)
+    def _build_glossary_hints(self, text: str) -> Dict[str, str]:
+        """Build glossary hints filtered by case-insensitive term matching."""
+        if not text:
+            return {}
 
-    def _build_glossary_hints(self) -> Dict[str, str]:
-        """Build glossary hints dictionary from glossary."""
-        return {term: entry.target for term, entry in self.glossary.terms.items()}
+        folded_text = text.casefold()
+        return {
+            term: entry.target
+            for term, entry in self.glossary.terms.items()
+            if term.casefold() in folded_text
+        }
 
     def _assert_no_token_collision(self, text: str) -> None:
         """Ensure newline control tokens do not exist before encoding."""
@@ -277,7 +214,7 @@ class TranslationPipeline:
         context: Optional[str] = None,
     ) -> TranslatedChunk:
         """
-        Translate a single chunk with glossary preprocessing and postprocessing.
+        Translate a single chunk with dynamic glossary hints.
 
         Args:
             chunk: The text chunk to translate.
@@ -287,12 +224,10 @@ class TranslationPipeline:
         Returns:
             TranslatedChunk with the translation result.
         """
-        # Preprocess: Replace glossary terms with placeholders
-        preprocessed_text, mapping = self._preprocessor.preprocess(chunk)
-        encoded_text, source_breaks = self._encode_newlines_for_llm(preprocessed_text)
+        encoded_text, source_breaks = self._encode_newlines_for_llm(chunk)
 
-        # Build glossary hints for the prompt
-        glossary_hints = self._build_glossary_hints()
+        # Build glossary hints for the current chunk
+        glossary_hints = self._build_glossary_hints(chunk)
 
         # Merge abstract context with provided context for high-quality mode
         merged_context = context
@@ -311,8 +246,7 @@ class TranslationPipeline:
             glossary_hints=glossary_hints,
         )
 
-        decoded_translation = self._decode_newlines_from_llm(raw_translation)
-        final_translation = self._preprocessor.postprocess(decoded_translation, mapping)
+        final_translation = self._decode_newlines_from_llm(raw_translation)
         decoded_sl_count, decoded_pl_count = self._count_newline_breaks(
             final_translation
         )
@@ -322,8 +256,13 @@ class TranslationPipeline:
             translation=final_translation,
             chunk_id=chunk_id,
             metadata={
-                "had_glossary_terms": len(mapping) > 0,
-                "glossary_terms_count": len(mapping),
+                "source_length": len(chunk),
+                "batched": False,
+                "batch_id": None,
+                "glossary_hints": glossary_hints,
+                "had_glossary_terms": len(glossary_hints) > 0,
+                "glossary_terms_count": len(glossary_hints),
+                "skipped_placeholder": False,
                 "newline_codec_applied": True,
                 "source_sl_count": source_breaks["source_sl_count"],
                 "source_pl_count": source_breaks["source_pl_count"],
@@ -337,22 +276,22 @@ class TranslationPipeline:
         chunks: List[Dict[str, str]],
         context: Optional[str] = None,
     ) -> List[TranslatedChunk]:
-        preprocessed_chunks = []
-        mappings = []
+        encoded_chunks = []
+        chunk_glossary_hints = []
+        batch_glossary_hints: Dict[str, str] = {}
         source_breaks = []
         for chunk_data in chunks:
-            preprocessed_text, mapping = self._preprocessor.preprocess(
-                chunk_data["content"]
-            )
-            encoded_text, break_meta = self._encode_newlines_for_llm(preprocessed_text)
-            preprocessed_chunks.append(
+            source_text = chunk_data["content"]
+            encoded_text, break_meta = self._encode_newlines_for_llm(source_text)
+            encoded_chunks.append(
                 {"chunk_id": chunk_data["chunk_id"], "content": encoded_text}
             )
-            mappings.append(mapping)
             source_breaks.append(break_meta)
+            glossary_hints = self._build_glossary_hints(source_text)
+            chunk_glossary_hints.append(glossary_hints)
+            batch_glossary_hints.update(glossary_hints)
 
-        batch_text = build_batch_translation_text(preprocessed_chunks)
-        glossary_hints = self._build_glossary_hints()
+        batch_text = build_batch_translation_text(encoded_chunks)
 
         merged_context = context
         if self.abstract_context:
@@ -372,7 +311,7 @@ class TranslationPipeline:
         raw_response = await self._call_with_retry(
             text=batch_text,
             context=merged_context,
-            glossary_hints=glossary_hints,
+            glossary_hints=batch_glossary_hints,
         )
 
         pattern = r"\[(\d+)\]\s*(.+?)(?=\[\d+\]|$)"
@@ -387,12 +326,7 @@ class TranslationPipeline:
             if idx < 0 or idx >= len(chunks):
                 return []
 
-            decoded_translation = self._decode_newlines_from_llm(
-                translated_text.strip()
-            )
-            final_translation = self._preprocessor.postprocess(
-                decoded_translation, mappings[idx]
-            )
+            final_translation = self._decode_newlines_from_llm(translated_text.strip())
             decoded_sl_count, decoded_pl_count = self._count_newline_breaks(
                 final_translation
             )
@@ -403,9 +337,13 @@ class TranslationPipeline:
                     translation=final_translation,
                     chunk_id=chunks[idx]["chunk_id"],
                     metadata={
-                        "had_glossary_terms": len(mappings[idx]) > 0,
-                        "glossary_terms_count": len(mappings[idx]),
-                        "batch_translated": True,
+                        "source_length": len(chunks[idx]["content"]),
+                        "batched": True,
+                        "batch_id": None,
+                        "glossary_hints": chunk_glossary_hints[idx],
+                        "had_glossary_terms": len(chunk_glossary_hints[idx]) > 0,
+                        "glossary_terms_count": len(chunk_glossary_hints[idx]),
+                        "skipped_placeholder": False,
                         "newline_codec_applied": True,
                         "source_sl_count": source_breaks[idx]["source_sl_count"],
                         "source_pl_count": source_breaks[idx]["source_pl_count"],
@@ -423,15 +361,32 @@ class TranslationPipeline:
     def _load_state(self) -> Dict[str, Any]:
         """Load intermediate state from file."""
         if self.state_file and self.state_file.exists():
-            return json.loads(self.state_file.read_text(encoding="utf-8"))
+            data = json.loads(self.state_file.read_text(encoding="utf-8"))
+            return {
+                "completed": data.get("completed", []),
+                "results": data.get("results", []),
+            }
         return {"completed": [], "results": []}
 
-    def _save_state(self, state: Dict[str, Any]) -> None:
-        """Save intermediate state to file."""
+    def _save_state(self, state: Dict[str, Any], total_chunks: int = 0) -> None:
+        """Save intermediate state to file with v2.0 schema."""
         if self.state_file:
             self.state_file.parent.mkdir(parents=True, exist_ok=True)
+            output = {
+                "version": "2.0",
+                "meta": {
+                    "model": self.model_name,
+                    "hq_mode": self.hq_mode,
+                    "total_chunks": total_chunks,
+                    "started_at": self._started_at,
+                    "finished_at": state.get("_finished_at"),
+                    "total_seconds": state.get("_total_seconds"),
+                },
+                "completed": state["completed"],
+                "results": state["results"],
+            }
             self.state_file.write_text(
-                json.dumps(state, ensure_ascii=False, indent=2),
+                json.dumps(output, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
 
@@ -455,17 +410,16 @@ class TranslationPipeline:
         Returns:
             List of TranslatedChunk objects in the same order as input.
         """
-        # Load existing state for resume capability
+        self._started_at = datetime.now().isoformat()
+
         state = self._load_state()
         completed_ids = set(state["completed"])
 
-        # Build results map from existing state
         results_map: Dict[str, TranslatedChunk] = {}
         for result_data in state["results"]:
             chunk = TranslatedChunk(**result_data)
             results_map[chunk.chunk_id] = chunk
 
-        # Separate pure placeholder chunks from translatable chunks
         placeholder_pattern = re.compile(r"^\[\[[A-Z_]+_\d+\]\]$")
         placeholder_chunks = []
         translatable_chunks = []
@@ -477,14 +431,9 @@ class TranslationPipeline:
                 else:
                     translatable_chunks.append(c)
 
-        # Create TranslatedChunk objects for pure placeholders (no LLM call)
         for chunk_data in placeholder_chunks:
             chunk_id = chunk_data["chunk_id"]
             content = chunk_data["content"]
-
-            # Log skip
-            if self.logger:
-                self.logger.log_skip(chunk_id, "pure_placeholder", content)
 
             placeholder_result = TranslatedChunk(
                 source=content,
@@ -497,12 +446,9 @@ class TranslationPipeline:
             state["results"].append(placeholder_result.model_dump())
 
         if not translatable_chunks:
-            self._save_state(state)
+            self._save_state(state, total_chunks=len(chunks))
             return [results_map[chunk_data["chunk_id"]] for chunk_data in chunks]
 
-        # 分离短chunks和长chunks
-        # 短chunks (<threshold字符) 将被合并成batches
-        # 长chunks (>=threshold字符) 单独翻译
         SHORT_THRESHOLD = self.batch_short_threshold
         MAX_BATCH_CHARS = self.batch_max_chars
 
@@ -514,38 +460,22 @@ class TranslationPipeline:
             else:
                 long_chunks.append(c)
 
-        # 贪心装箱：按字符预算打包短chunks
-        batches = []
-        current_batch = []
+        batches: List[List[Dict[str, str]]] = []
+        current_batch: List[Dict[str, str]] = []
         current_len = 0
 
         for chunk in short_chunks:
             chunk_len = len(chunk["content"])
-            # 如果加入当前chunk会超过预算，先flush当前batch
             if current_len + chunk_len > MAX_BATCH_CHARS and current_batch:
                 batches.append(current_batch)
-                # Log batch creation
-                if self.logger:
-                    batch_id = f"batch_{len(batches) - 1}"
-                    total_chars = current_len
-                    self.logger.log_batch(
-                        batch_id, "short_chunks", len(current_batch), total_chars
-                    )
                 current_batch = []
                 current_len = 0
             current_batch.append(chunk)
             current_len += chunk_len
 
-        # flush剩余的batch
         if current_batch:
             batches.append(current_batch)
-            if self.logger:
-                batch_id = f"batch_{len(batches) - 1}"
-                self.logger.log_batch(
-                    batch_id, "short_chunks", len(current_batch), current_len
-                )
 
-        # 回调：报告合并统计 (batches数, 长chunks数, 总API调用数)
         total_api_calls = len(batches) + len(long_chunks)
         if batch_stats_callback:
             batch_stats_callback(len(batches), len(long_chunks), total_api_calls)
@@ -560,6 +490,7 @@ class TranslationPipeline:
             batch_index: int,
         ) -> List[TranslatedChunk]:
             nonlocal completed_count
+            batch_id = f"batch_{batch_index}"
             async with semaphore:
                 try:
                     batch_results = await self.translate_batch(
@@ -578,17 +509,8 @@ class TranslationPipeline:
                             fallback_results.append(result)
                         batch_results = fallback_results
 
-                    # Log each chunk in the batch
-                    if self.logger:
-                        batch_id = f"batch_{batch_index}"
-                        for chunk_data in batch_chunks:
-                            self.logger.log_chunk(
-                                chunk_data["chunk_id"],
-                                "short",
-                                len(chunk_data["content"]),
-                                batched=True,
-                                batch_id=batch_id,
-                            )
+                    for r in batch_results:
+                        r.metadata["batch_id"] = batch_id
 
                     async with progress_lock:
                         completed_count += len(batch_chunks)
@@ -609,18 +531,6 @@ class TranslationPipeline:
                         )
                         fallback_results.append(result)
 
-                    # Log each chunk in the batch (fallback case)
-                    if self.logger:
-                        batch_id = f"batch_{batch_index}"
-                        for chunk_data in batch_chunks:
-                            self.logger.log_chunk(
-                                chunk_data["chunk_id"],
-                                "short",
-                                len(chunk_data["content"]),
-                                batched=True,
-                                batch_id=batch_id,
-                            )
-
                     async with progress_lock:
                         completed_count += len(batch_chunks)
                         if progress_callback:
@@ -635,16 +545,9 @@ class TranslationPipeline:
             chunk_data: Dict[str, str],
         ) -> TranslatedChunk:
             async with semaphore:
-                chunk_id = chunk_data["chunk_id"]
-                content = chunk_data["content"]
-
-                # Log long chunk
-                if self.logger:
-                    self.logger.log_chunk(chunk_id, "long", len(content), batched=False)
-
                 result = await self.translate_chunk(
-                    chunk=content,
-                    chunk_id=chunk_id,
+                    chunk=chunk_data["content"],
+                    chunk_id=chunk_data["chunk_id"],
                     context=context,
                 )
 
@@ -694,8 +597,12 @@ class TranslationPipeline:
                 state["completed"].append(success_result.chunk_id)
                 state["results"].append(success_result.model_dump())
 
-        # Save final state
-        self._save_state(state)
+        finished_at = datetime.now().isoformat()
+        started_dt = datetime.fromisoformat(self._started_at)
+        finished_dt = datetime.fromisoformat(finished_at)
+        state["_finished_at"] = finished_at
+        state["_total_seconds"] = round((finished_dt - started_dt).total_seconds(), 2)
 
-        # Return results in original order
+        self._save_state(state, total_chunks=len(chunks))
+
         return [results_map[chunk_data["chunk_id"]] for chunk_data in chunks]

@@ -300,18 +300,9 @@ ieeA translate paper.tex
 
 ## Getting Help
 
-### Debug mode
+### Check translation state
 
-Run with verbose output:
-```bash
-ieeA translate paper.tex --verbose
-```
-
-### Check logs
-
-Logs are saved to:
-- `~/.ieeA/logs/` (user logs)
-- `./ieet.log` (project logs)
+翻译状态记录在 `translation_state.json` 文件中，包含完整的翻译元信息和每个 chunk 的详细 metadata。
 
 ### Reporting issues
 

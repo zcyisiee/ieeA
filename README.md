@@ -14,17 +14,6 @@ ieeA translate https://arxiv.org/abs/2301.07041 --output-dir output/
 
 ### 高级选项
 
-#### 详细日志模式
-使用 `--verbose/-v` 标志启用详细控制台输出：
-```bash
-ieeA translate https://arxiv.org/abs/2301.07041 --verbose
-```
-
-#### 日志文件
-每次翻译会自动生成结构化日志文件：
-- 位置: `output/<arxiv_id>/translation_log_<timestamp>.json`
-- 包含: 翻译配置、chunk 详情、批量信息、跳过的内容、耗时统计
-
 #### 批量翻译优化
 - 短内容（< 100 字符）会自动批量翻译，减少 API 调用
 - 纯占位符内容（如作者信息）会自动跳过翻译

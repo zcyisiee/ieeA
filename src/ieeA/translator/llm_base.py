@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Dict, Any, Union, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .logger import TranslationLogger
+from typing import List, Optional, Dict, Any, Union
 
 
 class LLMProvider(ABC):
@@ -12,12 +9,10 @@ class LLMProvider(ABC):
         self,
         model: str,
         api_key: Optional[str] = None,
-        logger: Optional["TranslationLogger"] = None,
         **kwargs,
     ):
         self.model = model
         self.api_key = api_key
-        self.logger = logger
         self.kwargs = kwargs
 
     @abstractmethod

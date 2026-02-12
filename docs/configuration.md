@@ -150,9 +150,6 @@ ieeA translate https://arxiv.org/abs/2301.07041 --high-quality --abstract "This 
 
 # Skip compilation or keep source
 ieeA translate paper.tex --no-compile --keep-source
-
-# Verbose logging
-ieeA translate paper.tex --verbose
 ```
 
 ## Complete Example Configuration

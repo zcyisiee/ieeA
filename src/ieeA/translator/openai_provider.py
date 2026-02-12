@@ -1,6 +1,5 @@
 # pyright: reportPossiblyUnboundVariable=false, reportOptionalMemberAccess=false
 import os
-import time
 from typing import Optional, Dict, List, Any, cast
 from .llm_base import LLMProvider
 from .prompts import build_system_prompt
@@ -68,15 +67,6 @@ class OpenAIProvider(LLMProvider):
             custom_system_prompt=custom_system_prompt,
         )
 
-        if self.logger:
-            self.logger.log_prompt_config(
-                system_prompt=system_content,
-                custom_system_prompt=custom_system_prompt,
-                glossary_terms=glossary_hints,
-                few_shot_count=len(few_shot_examples) if few_shot_examples else 0,
-                context=context,
-            )
-
         messages.append({"role": "system", "content": system_content})
 
         # Few-shot examples
@@ -91,14 +81,11 @@ class OpenAIProvider(LLMProvider):
         messages.append({"role": "user", "content": text})
 
         try:
-            start_time = time.time()
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 temperature=self.kwargs.get("temperature", 0.3),
             )
-            if self.logger:
-                self.logger.add_llm_time(time.time() - start_time)
             content = cast(str, response.choices[0].message.content or "")
             return content.strip()
         except Exception as e:
