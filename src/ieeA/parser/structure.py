@@ -1,4 +1,5 @@
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple, Union
@@ -168,3 +169,138 @@ class LaTeXDocument:
         with open(filepath, "r", encoding="utf-8") as f:
             data = json.load(f)
         return set(data["all_valid_placeholders"])
+
+
+def _levenshtein_distance(s1: str, s2: str) -> int:
+    """计算两个字符串之间的 Levenshtein 编辑距离。"""
+    if len(s1) < len(s2):
+        return _levenshtein_distance(s2, s1)
+    if len(s2) == 0:
+        return len(s1)
+    prev_row = list(range(len(s2) + 1))
+    for i, c1 in enumerate(s1):
+        curr_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = prev_row[j + 1] + 1
+            deletions = curr_row[j] + 1
+            substitutions = prev_row[j] + (0 if c1 == c2 else 1)
+            curr_row.append(min(insertions, deletions, substitutions))
+        prev_row = curr_row
+    return prev_row[-1]
+
+
+def validate_translated_placeholders(
+    translated_chunks: Dict[str, str],
+    doc: "LaTeXDocument",
+    valid_placeholders: Optional[Set[str]] = None,
+) -> Tuple[Dict[str, str], List[Dict]]:
+    """
+    校验并自动修复 LLM 翻译文本中的占位符问题。
+
+    - typo (编辑距离 ≤ 2): 自动替换为正确占位符
+    - hallucination (编辑距离 > 2 或跨 chunk 引用): 从文本中删除
+    - missing (源文本有但翻译中缺失): 仅记录警告，不修复
+
+    返回: (修复后的 translated_chunks, 问题列表)
+    """
+    # 1. 构建有效占位符集合
+    if valid_placeholders is None:
+        valid_placeholders = set(doc.global_placeholders.keys())
+        for chunk in doc.chunks:
+            valid_placeholders.update(chunk.preserved_elements.keys())
+
+    # 2. 白名单: 换行 token，跳过校验
+    whitelist = {"[[SL]]", "[[PL]]", "[[SL_RAW]]", "[[PL_RAW]]"}
+
+    # 3. 构建每个 chunk 源文本中的占位符映射
+    ph_pattern = re.compile(r"\[\[[A-Z_]+_\d+\]\]")
+
+    source_ph_map: Dict[str, Set[str]] = {}
+    chunk_map: Dict[str, Chunk] = {}
+    for chunk in doc.chunks:
+        source_ph_map[chunk.id] = set(ph_pattern.findall(chunk.content))
+        chunk_map[chunk.id] = chunk
+
+    # 4. 逐 chunk 校验
+    fixed_chunks: Dict[str, str] = {}
+    issues: List[Dict] = []
+
+    for chunk_id, translated_text in translated_chunks.items():
+        trans_phs = set(ph_pattern.findall(translated_text))
+        source_phs = source_ph_map.get(chunk_id, set())
+
+        # 找出翻译中多出的占位符 (spurious)
+        spurious = trans_phs - source_phs
+
+        for bad_ph in spurious:
+            # 跳过白名单
+            if bad_ph in whitelist:
+                continue
+
+            if bad_ph in valid_placeholders:
+                # 跨 chunk 引用 → hallucination，删除
+                translated_text = translated_text.replace(bad_ph, "")
+                issues.append(
+                    {
+                        "type": "hallucination",
+                        "chunk_id": chunk_id,
+                        "bad": bad_ph,
+                        "fixed_to": None,
+                    }
+                )
+            else:
+                # 不在全局有效集合中 → 尝试编辑距离匹配
+                best_match = None
+                best_dist = float("inf")
+                for src_ph in source_phs:
+                    dist = _levenshtein_distance(bad_ph, src_ph)
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_match = src_ph
+
+                if best_dist <= 2 and best_match is not None:
+                    # typo → 自动修复
+                    translated_text = translated_text.replace(bad_ph, best_match)
+                    issues.append(
+                        {
+                            "type": "typo_fixed",
+                            "chunk_id": chunk_id,
+                            "bad": bad_ph,
+                            "fixed_to": best_match,
+                        }
+                    )
+                else:
+                    # hallucination → 删除
+                    translated_text = translated_text.replace(bad_ph, "")
+                    issues.append(
+                        {
+                            "type": "hallucination",
+                            "chunk_id": chunk_id,
+                            "bad": bad_ph,
+                            "fixed_to": None,
+                        }
+                    )
+
+        # 找出源文本中有但翻译中缺失的占位符 (missing)
+        # 需要在修复后重新扫描
+        current_phs = set(ph_pattern.findall(translated_text))
+        missing = source_phs - current_phs
+        for miss_ph in missing:
+            if miss_ph in whitelist:
+                continue
+            issues.append(
+                {
+                    "type": "missing",
+                    "chunk_id": chunk_id,
+                    "bad": miss_ph,
+                    "fixed_to": None,
+                }
+            )
+
+        # 5. 空文本回退
+        if translated_text.strip() == "" and chunk_id in chunk_map:
+            translated_text = chunk_map[chunk_id].content
+
+        fixed_chunks[chunk_id] = translated_text
+
+    return fixed_chunks, issues
