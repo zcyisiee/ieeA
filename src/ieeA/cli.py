@@ -27,6 +27,7 @@ from ieeA.rules.glossary import load_glossary
 from ieeA.rules.examples import load_examples
 from ieeA.translator import get_sdk_client
 from ieeA.translator.pipeline import TranslationPipeline
+from ieeA.parser.structure import validate_translated_placeholders
 from ieeA.validator.engine import ValidationEngine
 
 app = typer.Typer(
@@ -151,6 +152,12 @@ def translate(
                     progress.update(task, description=f"[red]Parsing failed: {e}[/red]")
                     raise
 
+            # Save parser state for placeholder validation
+            parser_state_path = (
+                output_dir / download_result.arxiv_id / "parser_state.json"
+            )
+            doc.save_parser_state(parser_state_path)
+
             # 3. Translate
             console.print("\n[bold]Translating...[/bold]")
             glossary = load_glossary()
@@ -240,6 +247,32 @@ def translate(
 
             # Reconstruct
             translated_map = {r["chunk_id"]: r["translation"] for r in results}
+
+            translated_map, ph_issues = validate_translated_placeholders(
+                translated_map, doc
+            )
+
+            if ph_issues:
+                console.print(
+                    f"\n[yellow]Placeholder Issues ({len(ph_issues)}):[/yellow]"
+                )
+                for issue in ph_issues:
+                    if issue["type"] == "typo_fixed":
+                        console.print(
+                            f"[yellow]  TYPO FIXED: chunk {issue['chunk_id'][:8]}..., "
+                            f"{issue['bad']} → {issue['fixed_to']}[/yellow]"
+                        )
+                    elif issue["type"] == "hallucination":
+                        console.print(
+                            f"[yellow]  HALLUCINATION REMOVED: chunk {issue['chunk_id'][:8]}..., "
+                            f"{issue['bad']} deleted[/yellow]"
+                        )
+                    elif issue["type"] == "missing":
+                        console.print(
+                            f"[red]  MISSING: chunk {issue['chunk_id'][:8]}..., "
+                            f"{issue['bad']} lost in translation[/red]"
+                        )
+
             translated_tex, translated_chunk_start_lines = (
                 doc.reconstruct_with_chunk_start_lines(translated_map)
             )
