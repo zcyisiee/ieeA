@@ -1,5 +1,7 @@
+import json
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from pathlib import Path
+from typing import Dict, List, Optional, Set, Tuple, Union
 import uuid
 
 
@@ -126,3 +128,43 @@ class LaTeXDocument:
             translated_chunks=translated_chunks,
             collect_chunk_start_lines=True,
         )
+
+    def save_parser_state(self, filepath: Union[str, Path]) -> None:
+        """将完整的 parser 状态序列化为 JSON 文件。"""
+        filepath = Path(filepath)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+
+        state = {
+            "version": "1.0",
+            "global_placeholders": self.global_placeholders,
+            "chunks": [
+                {
+                    "id": chunk.id,
+                    "content": chunk.content,
+                    "context": chunk.context,
+                    "latex_wrapper": chunk.latex_wrapper,
+                    "preserved_elements": chunk.preserved_elements,
+                }
+                for chunk in self.chunks
+            ],
+            "all_valid_placeholders": sorted(
+                set(
+                    list(self.global_placeholders.keys())
+                    + [
+                        ph
+                        for chunk in self.chunks
+                        for ph in chunk.preserved_elements.keys()
+                    ]
+                )
+            ),
+        }
+
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(state, f, ensure_ascii=False, indent=2)
+
+    @classmethod
+    def load_valid_placeholders(cls, filepath: Union[str, Path]) -> Set[str]:
+        """从 JSON 文件加载所有有效的占位符集合。"""
+        with open(filepath, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return set(data["all_valid_placeholders"])
