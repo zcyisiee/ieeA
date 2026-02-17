@@ -36,6 +36,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest",
+  "pytest-asyncio",
   "ruff",
   "mypy",
   "build",
@@ -66,6 +67,10 @@ strict = true
 [tool.setuptools_scm]
 version_scheme = "post-release"
 local_scheme = "no-local-version"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
 
 [dependency-groups]
 dev = []
