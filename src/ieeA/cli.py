@@ -61,7 +61,7 @@ def translate(
     ),
     sdk: Optional[str] = typer.Option(
         None,
-        help="SDK to use (openai, openai-coding, anthropic, or None for direct HTTP)",
+        help="SDK to use (openai, openai-coding, anthropic, anthropic-coding, or None for direct HTTP)",
     ),
     model: Optional[str] = typer.Option(None, help="Model name to use"),
     key: Optional[str] = typer.Option(None, help="API Key"),
@@ -164,7 +164,7 @@ def translate(
             console.print("\n[bold]Translating...[/bold]")
             glossary = load_glossary()
             provider_kwargs: dict[str, Any] = {"temperature": config.llm.temperature}
-            if sdk_name == "openai-coding":
+            if sdk_name in ("openai-coding", "anthropic-coding"):
                 provider_kwargs["full_glossary"] = glossary
 
             provider = get_sdk_client(
@@ -203,7 +203,7 @@ def translate(
                 hq_mode=high_quality,
                 batch_short_threshold=config.translation.batch_short_threshold,
                 batch_max_chars=config.translation.batch_max_chars,
-                sequential_mode=(sdk_name == "openai-coding"),
+                sequential_mode=(sdk_name in ("openai-coding", "anthropic-coding")),
             )
 
             chunk_data = [{"chunk_id": c.id, "content": c.content} for c in doc.chunks]
@@ -458,7 +458,7 @@ def glossary_add(
 def ping(
     sdk: Optional[str] = typer.Option(
         None,
-        help="SDK to use (openai, openai-coding, anthropic, or None for direct HTTP)",
+        help="SDK to use (openai, openai-coding, anthropic, anthropic-coding, or None for direct HTTP)",
     ),
     model: Optional[str] = typer.Option(None, help="Model name to use"),
     key: Optional[str] = typer.Option(None, help="API Key"),

@@ -1,10 +1,11 @@
-import os
-from typing import Optional, Dict, List, Any
+# pyright: reportPossiblyUnboundVariable=false, reportOptionalMemberAccess=false
+from typing import Optional, Dict, List
 from .llm_base import LLMProvider
 from .prompts import build_system_prompt
 
+anthropic = None
 try:
-    from anthropic import AsyncAnthropic
+    import anthropic
 
     HAS_ANTHROPIC = True
 except ImportError:
@@ -16,6 +17,7 @@ class AnthropicProvider(LLMProvider):
         self,
         model: str = "claude-3-5-sonnet-20240620",
         api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
         **kwargs,
     ):
         super().__init__(model, api_key, **kwargs)
@@ -24,7 +26,7 @@ class AnthropicProvider(LLMProvider):
                 "anthropic package is required for AnthropicProvider. Please install it with `pip install anthropic`."
             )
 
-        self.client = AsyncAnthropic(api_key=api_key)
+        self.client = anthropic.AsyncAnthropic(api_key=api_key, base_url=base_url)
 
     async def translate(
         self,

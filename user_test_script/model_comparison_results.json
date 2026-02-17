@@ -1,0 +1,187 @@
+{
+  "meta": {
+    "test_time": "2026-02-16T23:35:30.194665",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "model_count": 12,
+    "success_count": 12,
+    "error_count": 0,
+    "source_text": "Artificial intelligence (AI) has achieved astonishing successes in many domains, especially with the recent breakthroughs in the development of foundational large models. These large models, leveraging their extensive training data, provide versatile solutions for a wide range of downstream tasks. However, as modern datasets become increasingly diverse and complex, the development of large AI models faces two major challenges: (1) the enormous consumption of computational resources and deployment difficulties, and (2) the difficulty in fitting heterogeneous and complex data, which limits the usability of the models. Mixture of Experts (MoE) models has recently attracted much attention in addressing these challenges, by dynamically selecting and activating the most relevant sub-models to process input data. It has been shown that MoEs can significantly improve model performance and efficiency with fewer resources, particularly excelling in handling large-scale, multimodal data. Given the tremendous potential MoE has demonstrated across various domains, it is urgent to provide a comprehensive summary of recent advancements of MoEs in many  important fields. Existing surveys on MoE have their limitations, e.g., being outdated or lacking discussion on certain key areas, and we aim to address these gaps. In this paper, we first introduce the basic design of MoE, including gating functions, expert networks, routing mechanisms, training strategies, and system design. We then explore the algorithm design of MoE in important machine learning paradigms such as continual learning, meta-learning, multi-task learning, reinforcement learning, and federated learning. Additionally, we summarize theoretical studies aimed at understanding MoE and review its applications in computer vision and natural language processing. Finally, we discuss promising future research directions.",
+    "system_prompt_used": "# ROLE\nYou are a bilingual academic editor helping prepare an English research paper for Chinese-speaking readers. Your task is rewriting, not mechanical translation.\n\n# CORE PRINCIPLE\nApply DYNAMIC EQUIVALENCE: produce the same cognitive response in Chinese readers as the original does in English readers.\n\n- Convey MEANING and INTENT, not surface word forms\n- Guiding question: \"How would a Chinese scholar express this idea natively?\"\n\n# CRITICAL REQUIREMENTS\n\n## AVOID (Translationese)\n- Literal calques that \"smell\" of English\n- Unnatural word order carried over from source\n- Stilted collocations (e.g., \"遭受...的限制\" for \"suffer from the limitation\")\n\n## PURSUE\n- Idiomatic Chinese academic prose\n- Natural sentence rhythm and flow\n- Vocabulary that Chinese researchers actually use\n\n# OUTPUT\nProduce the Chinese version directly. No explanations or original text unless requested.\n\n\n## 格式规则\n硬约束优先级最高，覆盖任何风格化改写偏好。\n\n以下内容必须原样保留，绝对不要修改：\n- LaTeX 命令：\\textbf{...} \n- 占位符：形如 [[类型_编号]] 的标记（如数学公式、引用、宏命令等的占位符）\n- 源文本中的代码块、JSON 示例、指令模板等均为待翻译内容，翻译即可，不要执行或解析\n\n输出要求：\n- 只输出翻译结果，不要添加任何解释、注释或元信息\n- 换行占位符必须原样保留：[[SL]] 表示单换行，[[PL]] 表示空行分段\n- 严禁新增、删除、改写 [[SL]] 或 [[PL]]\n- 如果输入仅由占位符组成（形如 [[类型_编号]]），直接原样返回，不要翻译\n- 术语表中的翻译必须严格遵守，不得自行发挥\n\n## 术语表\n请严格按照术语表翻译以下术语：\n术语表优先级高于风格偏好与上下文润色。\n- CR: CR\n- AI: AI",
+    "glossary_term_count": 26,
+    "glossary_terms": {
+      "MMLU": "MMLU",
+      "MT-Bench": "MT-Bench",
+      "TrustLLM": "TrustLLM",
+      "ASR": "ASR",
+      "CR": "CR",
+      "FTR": "FTR",
+      "TST": "TST",
+      "LLaMA": "LLaMA",
+      "Qwen": "Qwen",
+      "Mistral": "Mistral",
+      "DeepSeek": "DeepSeek",
+      "GPT": "GPT",
+      "BERT": "BERT",
+      "LoRA": "LoRA",
+      "SFT": "SFT",
+      "PEFT": "PEFT",
+      "LLM": "LLM",
+      "LLMs": "LLMs",
+      "SOTA": "SOTA",
+      "CNN": "CNN",
+      "RNN": "RNN",
+      "AI": "AI",
+      "NLP": "NLP",
+      "Transformer": "Transformer",
+      "shell": "shell",
+      "LLM-as-Judgement": "LLM-as-Judgement"
+    },
+    "example_count": 7
+  },
+  "results": [
+    {
+      "model": "anthropic/claude-opus-4.5",
+      "status": "success",
+      "translation": "人工智能（AI）在众多领域取得了令人瞩目的成就，尤其是近年来基础大模型的突破性进展。这些大模型凭借海量训练数据，为各类下游任务提供了通用的解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的发展面临两大挑战：（1）计算资源消耗巨大且部署困难；（2）难以拟合异构复杂数据，制约了模型的实用性。混合专家（MoE）模型通过动态选择并激活最相关的子模型来处理输入数据，近年来在应对上述挑战方面备受关注。研究表明，MoE 能够以更少的资源显著提升模型性能和效率，在处理大规模、多模态数据时表现尤为出色。鉴于 MoE 在各领域展现出的巨大潜力，亟需对其近期进展进行全面梳理。现有的 MoE 综述存在一定局限，如内容过时或对某些关键领域讨论不足，本文旨在弥补这些空白。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略和系统设计。随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计。此外，本文总结了旨在理解 MoE 的理论研究，并综述其在计算机视觉和自然语言处理领域的应用。最后，我们展望了未来有前景的研究方向。",
+      "latency_seconds": 8.47,
+      "usage": {
+        "prompt_tokens": 1792,
+        "completion_tokens": 522,
+        "total_tokens": 2314
+      },
+      "error": null
+    },
+    {
+      "model": "anthropic/claude-sonnet-4.5",
+      "status": "success",
+      "translation": "人工智能（AI）在诸多领域取得了令人瞩目的成就，尤其是近年来基础大模型的突破性进展。这些大模型凭借海量训练数据，为各类下游任务提供了通用解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的发展面临两大挑战：（1）计算资源消耗巨大且部署困难；（2）难以拟合异构复杂数据，限制了模型的实用性。混合专家模型（Mixture of Experts, MoE）近年来在应对这些挑战方面备受关注，其核心思想是动态选择并激活最相关的子模型来处理输入数据。研究表明，MoE 能够以更少的资源显著提升模型性能和效率，尤其在处理大规模、多模态数据时表现突出。鉴于 MoE 在各领域展现出的巨大潜力，亟需对其近期进展进行全面梳理。现有 MoE 综述存在一定局限，例如内容过时或缺乏对某些关键领域的讨论，本文旨在弥补这些不足。[[PL]]本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略和系统设计。随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计。此外，我们总结了旨在理解 MoE 的理论研究，并回顾其在计算机视觉和自然语言处理中的应用。最后，我们讨论了未来有前景的研究方向。",
+      "latency_seconds": 9.47,
+      "usage": {
+        "prompt_tokens": 1792,
+        "completion_tokens": 540,
+        "total_tokens": 2332
+      },
+      "error": null
+    },
+    {
+      "model": "anthropic/claude-haiku-4.5",
+      "status": "success",
+      "translation": "人工智能（AI）在许多领域取得了令人瞩目的成就，特别是随着基础大模型开发的最近突破。这些大模型利用其庞大的训练数据，为广泛的下游任务提供了通用解决方案。然而，随着现代数据集变得日益多样化和复杂，大 AI 模型的开发面临两大挑战：（1）计算资源消耗巨大且部署困难，（2）难以拟合异构且复杂的数据，这限制了模型的可用性。混合专家（MoE）模型近来因其通过动态选择和激活最相关的子模型来处理输入数据的方式而备受关注。研究表明，MoE 能够以更少的资源显著提升模型性能和效率，在处理大规模、多模态数据方面表现尤为突出。鉴于 MoE 在各个领域展现出的巨大潜力，迫切需要对 MoE 在许多重要领域的最新进展进行全面总结。现有的 MoE 综述存在局限性，例如内容陈旧或缺乏对某些关键领域的讨论，本文旨在弥补这些不足。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略和系统设计。随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计。此外，我们总结了旨在理解 MoE 的理论研究，并回顾了其在计算机视觉和自然语言处理中的应用。最后，我们讨论了有前景的未来研究方向。",
+      "latency_seconds": 5.58,
+      "usage": {
+        "prompt_tokens": 1792,
+        "completion_tokens": 543,
+        "total_tokens": 2335
+      },
+      "error": null
+    },
+    {
+      "model": "openai/gpt-5.2-chat",
+      "status": "success",
+      "translation": "人工智能（AI）近年来在诸多领域取得了令人瞩目的成就，尤其是基础大模型的突破性进展，显著推动了相关技术的发展。此类大模型依托海量训练数据，为各类下游任务提供了通用而灵活的解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的发展面临两方面的突出挑战：（1）对计算资源的巨大消耗及其部署难题；（2）难以有效建模异构且复杂的数据分布，从而制约了模型的实际应用。近年来，专家混合模型（Mixture of Experts, MoE）因能够通过动态选择并激活最相关的子模型来处理输入数据，而在应对上述挑战方面受到广泛关注。研究表明，MoE 在资源消耗更低的情况下即可显著提升模型性能与效率，尤其在大规模、多模态数据处理方面表现突出。鉴于 MoE 在多个领域展现出的巨大潜力，有必要对其在重要方向上的最新进展进行系统梳理。现有关于 MoE 的综述仍存在一定局限，例如内容相对滞后或对部分关键问题讨论不足，本文旨在弥补这些不足。本文首先介绍 MoE 的基本架构设计，包括门控函数、专家网络、路由机制、训练策略以及系统实现等方面；随后，探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计；此外，本文还总结了旨在深化对 MoE 理解的理论研究，并回顾其在计算机视觉与自然语言处理领域的应用；最后，对未来值得关注的研究方向进行展望。",
+      "latency_seconds": 7.45,
+      "usage": {
+        "prompt_tokens": 1498,
+        "completion_tokens": 390,
+        "total_tokens": 1888
+      },
+      "error": null
+    },
+    {
+      "model": "openai/gpt-5-mini",
+      "status": "success",
+      "translation": "人工智能（AI）在许多领域取得了令人瞩目的成功，尤其是随着基础大模型的最新突破性进展。这类大模型凭借海量训练数据，为各类下游任务提供了通用且高效的解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的发展面临两大挑战：一方面计算资源消耗巨大且部署难度高；另一方面难以拟合异构且复杂的数据，从而限制了模型的可用性。为应对这些挑战，Mixture of Experts（MoE）模型近年来受到广泛关注——它通过动态选择并激活最相关的子模型来处理输入数据。研究表明，MoE 能以更少的资源显著提升模型的性能与效率，尤为擅长处理大规模多模态数据。鉴于 MoE 在多个领域展现出的巨大潜力，迫切需要对其在若干重要领域的最新进展进行全面综述。现有关于 MoE 的综述存在不足，例如部分已过时或未涵盖若干关键议题，我们的工作旨在弥补这些空白。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略与系统设计；随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式下的算法设计；另外总结了旨在理解 MoE 的理论研究，并回顾其在计算机视觉与自然语言处理领域的应用。最后，我们讨论了若干有前景的未来研究方向。",
+      "latency_seconds": 21.48,
+      "usage": {
+        "prompt_tokens": 1498,
+        "completion_tokens": 2225,
+        "total_tokens": 3723
+      },
+      "error": null
+    },
+    {
+      "model": "openai/gpt-5-nano",
+      "status": "success",
+      "translation": "AI 在多领域取得了显著成就，尤其是在基础大型模型的发展方面。这些大型模型凭借海量的训练数据，为广泛的下游任务提供了多样化的解决方案。然而，随着现代数据集日益多样化和复杂化，大型AI模型的开发面临两大挑战：一是庞大的计算资源消耗与部署难度；二是难以适配异质且复杂的数据，限制了模型的可用性。专家混合（MoE）模型近年来在应对这些挑战方面备受关注，通过动态选择并激活最相关的子模型来处理输入数据。研究表明，MoE 能在更少资源下显著提升模型性能与效率，尤其在处理大规模多模态数据方面表现突出。鉴于 MoE 在各领域展现出的巨大潜力，亟需对 MoE 在众多重要领域的最新进展进行全面综述。现有的 MoE 综述存在一定局限性，例如信息滞后或对某些关键领域讨论不足，我们旨在弥补这些空白。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略和系统设计。随后，我们在持续学习、元学习、多任务学习、强化学习和联邦学习等重要的机器学习范式中探讨 MoE 的算法设计。此外，我们还对旨在理解 MoE 的理论研究进行总结，并回顾其在计算机视觉和自然语言处理领域的应用。最后，我们讨论未来具有前景的研究方向。",
+      "latency_seconds": 39.76,
+      "usage": {
+        "prompt_tokens": 1498,
+        "completion_tokens": 4255,
+        "total_tokens": 5753
+      },
+      "error": null
+    },
+    {
+      "model": "google/gemini-3-pro-preview",
+      "status": "success",
+      "translation": "AI 在众多领域取得了显著成就，尤其是近期基础大模型的突破性进展，更是引人瞩目。凭借海量的训练数据，这些大模型为各类下游任务提供了通用的解决方案。然而，随着现代数据集日趋多样化和复杂化，大 AI 模型的研发面临两大挑战：(1) 计算资源消耗巨大且部署困难；(2) 难以有效拟合异构复杂数据，从而限制了模型的适用性。混合专家（MoE）模型通过动态选择并激活最相关的子模型来处理输入数据，在应对上述挑战方面备受关注。研究表明，MoE 能以更少的资源显著提升模型性能与效率，在处理大规模多模态数据时表现尤为优异。鉴于 MoE 在各领域展现出的巨大潜力，亟需对其在众多重要领域的最新进展进行系统性梳理。现有的 MoE 综述存在内容陈旧或关键领域覆盖不全等局限，本文旨在填补这一空白。本文首先介绍了 MoE 的基础架构，包括门控函数、专家网络、路由机制、训练策略及系统设计。随后，我们探讨了 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计。此外，我们总结了旨在解析 MoE 机理的理论研究，并回顾了其在计算机视觉和自然语言处理领域的应用。最后，我们展望了未来具有前景的研究方向。",
+      "latency_seconds": 23.13,
+      "usage": {
+        "prompt_tokens": 1344,
+        "completion_tokens": 2500,
+        "total_tokens": 3844
+      },
+      "error": null
+    },
+    {
+      "model": "google/gemini-3-flash-preview",
+      "status": "success",
+      "translation": "人工智能（AI）在诸多领域取得了惊人的成就，尤其是近期基础大模型的研发取得了突破性进展。这些大模型凭借海量的训练数据，为各种下游任务提供了通用的解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的开发面临两大主要挑战：（1）巨大的计算资源消耗及部署难题；（2）难以拟合异构且复杂的数据，限制了模型的可用性。混合专家模型（MoE）通过动态选择并激活最相关的子模型来处理输入数据，在应对上述挑战方面受到了广泛关注。研究表明，MoE 能够以更少的资源显著提升模型性能与效率，在处理大规模多模态数据时表现尤为出色。鉴于 MoE 在各领域展现出的巨大潜力，亟需对 MoE 在多个重要领域的最新进展进行全面总结。现有的 MoE 综述存在一定的局限性，例如内容陈旧或缺乏对某些关键领域的讨论，本文旨在填补这些空白。在本文中，我们首先介绍了 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略及系统设计。随后，我们探讨了 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计。此外，我们还总结了旨在理解 MoE 的理论研究，并回顾了其在计算机视觉和自然语言处理中的应用。最后，我们讨论了具有前景的未来研究方向。",
+      "latency_seconds": 3.26,
+      "usage": {
+        "prompt_tokens": 1360,
+        "completion_tokens": 313,
+        "total_tokens": 1673
+      },
+      "error": null
+    },
+    {
+      "model": "qwen/qwen3-max-thinking",
+      "status": "success",
+      "translation": "人工智能（AI）在众多领域取得了令人瞩目的成就，尤其是在基础大模型研发方面的近期突破。这些大模型凭借海量训练数据，为广泛的下游任务提供了通用且高效的解决方案。然而，随着现代数据集日益多样化和复杂化，大 AI 模型的发展正面临两大主要挑战：（1）巨大的计算资源消耗与部署困难；（2）难以有效拟合异构且复杂的多源数据，从而限制了模型的实用性。近年来，混合专家（Mixture of Experts, MoE）模型因其通过动态选择并激活最相关的子模型来处理输入数据，在应对上述挑战方面受到广泛关注。研究表明，MoE 能以更少的资源显著提升模型性能与效率，尤其在处理大规模、多模态数据方面表现突出。鉴于 MoE 在多个领域展现出的巨大潜力，亟需对其在诸多重要方向上的最新进展进行全面梳理。现有 MoE 综述存在局限性，例如内容过时或缺乏对某些关键领域的讨论，本文旨在弥补这些不足。我们首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略与系统设计；随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计；此外，我们还总结了旨在理解 MoE 机理的理论研究，并回顾其在计算机视觉与自然语言处理中的应用；最后，我们讨论了若干具有前景的未来研究方向。",
+      "latency_seconds": 10.92,
+      "usage": {
+        "prompt_tokens": 1444,
+        "completion_tokens": 313,
+        "total_tokens": 1757
+      },
+      "error": null
+    },
+    {
+      "model": "qwen/qwen3.5-plus-02-15",
+      "status": "success",
+      "translation": "人工智能（AI）已在众多领域取得惊人成就，尤其是近期基础大模型的突破更是如此。这些大模型凭借海量训练数据，为广泛的下游任务提供了通用解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的开发面临两大挑战：(1) 计算资源消耗巨大且部署困难；(2) 难以拟合异构且复杂的数据，从而限制了模型的可用性。混合专家（MoE）模型通过动态选择并激活最相关的子模型来处理输入数据，最近在应对这些挑战方面备受关注。研究表明，MoE 能够以更少的资源显著提升模型性能与效率，在处理大规模多模态数据方面表现尤为出色。鉴于 MoE 在各领域展现出的巨大潜力，亟需对其在众多重要领域的最新进展进行全面综述。现有的 MoE 综述存在局限性，例如内容过时或缺乏对某些关键领域的探讨，本文旨在填补这些空白。文中首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略及系统设计；随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计；此外，总结旨在理解 MoE 的理论研究，并回顾其在计算机视觉和自然语言处理中的应用；最后，展望具有前景的未来研究方向。",
+      "latency_seconds": 5.25,
+      "usage": {
+        "prompt_tokens": 1422,
+        "completion_tokens": 266,
+        "total_tokens": 1688
+      },
+      "error": null
+    },
+    {
+      "model": "moonshotai/kimi-k2.5",
+      "status": "success",
+      "translation": "人工智能（AI）已在诸多领域取得令人瞩目的成就，尤其是近期基础大模型的突破性进展。这些大模型依托海量训练数据，为各类下游任务提供了通用解决方案。然而，随着现代数据集日益多样且复杂，大模型的发展面临两大核心挑战：（1）计算资源消耗巨大且部署困难；（2）难以拟合异构复杂数据，从而限制了模型的实用性。混合专家模型（MoE）近期备受关注，其通过动态选择并激活最相关的子模型来处理输入数据。研究表明，MoE 能够以更少的资源显著提升模型性能与效率，尤其擅长处理大规模多模态数据。鉴于 MoE 在各领域展现出的巨大潜力，亟需对其在重要领域的最新进展进行全面总结。现有 MoE 综述存在局限，例如内容过时或缺乏对某些关键领域的探讨，本文旨在填补这些空白。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略及系统设计；随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计；此外，总结旨在深入理解 MoE 的理论研究，并综述其在计算机视觉与自然语言处理中的应用；最后讨论未来富有前景的研究方向。",
+      "latency_seconds": 28.45,
+      "usage": {
+        "prompt_tokens": 1391,
+        "completion_tokens": 1019,
+        "total_tokens": 2410
+      },
+      "error": null
+    },
+    {
+      "model": "deepseek/deepseek-v3.2",
+      "status": "success",
+      "translation": "{\"result\": \"人工智能（AI）已在诸多领域取得令人瞩目的成就，特别是在基础大模型研发方面近期取得的突破性进展。这些大模型凭借其海量的训练数据，为广泛的下游任务提供了通用的解决方案。然而，随着现代数据集日益多样化和复杂化，大型AI模型的开发面临两大挑战：（1）巨大的计算资源消耗与部署困难；（2）难以拟合异构复杂数据，从而限制了模型的可用性。[[SL]]专家混合（MoE）模型通过动态选择和激活最相关的子模型来处理输入数据，为应对这些挑战提供了新的思路，近期备受关注。研究表明，MoE能以更少的资源显著提升模型性能与效率，尤其擅长处理大规模、多模态数据。鉴于MoE在各领域展现的巨大潜力，对许多重要领域中MoE的最新进展进行全面梳理已十分迫切。[[SL]]现有的MoE综述研究存在一定局限，例如内容过时或对某些关键领域讨论不足，本文旨在弥补这些空白。本文首先介绍MoE的基本设计，包括门控函数、专家网络、路由机制、训练策略与系统设计；随后探讨MoE在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计；此外，本文总结了旨在理解MoE的理论研究，并回顾了其在计算机视觉和自然语言处理领域的应用；最后，我们讨论了未来潜在的研究方向。\"}",
+      "latency_seconds": 50.16,
+      "usage": {
+        "prompt_tokens": 1345,
+        "completion_tokens": 287,
+        "total_tokens": 1632
+      },
+      "error": null
+    }
+  ]
+}

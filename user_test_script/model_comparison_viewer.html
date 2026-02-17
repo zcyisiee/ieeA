@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>模型翻译对比</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;background:#f5f5f7;color:#1d1d1f;-webkit-font-smoothing:antialiased}
+
+  .container{max-width:1560px;margin:0 auto;padding:40px 32px 60px}
+
+  header{margin-bottom:36px}
+  header h1{font-size:28px;font-weight:600;letter-spacing:-.3px;margin-bottom:6px}
+  header .sub{font-size:13px;color:#86868b;font-weight:400}
+
+  .source-panel{background:#fff;border-radius:14px;padding:28px 32px;margin-bottom:32px;border:1px solid #e5e5ea}
+  .source-panel .label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#86868b;margin-bottom:12px}
+  .source-panel .text{font-size:14px;line-height:1.75;color:#1d1d1f}
+
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+  .card{background:#fff;border-radius:14px;border:1px solid #e5e5ea;display:flex;flex-direction:column;transition:box-shadow .2s ease,border-color .2s ease;position:relative;overflow:hidden}
+  .card:hover{border-color:#d2d2d7;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+
+  .card-head{padding:16px 20px 12px;border-bottom:1px solid #f0f0f3;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .model-name{font-size:14px;font-weight:600;color:#1d1d1f}
+  .provider-tag{font-size:10px;font-weight:500;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px}
+  .provider-anthropic{background:#fef3e6;color:#c87a2a}
+  .provider-openai{background:#e8f5e9;color:#2e7d32}
+  .provider-google{background:#e3f2fd;color:#1565c0}
+  .provider-qwen{background:#f3e5f5;color:#7b1fa2}
+  .provider-moonshot{background:#fce4ec;color:#c62828}
+  .provider-deepseek{background:#e0f2f1;color:#00695c}
+
+  .card-body{padding:16px 20px;flex:1;overflow-y:auto;max-height:280px}
+  .card-body::-webkit-scrollbar{width:3px}
+  .card-body::-webkit-scrollbar-thumb{background:#d1d1d6;border-radius:3px}
+  .card-body .translation{font-size:13px;line-height:1.8;color:#333}
+
+  .card-foot{padding:10px 20px;border-top:1px solid #f0f0f3;display:flex;gap:16px;font-size:11px;color:#86868b;flex-shrink:0}
+  .card-foot span{display:flex;align-items:center;gap:4px}
+  .card-foot .dot{width:4px;height:4px;border-radius:50%;background:#86868b;display:inline-block}
+
+  @media(max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:860px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>模型翻译对比</h1>
+    <div class="sub">12 models · temperature 0.5 · OpenRouter API · 2026-02-16</div>
+  </header>
+
+  <div class="source-panel">
+    <div class="label">原文 · Source</div>
+    <div class="text" id="source-text"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const DATA = {
+  source: "Artificial intelligence (AI) has achieved astonishing successes in many domains, especially with the recent breakthroughs in the development of foundational large models. These large models, leveraging their extensive training data, provide versatile solutions for a wide range of downstream tasks. However, as modern datasets become increasingly diverse and complex, the development of large AI models faces two major challenges: (1) the enormous consumption of computational resources and deployment difficulties, and (2) the difficulty in fitting heterogeneous and complex data, which limits the usability of the models. Mixture of Experts (MoE) models has recently attracted much attention in addressing these challenges, by dynamically selecting and activating the most relevant sub-models to process input data. It has been shown that MoEs can significantly improve model performance and efficiency with fewer resources, particularly excelling in handling large-scale, multimodal data. Given the tremendous potential MoE has demonstrated across various domains, it is urgent to provide a comprehensive summary of recent advancements of MoEs in many important fields. Existing surveys on MoE have their limitations, e.g., being outdated or lacking discussion on certain key areas, and we aim to address these gaps. In this paper, we first introduce the basic design of MoE, including gating functions, expert networks, routing mechanisms, training strategies, and system design. We then explore the algorithm design of MoE in important machine learning paradigms such as continual learning, meta-learning, multi-task learning, reinforcement learning, and federated learning. Additionally, we summarize theoretical studies aimed at understanding MoE and review its applications in computer vision and natural language processing. Finally, we discuss promising future research directions.",
+  results: [
+    {model:"Claude Opus 4.5",provider:"anthropic",translation:"人工智能（AI）在众多领域取得了令人瞩目的成就，尤其是近年来基础大模型的突破性进展。这些大模型凭借海量训练数据，为各类下游任务提供了通用的解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的发展面临两大挑战：（1）计算资源消耗巨大且部署困难；（2）难以拟合异构复杂数据，制约了模型的实用性。混合专家（MoE）模型通过动态选择并激活最相关的子模型来处理输入数据，近年来在应对上述挑战方面备受关注。研究表明，MoE 能够以更少的资源显著提升模型性能和效率，在处理大规模、多模态数据时表现尤为出色。鉴于 MoE 在各领域展现出的巨大潜力，亟需对其近期进展进行全面梳理。现有的 MoE 综述存在一定局限，如内容过时或对某些关键领域讨论不足，本文旨在弥补这些空白。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略和系统设计。随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计。此外，本文总结了旨在理解 MoE 的理论研究，并综述其在计算机视觉和自然语言处理领域的应用。最后，我们展望了未来有前景的研究方向。",latency:8.47,tokens:2314},
+    {model:"Claude Sonnet 4.5",provider:"anthropic",translation:"人工智能（AI）在诸多领域取得了令人瞩目的成就，尤其是近年来基础大模型的突破性进展。这些大模型凭借海量训练数据，为各类下游任务提供了通用解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的发展面临两大挑战：（1）计算资源消耗巨大且部署困难；（2）难以拟合异构复杂数据，限制了模型的实用性。混合专家模型（Mixture of Experts, MoE）近年来在应对这些挑战方面备受关注，其核心思想是动态选择并激活最相关的子模型来处理输入数据。研究表明，MoE 能够以更少的资源显著提升模型性能和效率，尤其在处理大规模、多模态数据时表现突出。鉴于 MoE 在各领域展现出的巨大潜力，亟需对其近期进展进行全面梳理。现有 MoE 综述存在一定局限，例如内容过时或缺乏对某些关键领域的讨论，本文旨在弥补这些不足。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略和系统设计。随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计。此外，我们总结了旨在理解 MoE 的理论研究，并回顾其在计算机视觉和自然语言处理中的应用。最后，我们讨论了未来有前景的研究方向。",latency:9.47,tokens:2332},
+    {model:"Claude Haiku 4.5",provider:"anthropic",translation:"人工智能（AI）在许多领域取得了令人瞩目的成就，特别是随着基础大模型开发的最近突破。这些大模型利用其庞大的训练数据，为广泛的下游任务提供了通用解决方案。然而，随着现代数据集变得日益多样化和复杂，大 AI 模型的开发面临两大挑战：（1）计算资源消耗巨大且部署困难，（2）难以拟合异构且复杂的数据，这限制了模型的可用性。混合专家（MoE）模型近来因其通过动态选择和激活最相关的子模型来处理输入数据的方式而备受关注。研究表明，MoE 能够以更少的资源显著提升模型性能和效率，在处理大规模、多模态数据方面表现尤为突出。鉴于 MoE 在各个领域展现出的巨大潜力，迫切需要对 MoE 在许多重要领域的最新进展进行全面总结。现有的 MoE 综述存在局限性，例如内容陈旧或缺乏对某些关键领域的讨论，本文旨在弥补这些不足。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略和系统设计。随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计。此外，我们总结了旨在理解 MoE 的理论研究，并回顾了其在计算机视觉和自然语言处理中的应用。最后，我们讨论了有前景的未来研究方向。",latency:5.58,tokens:2335},
+    {model:"GPT-5.2 Chat",provider:"openai",translation:"人工智能（AI）近年来在诸多领域取得了令人瞩目的成就，尤其是基础大模型的突破性进展，显著推动了相关技术的发展。此类大模型依托海量训练数据，为各类下游任务提供了通用而灵活的解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的发展面临两方面的突出挑战：（1）对计算资源的巨大消耗及其部署难题；（2）难以有效建模异构且复杂的数据分布，从而制约了模型的实际应用。近年来，专家混合模型（Mixture of Experts, MoE）因能够通过动态选择并激活最相关的子模型来处理输入数据，而在应对上述挑战方面受到广泛关注。研究表明，MoE 在资源消耗更低的情况下即可显著提升模型性能与效率，尤其在大规模、多模态数据处理方面表现突出。鉴于 MoE 在多个领域展现出的巨大潜力，有必要对其在重要方向上的最新进展进行系统梳理。现有关于 MoE 的综述仍存在一定局限，例如内容相对滞后或对部分关键问题讨论不足，本文旨在弥补这些不足。本文首先介绍 MoE 的基本架构设计，包括门控函数、专家网络、路由机制、训练策略以及系统实现等方面；随后，探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计；此外，本文还总结了旨在深化对 MoE 理解的理论研究，并回顾其在计算机视觉与自然语言处理领域的应用；最后，对未来值得关注的研究方向进行展望。",latency:7.45,tokens:1888},
+    {model:"GPT-5 Mini",provider:"openai",translation:"人工智能（AI）在许多领域取得了令人瞩目的成功，尤其是随着基础大模型的最新突破性进展。这类大模型凭借海量训练数据，为各类下游任务提供了通用且高效的解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的发展面临两大挑战：一方面计算资源消耗巨大且部署难度高；另一方面难以拟合异构且复杂的数据，从而限制了模型的可用性。为应对这些挑战，Mixture of Experts（MoE）模型近年来受到广泛关注——它通过动态选择并激活最相关的子模型来处理输入数据。研究表明，MoE 能以更少的资源显著提升模型的性能与效率，尤为擅长处理大规模多模态数据。鉴于 MoE 在多个领域展现出的巨大潜力，迫切需要对其在若干重要领域的最新进展进行全面综述。现有关于 MoE 的综述存在不足，例如部分已过时或未涵盖若干关键议题，我们的工作旨在弥补这些空白。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略与系统设计；随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式下的算法设计；另外总结了旨在理解 MoE 的理论研究，并回顾其在计算机视觉与自然语言处理领域的应用。最后，我们讨论了若干有前景的未来研究方向。",latency:21.48,tokens:3723},
+    {model:"GPT-5 Nano",provider:"openai",translation:"AI 在多领域取得了显著成就，尤其是在基础大型模型的发展方面。这些大型模型凭借海量的训练数据，为广泛的下游任务提供了多样化的解决方案。然而，随着现代数据集日益多样化和复杂化，大型AI模型的开发面临两大挑战：一是庞大的计算资源消耗与部署难度；二是难以适配异质且复杂的数据，限制了模型的可用性。专家混合（MoE）模型近年来在应对这些挑战方面备受关注，通过动态选择并激活最相关的子模型来处理输入数据。研究表明，MoE 能在更少资源下显著提升模型性能与效率，尤其在处理大规模多模态数据方面表现突出。鉴于 MoE 在各领域展现出的巨大潜力，亟需对 MoE 在众多重要领域的最新进展进行全面综述。现有的 MoE 综述存在一定局限性，例如信息滞后或对某些关键领域讨论不足，我们旨在弥补这些空白。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略和系统设计。随后，我们在持续学习、元学习、多任务学习、强化学习和联邦学习等重要的机器学习范式中探讨 MoE 的算法设计。此外，我们还对旨在理解 MoE 的理论研究进行总结，并回顾其在计算机视觉和自然语言处理领域的应用。最后，我们讨论未来具有前景的研究方向。",latency:39.76,tokens:5753},
+    {model:"Gemini 3 Pro",provider:"google",translation:"AI 在众多领域取得了显著成就，尤其是近期基础大模型的突破性进展，更是引人瞩目。凭借海量的训练数据，这些大模型为各类下游任务提供了通用的解决方案。然而，随着现代数据集日趋多样化和复杂化，大 AI 模型的研发面临两大挑战：(1) 计算资源消耗巨大且部署困难；(2) 难以有效拟合异构复杂数据，从而限制了模型的适用性。混合专家（MoE）模型通过动态选择并激活最相关的子模型来处理输入数据，在应对上述挑战方面备受关注。研究表明，MoE 能以更少的资源显著提升模型性能与效率，在处理大规模多模态数据时表现尤为优异。鉴于 MoE 在各领域展现出的巨大潜力，亟需对其在众多重要领域的最新进展进行系统性梳理。现有的 MoE 综述存在内容陈旧或关键领域覆盖不全等局限，本文旨在填补这一空白。本文首先介绍了 MoE 的基础架构，包括门控函数、专家网络、路由机制、训练策略及系统设计。随后，我们探讨了 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计。此外，我们总结了旨在解析 MoE 机理的理论研究，并回顾了其在计算机视觉和自然语言处理领域的应用。最后，我们展望了未来具有前景的研究方向。",latency:23.13,tokens:3844},
+    {model:"Gemini 3 Flash",provider:"google",translation:"人工智能（AI）在诸多领域取得了惊人的成就，尤其是近期基础大模型的研发取得了突破性进展。这些大模型凭借海量的训练数据，为各种下游任务提供了通用的解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的开发面临两大主要挑战：（1）巨大的计算资源消耗及部署难题；（2）难以拟合异构且复杂的数据，限制了模型的可用性。混合专家模型（MoE）通过动态选择并激活最相关的子模型来处理输入数据，在应对上述挑战方面受到了广泛关注。研究表明，MoE 能够以更少的资源显著提升模型性能与效率，在处理大规模多模态数据时表现尤为出色。鉴于 MoE 在各领域展现出的巨大潜力，亟需对 MoE 在多个重要领域的最新进展进行全面总结。现有的 MoE 综述存在一定的局限性，例如内容陈旧或缺乏对某些关键领域的讨论，本文旨在填补这些空白。在本文中，我们首先介绍了 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略及系统设计。随后，我们探讨了 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计。此外，我们还总结了旨在理解 MoE 的理论研究，并回顾了其在计算机视觉和自然语言处理中的应用。最后，我们讨论了具有前景的未来研究方向。",latency:3.26,tokens:1673},
+    {model:"Qwen3 Max Thinking",provider:"qwen",translation:"人工智能（AI）在众多领域取得了令人瞩目的成就，尤其是在基础大模型研发方面的近期突破。这些大模型凭借海量训练数据，为广泛的下游任务提供了通用且高效的解决方案。然而，随着现代数据集日益多样化和复杂化，大 AI 模型的发展正面临两大主要挑战：（1）巨大的计算资源消耗与部署困难；（2）难以有效拟合异构且复杂的多源数据，从而限制了模型的实用性。近年来，混合专家（Mixture of Experts, MoE）模型因其通过动态选择并激活最相关的子模型来处理输入数据，在应对上述挑战方面受到广泛关注。研究表明，MoE 能以更少的资源显著提升模型性能与效率，尤其在处理大规模、多模态数据方面表现突出。鉴于 MoE 在多个领域展现出的巨大潜力，亟需对其在诸多重要方向上的最新进展进行全面梳理。现有 MoE 综述存在局限性，例如内容过时或缺乏对某些关键领域的讨论，本文旨在弥补这些不足。我们首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略与系统设计；随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计；此外，我们还总结了旨在理解 MoE 机理的理论研究，并回顾其在计算机视觉与自然语言处理中的应用；最后，我们讨论了若干具有前景的未来研究方向。",latency:10.92,tokens:1757},
+    {model:"Qwen3.5 Plus",provider:"qwen",translation:"人工智能（AI）已在众多领域取得惊人成就，尤其是近期基础大模型的突破更是如此。这些大模型凭借海量训练数据，为广泛的下游任务提供了通用解决方案。然而，随着现代数据集日益多样化和复杂化，大型 AI 模型的开发面临两大挑战：(1) 计算资源消耗巨大且部署困难；(2) 难以拟合异构且复杂的数据，从而限制了模型的可用性。混合专家（MoE）模型通过动态选择并激活最相关的子模型来处理输入数据，最近在应对这些挑战方面备受关注。研究表明，MoE 能够以更少的资源显著提升模型性能与效率，在处理大规模多模态数据方面表现尤为出色。鉴于 MoE 在各领域展现出的巨大潜力，亟需对其在众多重要领域的最新进展进行全面综述。现有的 MoE 综述存在局限性，例如内容过时或缺乏对某些关键领域的探讨，本文旨在填补这些空白。文中首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略及系统设计；随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计；此外，总结旨在理解 MoE 的理论研究，并回顾其在计算机视觉和自然语言处理中的应用；最后，展望具有前景的未来研究方向。",latency:5.25,tokens:1688},
+    {model:"Kimi K2.5",provider:"moonshot",translation:"人工智能（AI）已在诸多领域取得令人瞩目的成就，尤其是近期基础大模型的突破性进展。这些大模型依托海量训练数据，为各类下游任务提供了通用解决方案。然而，随着现代数据集日益多样且复杂，大模型的发展面临两大核心挑战：（1）计算资源消耗巨大且部署困难；（2）难以拟合异构复杂数据，从而限制了模型的实用性。混合专家模型（MoE）近期备受关注，其通过动态选择并激活最相关的子模型来处理输入数据。研究表明，MoE 能够以更少的资源显著提升模型性能与效率，尤其擅长处理大规模多模态数据。鉴于 MoE 在各领域展现出的巨大潜力，亟需对其在重要领域的最新进展进行全面总结。现有 MoE 综述存在局限，例如内容过时或缺乏对某些关键领域的探讨，本文旨在填补这些空白。本文首先介绍 MoE 的基本设计，包括门控函数、专家网络、路由机制、训练策略及系统设计；随后探讨 MoE 在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计；此外，总结旨在深入理解 MoE 的理论研究，并综述其在计算机视觉与自然语言处理中的应用；最后讨论未来富有前景的研究方向。",latency:28.45,tokens:2410},
+    {model:"DeepSeek V3.2",provider:"deepseek",translation:"人工智能（AI）已在诸多领域取得令人瞩目的成就，特别是在基础大模型研发方面近期取得的突破性进展。这些大模型凭借其海量的训练数据，为广泛的下游任务提供了通用的解决方案。然而，随着现代数据集日益多样化和复杂化，大型AI模型的开发面临两大挑战：（1）巨大的计算资源消耗与部署困难；（2）难以拟合异构复杂数据，从而限制了模型的可用性。专家混合（MoE）模型通过动态选择和激活最相关的子模型来处理输入数据，为应对这些挑战提供了新的思路，近期备受关注。研究表明，MoE能以更少的资源显著提升模型性能与效率，尤其擅长处理大规模、多模态数据。鉴于MoE在各领域展现的巨大潜力，对许多重要领域中MoE的最新进展进行全面梳理已十分迫切。现有的MoE综述研究存在一定局限，例如内容过时或对某些关键领域讨论不足，本文旨在弥补这些空白。本文首先介绍MoE的基本设计，包括门控函数、专家网络、路由机制、训练策略与系统设计；随后探讨MoE在持续学习、元学习、多任务学习、强化学习和联邦学习等重要机器学习范式中的算法设计；此外，本文总结了旨在理解MoE的理论研究，并回顾了其在计算机视觉和自然语言处理领域的应用；最后，我们讨论了未来潜在的研究方向。",latency:50.16,tokens:1632}
+  ]
+};
+
+document.getElementById("source-text").textContent = DATA.source;
+
+const grid = document.getElementById("grid");
+DATA.results.forEach(r => {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML =
+    '<div class="card-head">' +
+      '<span class="model-name">' + r.model + '</span>' +
+      '<span class="provider-tag provider-' + r.provider + '">' + r.provider + '</span>' +
+    '</div>' +
+    '<div class="card-body"><div class="translation">' + r.translation + '</div></div>' +
+    '<div class="card-foot">' +
+      '<span>' + r.latency + 's</span>' +
+      '<span class="dot"></span>' +
+      '<span>' + r.tokens.toLocaleString() + ' tokens</span>' +
+    '</div>';
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>
