@@ -54,7 +54,8 @@ ieeA translate https://arxiv.org/abs/2301.07041 --output-dir output/
 
 ### 3. 翻译 (Translator)
 - 并发调用 LLM API 翻译各 Chunk
-- 支持术语表 (Glossary) 保持术语一致性
+- 支持术语表 (Glossary) 保持术语一致性，使用词边界匹配避免误匹配
+- 文档级术语表过滤：翻译前一次性扫描全文，构建稳定的 system prompt 以命中 LLM 提供商的前缀缓存
 - 自动重试和断点续传
 
 ### 4. 重组 (Reconstructor)
@@ -71,7 +72,7 @@ ieeA translate https://arxiv.org/abs/2301.07041 --output-dir output/
 
 ```yaml
 llm:
-  # SDK: openai | openai-coding | anthropic | null（null 表示直连 HTTP）
+  # SDK: openai | openai-coding | anthropic | ark | null（null 表示直连 HTTP）
   sdk: null
   # 模型名或列表（列表时取第一个）
   models: openai/gpt-5-mini
@@ -149,6 +150,37 @@ ieeA translate https://arxiv.org/abs/2301.07041 --sdk openai-coding
 
 **适用场景：** 使用支持 KV cache 前缀匹配的提供商（如 OpenAI、DeepSeek）时，推荐使用此模式以获得更好的术语一致性和更低的推理成本。
 
+### 缓存命中优化
+
+默认模式（`openai`、`anthropic`、直连 HTTP）下，系统会自动优化缓存命中：
+
+1. **文档级术语表过滤**：翻译开始前扫描全文，一次性筛选出文档实际用到的术语，避免每个 chunk 产生不同的 system prompt
+2. **稳定 System Prompt**：为 individual 请求和 batch 请求分别预构建固定的 system prompt，整个文档翻译过程中保持不变
+3. **Provider 适配**：
+   - OpenAI / 通用 HTTP：保持 prompt 稳定即可自动命中前缀缓存（零配置）
+   - Anthropic：使用 system blocks 格式并标记 `cache_control: {"type": "ephemeral"}`，显式触发缓存
+   - 火山引擎 (Ark)：使用 Context API 缓存 system prompt，5 分钟 TTL，过期自动重建
+
+无需额外配置，选择对应的 `sdk` 即可生效。
+
+### 火山引擎 (Ark)
+
+将 `llm.sdk` 设为 `ark` 使用火山引擎的大模型服务，通过 Context API 实现 system prompt 缓存：
+
+```yaml
+llm:
+  sdk: ark
+  models: ep-xxxxxxxx  # 火山引擎模型接入点 ID
+  key: "your-api-key"
+  endpoint: https://ark.cn-beijing.volces.com/api/v3
+```
+
+需要额外安装依赖：
+
+```bash
+pip install -e ".[ark]"
+```
+
 ### 术语表
 
 术语表位置：`~/.ieeA/glossary.yaml`
@@ -167,14 +199,14 @@ ieeA translate https://arxiv.org/abs/2301.07041 --sdk openai-coding
 
 ## 支持的 LLM
 
-| 提供商 | 模型示例 | 环境变量 |
-|--------|----------|----------|
-| OpenAI | gpt-4o, gpt-4o-mini | `OPENAI_API_KEY` |
-| Claude | claude-3-opus, claude-3-sonnet | `ANTHROPIC_API_KEY` |
-| Qwen | qwen-turbo, qwen-max | `DASHSCOPE_API_KEY` |
-| Doubao | doubao-pro-* | `VOLCENGINE_API_KEY` |
+| 提供商 | SDK | 模型示例 | 缓存机制 |
+|--------|-----|----------|----------|
+| OpenAI | `openai` | gpt-4o, gpt-4o-mini | 自动前缀缓存 |
+| Claude | `anthropic` | claude-3-opus, claude-3-sonnet | 显式 cache_control |
+| 火山引擎 | `ark` | doubao-pro-* | Context API |
+| 通用 HTTP | `null` | 任意 OpenAI 兼容接口 | 服务端隐式缓存 |
 
-**提示**：可通过 `base_url` 配置使用 OpenRouter 等代理服务。
+**提示**：可通过 `endpoint` 配置使用 OpenRouter 等代理服务。
 
 ## 项目结构
 
