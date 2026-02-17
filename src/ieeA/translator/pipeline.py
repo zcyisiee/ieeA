@@ -52,6 +52,7 @@ class TranslationPipeline:
         batch_short_threshold: int = 300,
         batch_max_chars: int = 2000,
         sequential_mode: bool = False,
+        request_timeout: float = 120.0,
     ):
         self.provider = provider
         self.glossary = glossary or Glossary()
@@ -67,6 +68,7 @@ class TranslationPipeline:
         self.batch_short_threshold = batch_short_threshold
         self.batch_max_chars = batch_max_chars
         self.sequential_mode = sequential_mode
+        self.request_timeout = request_timeout
         self._started_at: Optional[str] = None
         self._last_provider_cache_meta: Optional[Dict[str, Any]] = None
 
@@ -190,27 +192,35 @@ class TranslationPipeline:
 
         for attempt in range(self.max_retries):
             try:
-                result = await self.provider.translate(
-                    text=text,
-                    context=context,
-                    glossary_hints=glossary_hints,
-                    few_shot_examples=self.few_shot_examples,
-                    custom_system_prompt=self.custom_system_prompt,
+                result = await asyncio.wait_for(
+                    self.provider.translate(
+                        text=text,
+                        context=context,
+                        glossary_hints=glossary_hints,
+                        few_shot_examples=self.few_shot_examples,
+                        custom_system_prompt=self.custom_system_prompt,
+                    ),
+                    timeout=self.request_timeout,
                 )
                 self._last_provider_cache_meta = getattr(
                     self.provider, "_last_cache_meta", None
                 )
                 return result
+            except asyncio.TimeoutError:
+                last_error = TimeoutError(
+                    f"Request timed out after {self.request_timeout}s "
+                    f"(attempt {attempt + 1}/{self.max_retries})"
+                )
+                if attempt < self.max_retries - 1:
+                    delay = self.retry_delay * (2**attempt)
+                    await asyncio.sleep(delay)
             except Exception as e:
                 last_error = e
                 if attempt < self.max_retries - 1:
-                    # Check if it's a rate limit error (429)
                     error_str = str(e).lower()
                     if "429" in error_str or "rate limit" in error_str:
-                        # Longer delay for rate limit errors
                         delay = max(5.0, self.retry_delay * (3**attempt))
                     else:
-                        # Standard exponential backoff
                         delay = self.retry_delay * (2**attempt)
                     await asyncio.sleep(delay)
 
@@ -713,7 +723,24 @@ class TranslationPipeline:
         long_tasks = [translate_with_semaphore(c) for c in long_chunks]
 
         all_tasks = batch_tasks + long_tasks
-        results = await asyncio.gather(*all_tasks, return_exceptions=True)
+
+        # Cache warmup: send the first request alone to establish prefix cache
+        # on the server side, then concurrently send remaining requests.
+        if all_tasks:
+            try:
+                first_result = await all_tasks[0]
+            except Exception as e:
+                first_result = e
+
+            if len(all_tasks) > 1:
+                remaining_results = await asyncio.gather(
+                    *all_tasks[1:], return_exceptions=True
+                )
+                results = [first_result] + list(remaining_results)
+            else:
+                results = [first_result]
+        else:
+            results = []
 
         for i, result in enumerate(results):
             if isinstance(result, Exception):
