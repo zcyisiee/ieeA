@@ -19,6 +19,8 @@ class DirectHTTPProvider(LLMProvider):
             raise ValueError("endpoint is required for DirectHTTPProvider")
         self.endpoint = endpoint
         self.client = httpx.AsyncClient()
+        self._prebuilt_system_prompt: Optional[str] = None
+        self._prebuilt_batch_prompt: Optional[str] = None
 
     async def translate(
         self,
@@ -30,12 +32,15 @@ class DirectHTTPProvider(LLMProvider):
     ) -> str:
         messages = []
 
-        system_content = build_system_prompt(
-            glossary_hints=glossary_hints,
-            context=context,
-            few_shot_examples=few_shot_examples,
-            custom_system_prompt=custom_system_prompt,
-        )
+        if self._prebuilt_system_prompt is not None and glossary_hints is None:
+            system_content = self._prebuilt_system_prompt
+        else:
+            system_content = build_system_prompt(
+                glossary_hints=glossary_hints,
+                context=context,
+                few_shot_examples=few_shot_examples,
+                custom_system_prompt=custom_system_prompt,
+            )
 
         messages.append({"role": "system", "content": system_content})
 
