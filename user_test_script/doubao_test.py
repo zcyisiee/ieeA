@@ -209,6 +209,7 @@ async def run_all_models(
     api_key: str,
     models: List[str],
     messages: List[Dict[str, str]],
+    temperature: float = 0.5,
     concurrency: int = 3,
 ) -> List[Dict[str, Any]]:
     semaphore = asyncio.Semaphore(concurrency)
@@ -216,7 +217,9 @@ async def run_all_models(
     async def sem_call(client: httpx.AsyncClient, model: str) -> Dict[str, Any]:
         async with semaphore:
             print(f"  ⏳ 正在调用: {model} ...")
-            result = await call_model(client, endpoint, api_key, model, messages)
+            result = await call_model(
+                client, endpoint, api_key, model, messages, temperature
+            )
             icon = "✅" if result["status"] == "success" else "❌"
             print(f"  {icon} {model} — {result['latency_seconds']}s")
             return result
@@ -240,6 +243,7 @@ async def main():
     # ---- 豆包配置 ----
     endpoint = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
     api_key = "88e7ced4-88dc-42ab-a7f0-c394be1adf27"
+    temperature = 0.2  # 低温测试
     models = [
         "doubao-seed-2-0-pro-260215",
         "doubao-seed-2-0-lite-260215",
@@ -310,8 +314,10 @@ async def main():
     )
 
     # ---- 调用豆包模型 ----
-    print(f"\n🚀 开始测试 {len(models)} 个豆包模型...\n")
-    results = await run_all_models(endpoint, api_key, models, messages)
+    print(f"\n🚀 开始测试 {len(models)} 个豆包模型 (temperature={temperature})...\n")
+    results = await run_all_models(
+        endpoint, api_key, models, messages, temperature=temperature
+    )
 
     # ---- 汇总 ----
     success_count = sum(1 for r in results if r["status"] == "success")
@@ -330,6 +336,8 @@ async def main():
         existing_data = {"meta": {}, "results": []}
 
     # 追加结果
+    for r in results:
+        r["temperature"] = temperature
     existing_data["results"].extend(results)
     # 更新 meta
     existing_data["meta"]["model_count"] = len(existing_data["results"])

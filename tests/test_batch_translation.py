@@ -197,3 +197,77 @@ class TestBatchTranslationIntegration:
         assert len(results) == 2
         assert "翻译:" in results[0].translation
         assert "翻译:" in results[1].translation
+
+
+class TestNewlineHallucinationHandling:
+    """Tests for raw newline stripping and newline token mismatch warnings."""
+
+    @pytest.mark.asyncio
+    async def test_translate_chunk_strips_raw_newlines_from_llm_output(self):
+        """LLM 返回真实换行时应被剔除，并保留 token 解码结果。"""
+        mock_provider = AsyncMock()
+        # 包含 1 个真实换行 + 1 个换行 token
+        mock_provider.translate = AsyncMock(return_value="甲\n[[SL]]乙")
+
+        pipeline = TranslationPipeline(provider=mock_provider)
+        result = await pipeline.translate_chunk("A\nB", chunk_id="chunk_1")
+
+        assert result.translation == "甲\n乙"
+        assert result.metadata["raw_newline_removed_count"] == 1
+        assert result.metadata["newline_token_mismatch"] is False
+        assert result.metadata["llm_sl_token_count"] == 1
+        assert result.metadata["llm_pl_token_count"] == 0
+        assert result.metadata["newline_warning"] != ""
+
+    @pytest.mark.asyncio
+    async def test_translate_chunk_warns_on_newline_token_mismatch(self):
+        """当 LLM 新增 [[SL]]/[[PL]] 时应标记 mismatch。"""
+        mock_provider = AsyncMock()
+        # 源文本 1 个 [[SL]]，返回 2 个 [[SL]]
+        mock_provider.translate = AsyncMock(return_value="甲[[SL]][[SL]]乙")
+
+        pipeline = TranslationPipeline(provider=mock_provider)
+        result = await pipeline.translate_chunk("A\nB", chunk_id="chunk_2")
+
+        assert result.translation == "甲\n\n乙"
+        assert result.metadata["raw_newline_removed_count"] == 0
+        assert result.metadata["newline_token_mismatch"] is True
+        assert result.metadata["llm_sl_token_count"] == 2
+        assert result.metadata["source_sl_count"] == 1
+        assert "mismatch" in result.metadata["newline_warning"].lower()
+
+    @pytest.mark.asyncio
+    async def test_translate_batch_uses_same_newline_postprocess(self):
+        """batch 路径应同样剔除真实换行并标记 token mismatch。"""
+        mock_provider = AsyncMock()
+
+        async def mock_translate(
+            text,
+            context=None,
+            glossary_hints=None,
+            few_shot_examples=None,
+            custom_system_prompt=None,
+        ):
+            if "[1]" in text and "[2]" in text:
+                return "[1] 一\n[[SL]]二\n[2] 三[[PL]][[PL]]四"
+            return "unexpected"
+
+        mock_provider.translate = mock_translate
+        pipeline = TranslationPipeline(provider=mock_provider)
+
+        chunks = [
+            {"chunk_id": "c1", "content": "X\nY"},
+            {"chunk_id": "c2", "content": "P\n\nQ"},
+        ]
+        results = await pipeline.translate_batch(chunks=chunks)
+
+        assert len(results) == 2
+        # chunk1: 删除真实换行，token 数量匹配
+        assert results[0].translation == "一\n二"
+        assert results[0].metadata["raw_newline_removed_count"] == 1
+        assert results[0].metadata["newline_token_mismatch"] is False
+        # chunk2: [[PL]] 多一个，触发 mismatch
+        assert results[1].translation == "三\n\n\n\n四"
+        assert results[1].metadata["newline_token_mismatch"] is True
+        assert results[1].metadata["llm_pl_token_count"] == 2
+        assert results[1].metadata["source_pl_count"] == 1
