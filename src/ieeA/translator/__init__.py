@@ -5,6 +5,7 @@ from .openai_coding_provider import OpenAICodingProvider
 from .anthropic_provider import AnthropicProvider
 from .anthropic_coding_provider import AnthropicCodingProvider
 from .http_provider import DirectHTTPProvider
+from .ark_provider import ArkProvider
 
 
 def _normalize_openai_base_url(endpoint: Optional[str]) -> Optional[str]:
@@ -73,12 +74,14 @@ def get_sdk_client(
             base_url=normalized_endpoint,
             **kwargs,
         )
+    elif sdk == "ark":
+        return ArkProvider(model=model, api_key=key, base_url=endpoint, **kwargs)
     elif sdk is None:
         return DirectHTTPProvider(model=model, api_key=key, endpoint=endpoint, **kwargs)
     else:
         raise ValueError(
             "Unknown sdk: "
-            f"{sdk}. Supported: openai, openai-coding, anthropic, anthropic-coding, None"
+            f"{sdk}. Supported: openai, openai-coding, anthropic, anthropic-coding, ark, None"
         )
 
 
@@ -89,5 +92,6 @@ __all__ = [
     "AnthropicProvider",
     "AnthropicCodingProvider",
     "DirectHTTPProvider",
+    "ArkProvider",
     "get_sdk_client",
 ]
