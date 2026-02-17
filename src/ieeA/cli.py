@@ -1,6 +1,7 @@
 import asyncio
 import os
 import shutil
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -445,6 +446,60 @@ def glossary_add(
         yaml.dump(data, f, allow_unicode=True)
 
     console.print(f"[green]Added term:[/green] {term} -> {translation}")
+
+
+@app.command()
+def ping(
+    sdk: Optional[str] = typer.Option(
+        None, help="SDK to use (openai, anthropic, or None for direct HTTP)"
+    ),
+    model: Optional[str] = typer.Option(None, help="Model name to use"),
+    key: Optional[str] = typer.Option(None, help="API Key"),
+    endpoint: Optional[str] = typer.Option(None, help="API endpoint URL"),
+):
+    """
+    Test LLM connectivity. Sends a minimal request to verify the configured LLM is reachable.
+    """
+    config = load_config()
+
+    sdk_name = sdk or config.llm.sdk
+    model_name = model or config.llm.get_model()
+    key_val = key or config.llm.key
+    endpoint_val = endpoint or config.llm.endpoint
+
+    console.print(
+        Panel.fit(
+            f"[bold blue]ieeA Ping[/bold blue]\n"
+            f"SDK: [green]{sdk_name or 'HTTP'}[/green]\n"
+            f"Model: [cyan]{model_name}[/cyan]\n"
+            f"Endpoint: [yellow]{endpoint_val or 'default'}[/yellow]",
+            title="Testing LLM Connectivity",
+        )
+    )
+
+    async def do_ping():
+        try:
+            provider = get_sdk_client(
+                sdk_name,
+                model=model_name,
+                key=key_val,
+                endpoint=endpoint_val,
+                temperature=config.llm.temperature,
+            )
+            start = time.perf_counter()
+            result = await provider.ping()
+            elapsed = time.perf_counter() - start
+
+            console.print(
+                f"\n[bold green]✅ 连通成功[/bold green]  "
+                f"耗时 [cyan]{elapsed:.2f}s[/cyan]\n"
+                f"  模型回复: [dim]{result[:120]}{'...' if len(result) > 120 else ''}[/dim]"
+            )
+        except Exception as e:
+            console.print(f"\n[bold red]❌ 连通失败[/bold red]\n  {e}")
+            raise typer.Exit(code=1)
+
+    asyncio.run(do_ping())
 
 
 @app.command()

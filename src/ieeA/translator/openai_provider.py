@@ -92,6 +92,14 @@ class OpenAIProvider(LLMProvider):
             # Handle API errors gracefully
             raise RuntimeError(f"OpenAI API error: {str(e)}") from e
 
+    async def ping(self) -> str:
+        response = await self.client.chat.completions.create(
+            model=self.model,
+            messages=[{"role": "user", "content": "Say hi"}],
+            max_tokens=10,
+        )
+        return cast(str, response.choices[0].message.content or "")
+
     def estimate_tokens(self, text: str) -> int:
         if HAS_TIKTOKEN and tiktoken is not None:
             try:

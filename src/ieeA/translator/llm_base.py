@@ -38,6 +38,9 @@ class LLMProvider(ABC):
         """
         pass
 
+    async def ping(self) -> str:
+        return await self.translate("Hi", context=None)
+
     @abstractmethod
     def estimate_tokens(self, text: str) -> int:
         """

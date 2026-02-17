@@ -73,6 +73,14 @@ class AnthropicProvider(LLMProvider):
         except Exception as e:
             raise RuntimeError(f"Anthropic API error: {str(e)}") from e
 
+    async def ping(self) -> str:
+        response = await self.client.messages.create(
+            model=self.model,
+            max_tokens=10,
+            messages=[{"role": "user", "content": "Say hi"}],
+        )
+        return "".join(b.text for b in response.content if b.type == "text").strip()
+
     def estimate_tokens(self, text: str) -> int:
         # Anthropic doesn't expose a simple local tokenizer in the SDK for estimation easily without calling API or using third party.
         # Simple heuristic: ~3.5 chars per token for English.

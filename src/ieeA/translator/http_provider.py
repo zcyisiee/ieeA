@@ -76,6 +76,21 @@ class DirectHTTPProvider(LLMProvider):
         except Exception as e:
             raise RuntimeError(f"HTTP API error: {str(e)}") from e
 
+    async def ping(self) -> str:
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+        request_body = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": "Say hi"}],
+            "max_tokens": 10,
+        }
+        response = await self.client.post(
+            self.endpoint, json=request_body, headers=headers
+        )
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"].strip()
+
     def estimate_tokens(self, text: str) -> int:
         # Heuristic: ~2.5 chars per token
         return int(len(text) / 2.5)
