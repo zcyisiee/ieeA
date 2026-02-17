@@ -49,6 +49,8 @@ class OpenAIProvider(LLMProvider):
             base_url=base_url,
             timeout=timeout_config,
         )
+        self._prebuilt_system_prompt: Optional[str] = None
+        self._prebuilt_batch_prompt: Optional[str] = None
 
     async def translate(
         self,
@@ -60,12 +62,16 @@ class OpenAIProvider(LLMProvider):
     ) -> str:
         messages = []
 
-        system_content = build_system_prompt(
-            glossary_hints=glossary_hints,
-            context=context,
-            few_shot_examples=few_shot_examples,
-            custom_system_prompt=custom_system_prompt,
-        )
+        # Use pre-built system prompt if available (cache optimization)
+        if self._prebuilt_system_prompt is not None and glossary_hints is None:
+            system_content = self._prebuilt_system_prompt
+        else:
+            system_content = build_system_prompt(
+                glossary_hints=glossary_hints,
+                context=context,
+                few_shot_examples=few_shot_examples,
+                custom_system_prompt=custom_system_prompt,
+            )
 
         messages.append({"role": "system", "content": system_content})
 

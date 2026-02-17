@@ -1,5 +1,5 @@
-# pyright: reportPossiblyUnboundVariable=false, reportOptionalMemberAccess=false
-from typing import Optional, Dict, List
+# pyright: reportPossiblyUnboundVariable=false, reportOptionalMemberAccess=false, reportArgumentType=false
+from typing import Optional, Dict, List, Union
 from .llm_base import LLMProvider
 from .prompts import build_system_prompt
 
@@ -27,6 +27,8 @@ class AnthropicProvider(LLMProvider):
             )
 
         self.client = anthropic.AsyncAnthropic(api_key=api_key, base_url=base_url)
+        self._prebuilt_system_prompt: Optional[str] = None
+        self._prebuilt_batch_prompt: Optional[str] = None
 
     async def translate(
         self,
@@ -36,12 +38,22 @@ class AnthropicProvider(LLMProvider):
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
         custom_system_prompt: Optional[str] = None,
     ) -> str:
-        system_content = build_system_prompt(
-            glossary_hints=glossary_hints,
-            context=context,
-            few_shot_examples=few_shot_examples,
-            custom_system_prompt=custom_system_prompt,
-        )
+        system_param: Union[str, List[Dict[str, Union[str, Dict]]]]
+        if self._prebuilt_system_prompt is not None and glossary_hints is None:
+            system_param = [
+                {
+                    "type": "text",
+                    "text": self._prebuilt_system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ]
+        else:
+            system_param = build_system_prompt(
+                glossary_hints=glossary_hints,
+                context=context,
+                few_shot_examples=few_shot_examples,
+                custom_system_prompt=custom_system_prompt,
+            )
 
         messages = []
 
@@ -60,7 +72,7 @@ class AnthropicProvider(LLMProvider):
             response = await self.client.messages.create(
                 model=self.model,
                 max_tokens=self.kwargs.get("max_tokens", 4096),
-                system=system_content,
+                system=system_param,
                 messages=messages,
                 temperature=self.kwargs.get("temperature", 0.3),
             )
