@@ -1,6 +1,7 @@
 from typing import Optional, Any
 from .llm_base import LLMProvider
 from .openai_provider import OpenAIProvider
+from .openai_coding_provider import OpenAICodingProvider
 from .anthropic_provider import AnthropicProvider
 from .http_provider import DirectHTTPProvider
 
@@ -40,17 +41,25 @@ def get_sdk_client(
         return OpenAIProvider(
             model=model, api_key=key, base_url=normalized_endpoint, **kwargs
         )
+    elif sdk == "openai-coding":
+        normalized_endpoint = _normalize_openai_base_url(endpoint)
+        return OpenAICodingProvider(
+            model=model, api_key=key, base_url=normalized_endpoint, **kwargs
+        )
     elif sdk == "anthropic":
         return AnthropicProvider(model=model, api_key=key, **kwargs)
     elif sdk is None:
         return DirectHTTPProvider(model=model, api_key=key, endpoint=endpoint, **kwargs)
     else:
-        raise ValueError(f"Unknown sdk: {sdk}. Supported: openai, anthropic, None")
+        raise ValueError(
+            f"Unknown sdk: {sdk}. Supported: openai, openai-coding, anthropic, None"
+        )
 
 
 __all__ = [
     "LLMProvider",
     "OpenAIProvider",
+    "OpenAICodingProvider",
     "AnthropicProvider",
     "DirectHTTPProvider",
     "get_sdk_client",
