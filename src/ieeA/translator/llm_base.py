@@ -14,6 +14,7 @@ class LLMProvider(ABC):
         self.model = model
         self.api_key = api_key
         self.kwargs = kwargs
+        self._last_cache_meta: Optional[Dict[str, Any]] = None
 
     @abstractmethod
     async def translate(

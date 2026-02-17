@@ -1,5 +1,7 @@
 """Tests for provider cache mechanisms."""
 
+import asyncio
+import time
 import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
 
@@ -268,3 +270,200 @@ class TestArkProviderCache:
         source = inspect.getsource(ArkProvider.__init__)
         assert "_prebuilt_system_prompt" in source
         assert "_prebuilt_batch_prompt" in source
+
+    def test_ark_provider_uses_async_client(self):
+        """ArkProvider must use AsyncArk, not sync Ark."""
+        import inspect
+        from ieeA.translator.ark_provider import ArkProvider
+
+        source = inspect.getsource(ArkProvider)
+        # Must NOT contain sync Ark import/usage
+        assert "from volcenginesdkarkruntime import Ark " not in source
+        # Module-level import should be AsyncArk
+        import ieeA.translator.ark_provider as ark_mod
+
+        module_source = inspect.getsource(ark_mod)
+        assert "AsyncArk" in module_source
+        assert "import Ark as _ArkClass" not in module_source
+
+    def test_ark_translate_is_truly_async(self):
+        """ArkProvider.translate must be a coroutine function."""
+        import asyncio
+        from ieeA.translator.ark_provider import ArkProvider
+
+        assert asyncio.iscoroutinefunction(ArkProvider.translate)
+
+    def test_ark_setup_context_is_async(self):
+        """ArkProvider.setup_context must be a coroutine function."""
+        import asyncio
+        from ieeA.translator.ark_provider import ArkProvider
+
+        assert asyncio.iscoroutinefunction(ArkProvider.setup_context)
+
+    def test_ark_ping_is_async(self):
+        """ArkProvider.ping must be a coroutine function."""
+        import asyncio
+        from ieeA.translator.ark_provider import ArkProvider
+
+        assert asyncio.iscoroutinefunction(ArkProvider.ping)
+
+    def test_ark_all_sdk_calls_use_await(self):
+        """Every self.client.* call in ArkProvider must be awaited."""
+        import ast
+        import inspect
+        from ieeA.translator.ark_provider import ArkProvider
+
+        source = inspect.getsource(ArkProvider)
+        tree = ast.parse(source)
+
+        # Find all calls to self.client.* and verify they are wrapped in Await
+        class AwaitChecker(ast.NodeVisitor):
+            def __init__(self):
+                self.unawaited_calls = []
+                self._in_await = False
+
+            def visit_Await(self, node):
+                old = self._in_await
+                self._in_await = True
+                self.generic_visit(node)
+                self._in_await = old
+
+            def visit_Call(self, node):
+                # Check if this is a self.client.* call
+                if self._is_client_call(node.func):
+                    if not self._in_await:
+                        self.unawaited_calls.append(ast.dump(node.func))
+                self.generic_visit(node)
+
+            def _is_client_call(self, node):
+                """Check if node is self.client.something.something(...)"""
+                parts = []
+                current = node
+                while isinstance(current, ast.Attribute):
+                    parts.append(current.attr)
+                    current = current.value
+                if isinstance(current, ast.Attribute) and current.attr == "client":
+                    if (
+                        isinstance(current.value, ast.Name)
+                        and current.value.id == "self"
+                    ):
+                        return True
+                return False
+
+        checker = AwaitChecker()
+        checker.visit(tree)
+        assert checker.unawaited_calls == [], (
+            f"Found unawaited self.client.* calls: {checker.unawaited_calls}"
+        )
+
+    async def test_ark_concurrent_translate_not_serialized(self):
+        """Multiple ArkProvider.translate calls via gather should run concurrently."""
+        from ieeA.translator.ark_provider import ArkProvider, HAS_ARK
+
+        if not HAS_ARK:
+            pytest.skip("volcenginesdkarkruntime not installed")
+
+        # Create provider with mocked async client
+        provider = ArkProvider.__new__(ArkProvider)
+        provider.model = "test-model"
+        provider.api_key = "test"
+        provider.kwargs = {"temperature": 0.3}
+        provider._prebuilt_system_prompt = None
+        provider._prebuilt_batch_prompt = None
+        provider._context_id = None
+
+        # Mock the async client with a delay to simulate network latency
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "translated"
+        mock_response.usage = None
+
+        async def slow_create(**kwargs):
+            await asyncio.sleep(0.1)  # 100ms simulated latency
+            return mock_response
+
+        mock_client.chat.completions.create = slow_create
+        provider.client = mock_client
+
+        # Run 5 translations concurrently
+        n = 5
+        start = time.monotonic()
+        results = await asyncio.gather(
+            *[provider.translate(f"text {i}") for i in range(n)]
+        )
+        elapsed = time.monotonic() - start
+
+        assert len(results) == n
+        # If truly concurrent: ~0.1s. If serialized: ~0.5s.
+        # Allow generous margin but catch serialization.
+        assert elapsed < 0.3, (
+            f"5 concurrent calls took {elapsed:.2f}s — likely serialized "
+            f"(expected <0.3s for concurrent, got {elapsed:.2f}s)"
+        )
+
+    async def test_ark_extracts_cached_tokens_and_prints(self, capsys):
+        """ArkProvider should parse cached_tokens and print cache telemetry."""
+        from ieeA.translator.ark_provider import ArkProvider
+
+        provider = ArkProvider.__new__(ArkProvider)
+        provider.model = "test-model"
+        provider.api_key = "test"
+        provider.kwargs = {"temperature": 0.0}
+        provider._prebuilt_system_prompt = "FIXED_PROMPT"
+        provider._prebuilt_batch_prompt = None
+        provider._context_id = "ctx-123"
+
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "translated"
+        mock_response.usage = {
+            "prompt_tokens": 2551,
+            "completion_tokens": 133,
+            "total_tokens": 2684,
+            "prompt_tokens_details": {"cached_tokens": 2535},
+        }
+
+        mock_client.context.completions.create = AsyncMock(return_value=mock_response)
+        provider.client = mock_client
+
+        result = await provider.translate("hello", glossary_hints=None)
+
+        assert result == "translated"
+        assert provider._last_cache_meta is not None
+        assert provider._last_cache_meta["cache_hit"] is True
+        assert provider._last_cache_meta["cached_tokens"] == 2535
+        assert provider._last_cache_meta["prompt_tokens"] == 2551
+
+        out = capsys.readouterr().out
+        assert "[ARK CACHE]" in out
+        assert "cached_tokens=2535" in out
+        assert "hit=True" in out
+
+    async def test_pipeline_captures_provider_cache_meta(self):
+        """Pipeline metadata should include provider_cache_meta from provider side-channel."""
+        from ieeA.translator.pipeline import TranslationPipeline
+
+        provider = AsyncMock()
+
+        async def translate_side_effect(**kwargs):
+            provider._last_cache_meta = {
+                "provider": "ark",
+                "cache_hit": True,
+                "cached_tokens": 120,
+                "prompt_tokens": 140,
+                "completion_tokens": 20,
+                "total_tokens": 160,
+            }
+            return "你好"
+
+        provider.translate = AsyncMock(side_effect=translate_side_effect)
+
+        pipeline = TranslationPipeline(provider=provider)
+        chunk = await pipeline.translate_chunk("hello", chunk_id="chunk-1")
+
+        cache_meta = chunk.metadata.get("provider_cache_meta")
+        assert isinstance(cache_meta, dict)
+        assert cache_meta["cache_hit"] is True
+        assert cache_meta["cached_tokens"] == 120

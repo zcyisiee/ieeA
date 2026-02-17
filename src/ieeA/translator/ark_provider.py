@@ -6,11 +6,11 @@ from typing import Optional, Dict, List, Any
 from .llm_base import LLMProvider
 from .prompts import build_system_prompt
 
-_Ark = None
+_AsyncArk = None
 try:
-    from volcenginesdkarkruntime import Ark as _ArkClass
+    from volcenginesdkarkruntime import AsyncArk as _AsyncArkClass
 
-    _Ark = _ArkClass
+    _AsyncArk = _AsyncArkClass
     HAS_ARK = True
 except ImportError:
     HAS_ARK = False
@@ -27,7 +27,7 @@ class ArkProvider(LLMProvider):
         **kwargs,
     ):
         super().__init__(model, api_key, **kwargs)
-        if not HAS_ARK or _Ark is None:
+        if not HAS_ARK or _AsyncArk is None:
             raise ImportError(
                 "volcenginesdkarkruntime is required for ArkProvider. "
                 "Install with: pip install 'volcengine-python-sdk[ark]'"
@@ -39,12 +39,68 @@ class ArkProvider(LLMProvider):
         if base_url:
             client_kwargs["base_url"] = base_url
 
-        self.client = _Ark(**client_kwargs)
+        self.client = _AsyncArk(**client_kwargs)
         self._context_id: Optional[str] = None
         self._prebuilt_system_prompt: Optional[str] = None
         self._prebuilt_batch_prompt: Optional[str] = None
 
-    def setup_context(self, system_prompt: Optional[str] = None) -> None:
+    @staticmethod
+    def _get_field(obj: Any, key: str, default: Any = None) -> Any:
+        if obj is None:
+            return default
+        if isinstance(obj, dict):
+            return obj.get(key, default)
+        return getattr(obj, key, default)
+
+    def _extract_cache_meta(
+        self, response: Any, use_context: bool
+    ) -> Optional[Dict[str, Any]]:
+        def _to_int(value: Any) -> int:
+            try:
+                if isinstance(value, bool):
+                    return int(value)
+                if isinstance(value, (int, float, str)):
+                    return int(value)
+            except (TypeError, ValueError):
+                pass
+            return 0
+
+        usage = self._get_field(response, "usage", None)
+        if usage is None:
+            return None
+
+        prompt_tokens = _to_int(self._get_field(usage, "prompt_tokens", 0))
+        completion_tokens = _to_int(self._get_field(usage, "completion_tokens", 0))
+        total_tokens = _to_int(self._get_field(usage, "total_tokens", 0))
+
+        prompt_details = self._get_field(usage, "prompt_tokens_details", None)
+        cached_tokens = _to_int(self._get_field(prompt_details, "cached_tokens", 0))
+
+        return {
+            "provider": "ark",
+            "mode": "context" if use_context else "chat",
+            "context_id": self._context_id,
+            "cache_hit": cached_tokens > 0,
+            "cached_tokens": cached_tokens,
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": total_tokens,
+        }
+
+    @staticmethod
+    def _print_cache_meta(cache_meta: Dict[str, Any]) -> None:
+        print(
+            "[ARK CACHE] "
+            f"mode={cache_meta.get('mode')} "
+            f"hit={cache_meta.get('cache_hit')} "
+            f"cached_tokens={cache_meta.get('cached_tokens')} "
+            f"prompt_tokens={cache_meta.get('prompt_tokens')} "
+            f"completion_tokens={cache_meta.get('completion_tokens')} "
+            f"total_tokens={cache_meta.get('total_tokens')} "
+            f"context_id={cache_meta.get('context_id')}"
+        )
+
+    async def setup_context(self, system_prompt: Optional[str] = None) -> None:
         """Create a cached context with the system prompt.
 
         Args:
@@ -54,7 +110,7 @@ class ArkProvider(LLMProvider):
         if not prompt:
             return
 
-        context = self.client.context.create(
+        context = await self.client.context.create(
             model=self.model,
             mode="common_prefix",
             messages=[{"role": "system", "content": prompt}],
@@ -107,7 +163,7 @@ class ArkProvider(LLMProvider):
             if use_context:
                 # Use context API for cached system prompt
                 try:
-                    response = self.client.context.completions.create(
+                    response = await self.client.context.completions.create(
                         context_id=self._context_id,
                         model=self.model,
                         messages=messages,
@@ -115,9 +171,9 @@ class ArkProvider(LLMProvider):
                     )
                 except Exception:
                     # Context may have expired (TTL), rebuild and retry
-                    self.setup_context()
+                    await self.setup_context()
                     if self._context_id:
-                        response = self.client.context.completions.create(
+                        response = await self.client.context.completions.create(
                             context_id=self._context_id,
                             model=self.model,
                             messages=messages,
@@ -129,18 +185,23 @@ class ArkProvider(LLMProvider):
                         messages.insert(
                             0, {"role": "system", "content": system_content}
                         )
-                        response = self.client.chat.completions.create(
+                        response = await self.client.chat.completions.create(
                             model=self.model,
                             messages=messages,
                             temperature=self.kwargs.get("temperature", 0.3),
                         )
             else:
                 # Standard API call (no context caching)
-                response = self.client.chat.completions.create(
+                response = await self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
                     temperature=self.kwargs.get("temperature", 0.3),
                 )
+
+            cache_meta = self._extract_cache_meta(response, use_context)
+            self._last_cache_meta = cache_meta
+            if cache_meta is not None:
+                self._print_cache_meta(cache_meta)
 
             content = response.choices[0].message.content or ""
             return content.strip()
@@ -148,7 +209,7 @@ class ArkProvider(LLMProvider):
             raise RuntimeError(f"Ark API error: {str(e)}") from e
 
     async def ping(self) -> str:
-        response = self.client.chat.completions.create(
+        response = await self.client.chat.completions.create(
             model=self.model,
             messages=[{"role": "user", "content": "Say hi"}],
             max_tokens=10,

@@ -68,6 +68,7 @@ class TranslationPipeline:
         self.batch_max_chars = batch_max_chars
         self.sequential_mode = sequential_mode
         self._started_at: Optional[str] = None
+        self._last_provider_cache_meta: Optional[Dict[str, Any]] = None
 
     def _build_glossary_hints(self, text: str) -> Dict[str, str]:
         """Build glossary hints filtered by case-insensitive term matching."""
@@ -196,6 +197,9 @@ class TranslationPipeline:
                     few_shot_examples=self.few_shot_examples,
                     custom_system_prompt=self.custom_system_prompt,
                 )
+                self._last_provider_cache_meta = getattr(
+                    self.provider, "_last_cache_meta", None
+                )
                 return result
             except Exception as e:
                 last_error = e
@@ -249,6 +253,7 @@ class TranslationPipeline:
             context=merged_context,
             glossary_hints=None,
         )
+        provider_cache_meta = self._last_provider_cache_meta
 
         final_translation = self._decode_newlines_from_llm(raw_translation)
         decoded_sl_count, decoded_pl_count = self._count_newline_breaks(
@@ -272,6 +277,7 @@ class TranslationPipeline:
                 "source_pl_count": source_breaks["source_pl_count"],
                 "decoded_sl_count": decoded_sl_count,
                 "decoded_pl_count": decoded_pl_count,
+                "provider_cache_meta": provider_cache_meta,
             },
         )
 
@@ -325,6 +331,7 @@ class TranslationPipeline:
             context=merged_context,
             glossary_hints=None,
         )
+        provider_cache_meta = self._last_provider_cache_meta
 
         if original_prompt is not None:
             self.provider._prebuilt_system_prompt = original_prompt  # type: ignore[attr-defined]
@@ -364,6 +371,7 @@ class TranslationPipeline:
                         "source_pl_count": source_breaks[idx]["source_pl_count"],
                         "decoded_sl_count": decoded_sl_count,
                         "decoded_pl_count": decoded_pl_count,
+                        "provider_cache_meta": provider_cache_meta,
                     },
                 )
             )
