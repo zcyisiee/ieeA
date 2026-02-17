@@ -71,7 +71,7 @@ ieeA translate https://arxiv.org/abs/2301.07041 --output-dir output/
 
 ```yaml
 llm:
-  # SDK: openai | anthropic | null（null 表示直连 HTTP）
+  # SDK: openai | openai-coding | anthropic | null（null 表示直连 HTTP）
   sdk: null
   # 模型名或列表（列表时取第一个）
   models: openai/gpt-5-mini
@@ -116,6 +116,38 @@ parser:
   # 额外可翻译的 LaTeX 环境
   extra_translatable_environments: []
 ```
+
+### 迭代发送模式 (`openai-coding`)
+
+将 `llm.sdk` 设为 `openai-coding` 即可启用迭代发送模式。该模式下，翻译请求按顺序逐条发送，每次请求携带之前所有请求的完整对话历史，利用 LLM 提供商的 KV cache 前缀匹配来降低延迟和成本。
+
+```yaml
+# ~/.ieeA/config.yaml
+llm:
+  sdk: openai-coding
+  models: gpt-4o
+  key: "sk-xxx"
+  endpoint: https://api.openai.com/v1/chat/completions   # 接口仍为标准 v1/chat/completions
+```
+
+也可通过命令行参数指定：
+
+```bash
+ieeA translate https://arxiv.org/abs/2301.07041 --sdk openai-coding
+```
+
+**与默认模式的区别：**
+
+| | 默认模式 (`openai`) | 迭代模式 (`openai-coding`) |
+|---|---|---|
+| 并发 | 多请求并发 | 严格顺序，逐条发送 |
+| 上下文 | 每个 chunk 独立翻译 | 携带全部历史对话，术语用词自动保持一致 |
+| 术语表 | 按 chunk 内容过滤后发送 | 发送完整术语表（保证 system prompt 不变以命中缓存） |
+| 系统提示词 | 标准提示词 | 额外追加"保持专业名词一致性"指令 |
+| Few-shot | 注入 | 始终注入，且位置固定 |
+| 断点续传 | 支持 | 支持（对话历史随 state file 一同保存） |
+
+**适用场景：** 使用支持 KV cache 前缀匹配的提供商（如 OpenAI、DeepSeek）时，推荐使用此模式以获得更好的术语一致性和更低的推理成本。
 
 ### 术语表
 
