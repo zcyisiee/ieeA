@@ -74,11 +74,14 @@ class TranslationPipeline:
         if not text:
             return {}
 
-        folded_text = text.casefold()
         return {
             term: entry.target
             for term, entry in self.glossary.terms.items()
-            if term.casefold() in folded_text
+            if re.search(
+                r"(?<!\w)" + re.escape(term) + r"(?!\w)",
+                text,
+                re.IGNORECASE | re.ASCII,
+            )
         }
 
     def _assert_no_token_collision(self, text: str) -> None:
