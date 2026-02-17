@@ -60,7 +60,8 @@ def translate(
         Path("output"), "-o", "--output-dir", help="Directory to save results"
     ),
     sdk: Optional[str] = typer.Option(
-        None, help="SDK to use (openai, anthropic, or None for direct HTTP)"
+        None,
+        help="SDK to use (openai, openai-coding, anthropic, or None for direct HTTP)",
     ),
     model: Optional[str] = typer.Option(None, help="Model name to use"),
     key: Optional[str] = typer.Option(None, help="API Key"),
@@ -451,7 +452,8 @@ def glossary_add(
 @app.command()
 def ping(
     sdk: Optional[str] = typer.Option(
-        None, help="SDK to use (openai, anthropic, or None for direct HTTP)"
+        None,
+        help="SDK to use (openai, openai-coding, anthropic, or None for direct HTTP)",
     ),
     model: Optional[str] = typer.Option(None, help="Model name to use"),
     key: Optional[str] = typer.Option(None, help="API Key"),

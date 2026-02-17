@@ -17,8 +17,10 @@ class LLMConfig(BaseModel):
     @field_validator("sdk")
     @classmethod
     def validate_sdk(cls, v):
-        if v is not None and v not in ("openai", "anthropic"):
-            raise ValueError(f"sdk must be 'openai', 'anthropic', or None, got '{v}'")
+        if v is not None and v not in ("openai", "openai-coding", "anthropic"):
+            raise ValueError(
+                f"sdk must be 'openai', 'openai-coding', 'anthropic', or None, got '{v}'"
+            )
         return v
 
     @field_validator("models")
