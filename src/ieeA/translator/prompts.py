@@ -22,6 +22,9 @@ FORMAT_RULES = """## 格式规则
 - 如果输入仅由占位符组成（形如 [[类型_编号]]），直接原样返回，不要翻译
 - 术语表中的翻译必须严格遵守，不得自行发挥"""
 
+CODING_CONSISTENCY_RULE = """## 一致性要求
+保持专业名词一致性。对于同一概念，在整个翻译过程中使用相同的中文译法。"""
+
 
 # ============================================================================
 # 默认翻译风格提示词 - 用户可通过 config.yaml 的 custom_system_prompt 替换
@@ -39,6 +42,7 @@ def build_system_prompt(
     context: Optional[str] = None,
     few_shot_examples: Optional[List[Dict[str, str]]] = None,
     custom_system_prompt: Optional[str] = None,
+    coding_mode: bool = False,
     language: str = "zh",
 ) -> str:
     """Build unified system prompt for all providers.
@@ -66,6 +70,10 @@ def build_system_prompt(
 
     # 2. 组装：风格提示词 + 硬编码格式规则
     system_content = f"{style_prompt}\n\n{FORMAT_RULES}"
+
+    # 2.5 coding 模式追加一致性规则
+    if coding_mode:
+        system_content += f"\n\n{CODING_CONSISTENCY_RULE}"
 
     # 3. 添加术语表（如有）
     if glossary_hints:
