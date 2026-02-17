@@ -3,7 +3,7 @@ import os
 import shutil
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import typer
 import yaml
@@ -163,12 +163,16 @@ def translate(
             # 3. Translate
             console.print("\n[bold]Translating...[/bold]")
             glossary = load_glossary()
+            provider_kwargs: dict[str, Any] = {"temperature": config.llm.temperature}
+            if sdk_name == "openai-coding":
+                provider_kwargs["full_glossary"] = glossary
+
             provider = get_sdk_client(
                 sdk_name,
                 model=model_name,
                 key=key_val,
                 endpoint=endpoint_val,
-                temperature=config.llm.temperature,
+                **provider_kwargs,
             )
 
             # Prepare high-quality mode parameters
@@ -199,6 +203,7 @@ def translate(
                 hq_mode=high_quality,
                 batch_short_threshold=config.translation.batch_short_threshold,
                 batch_max_chars=config.translation.batch_max_chars,
+                sequential_mode=(sdk_name == "openai-coding"),
             )
 
             chunk_data = [{"chunk_id": c.id, "content": c.content} for c in doc.chunks]

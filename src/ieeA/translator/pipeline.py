@@ -51,6 +51,7 @@ class TranslationPipeline:
         hq_mode: bool = False,
         batch_short_threshold: int = 300,
         batch_max_chars: int = 2000,
+        sequential_mode: bool = False,
     ):
         self.provider = provider
         self.glossary = glossary or Glossary()
@@ -65,6 +66,7 @@ class TranslationPipeline:
         self.hq_mode = hq_mode
         self.batch_short_threshold = batch_short_threshold
         self.batch_max_chars = batch_max_chars
+        self.sequential_mode = sequential_mode
         self._started_at: Optional[str] = None
 
     def _build_glossary_hints(self, text: str) -> Dict[str, str]:
@@ -362,18 +364,22 @@ class TranslationPipeline:
         """Load intermediate state from file."""
         if self.state_file and self.state_file.exists():
             data = json.loads(self.state_file.read_text(encoding="utf-8"))
-            return {
+            state = {
                 "completed": data.get("completed", []),
                 "results": data.get("results", []),
             }
+            # Restore message_history if provider supports it
+            if hasattr(self.provider, "set_history") and "message_history" in data:
+                self.provider.set_history(data["message_history"])
+            return state
         return {"completed": [], "results": []}
 
     def _save_state(self, state: Dict[str, Any], total_chunks: int = 0) -> None:
-        """Save intermediate state to file with v2.0 schema."""
+        """Save intermediate state to file with v2.1 schema."""
         if self.state_file:
             self.state_file.parent.mkdir(parents=True, exist_ok=True)
             output = {
-                "version": "2.0",
+                "version": "2.1",
                 "meta": {
                     "model": self.model_name,
                     "hq_mode": self.hq_mode,
@@ -385,6 +391,9 @@ class TranslationPipeline:
                 "completed": state["completed"],
                 "results": state["results"],
             }
+            # Persist message_history if provider supports it
+            if hasattr(self.provider, "get_history"):
+                output["message_history"] = self.provider.get_history()
             self.state_file.write_text(
                 json.dumps(output, ensure_ascii=False, indent=2),
                 encoding="utf-8",
@@ -480,6 +489,82 @@ class TranslationPipeline:
         if batch_stats_callback:
             batch_stats_callback(len(batches), len(long_chunks), total_api_calls)
 
+        # --- SEQUENTIAL EXECUTION PATH ---
+        if self.sequential_mode:
+            completed_count = 0
+            total_pending = len(translatable_chunks)
+
+            for i, batch in enumerate(batches):
+                batch_id = f"batch_{i}"
+                try:
+                    batch_results = await self.translate_batch(
+                        chunks=batch,
+                        context=context,
+                    )
+                    if not batch_results:
+                        batch_results = []
+                        for chunk_data in batch:
+                            result = await self.translate_chunk(
+                                chunk=chunk_data["content"],
+                                chunk_id=chunk_data["chunk_id"],
+                                context=context,
+                            )
+                            batch_results.append(result)
+                except Exception:
+                    batch_results = []
+                    for chunk_data in batch:
+                        result = await self.translate_chunk(
+                            chunk=chunk_data["content"],
+                            chunk_id=chunk_data["chunk_id"],
+                            context=context,
+                        )
+                        batch_results.append(result)
+
+                for r in batch_results:
+                    r.metadata["batch_id"] = batch_id
+                    results_map[r.chunk_id] = r
+                    state["completed"].append(r.chunk_id)
+                    state["results"].append(r.model_dump())
+
+                completed_count += len(batch)
+                if progress_callback:
+                    try:
+                        progress_callback(completed_count, total_pending)
+                    except Exception:
+                        pass
+                self._save_state(state, total_chunks=len(chunks))
+
+            for chunk_data in long_chunks:
+                result = await self.translate_chunk(
+                    chunk=chunk_data["content"],
+                    chunk_id=chunk_data["chunk_id"],
+                    context=context,
+                )
+                results_map[result.chunk_id] = result
+                state["completed"].append(result.chunk_id)
+                state["results"].append(result.model_dump())
+
+                completed_count += 1
+                if progress_callback:
+                    try:
+                        progress_callback(completed_count, total_pending)
+                    except Exception:
+                        pass
+                self._save_state(state, total_chunks=len(chunks))
+
+            finished_at = datetime.now().isoformat()
+            started_dt = datetime.fromisoformat(self._started_at)
+            finished_dt = datetime.fromisoformat(finished_at)
+            state["_finished_at"] = finished_at
+            state["_total_seconds"] = round(
+                (finished_dt - started_dt).total_seconds(), 2
+            )
+            self._save_state(state, total_chunks=len(chunks))
+
+            return [results_map[chunk_data["chunk_id"]] for chunk_data in chunks]
+        # --- END SEQUENTIAL PATH ---
+
+        # --- CONCURRENT EXECUTION PATH (existing, unchanged) ---
         semaphore = asyncio.Semaphore(max_concurrent)
         completed_count = 0
         progress_lock = asyncio.Lock()
