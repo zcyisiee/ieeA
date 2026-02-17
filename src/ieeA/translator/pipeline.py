@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 from ..rules.glossary import Glossary
 from .llm_base import LLMProvider
-from .prompts import build_batch_translation_text
+from .prompts import build_batch_translation_text, build_system_prompt
 
 
 class TranslatedChunk(BaseModel):
@@ -244,11 +244,10 @@ class TranslationPipeline:
             else:
                 merged_context = f"Document Abstract:\n{self.abstract_context}"
 
-        # Call LLM with retry
         raw_translation = await self._call_with_retry(
             text=encoded_text,
             context=merged_context,
-            glossary_hints=glossary_hints,
+            glossary_hints=None,
         )
 
         final_translation = self._decode_newlines_from_llm(raw_translation)
@@ -313,11 +312,22 @@ class TranslationPipeline:
         else:
             merged_context = batch_instruction
 
+        # Use batch prompt for batch requests
+        original_prompt = getattr(self.provider, "_prebuilt_system_prompt", None)
+        if (
+            hasattr(self.provider, "_prebuilt_batch_prompt")
+            and self.provider._prebuilt_batch_prompt  # type: ignore[attr-defined]
+        ):
+            self.provider._prebuilt_system_prompt = self.provider._prebuilt_batch_prompt  # type: ignore[attr-defined]
+
         raw_response = await self._call_with_retry(
             text=batch_text,
             context=merged_context,
-            glossary_hints=batch_glossary_hints,
+            glossary_hints=None,
         )
+
+        if original_prompt is not None:
+            self.provider._prebuilt_system_prompt = original_prompt  # type: ignore[attr-defined]
 
         pattern = r"\[(\d+)\]\s*(.+?)(?=\[\d+\]|$)"
         matches = re.findall(pattern, raw_response, re.DOTALL)
@@ -460,6 +470,45 @@ class TranslationPipeline:
         if not translatable_chunks:
             self._save_state(state, total_chunks=len(chunks))
             return [results_map[chunk_data["chunk_id"]] for chunk_data in chunks]
+
+        # --- Document-level glossary + pre-built system prompts ---
+        all_text = " ".join(c["content"] for c in translatable_chunks)
+        doc_glossary = self._build_glossary_hints(all_text)
+
+        # Merge abstract context (same logic as translate_chunk)
+        merged_context = context
+        if self.abstract_context:
+            if context:
+                merged_context = (
+                    f"{context}\n\nDocument Abstract:\n{self.abstract_context}"
+                )
+            else:
+                merged_context = f"Document Abstract:\n{self.abstract_context}"
+
+        # Pre-build individual system prompt (for long_chunks)
+        individual_system_prompt = build_system_prompt(
+            glossary_hints=doc_glossary,
+            context=merged_context,
+            few_shot_examples=self.few_shot_examples,
+            custom_system_prompt=self.custom_system_prompt,
+        )
+
+        # Pre-build batch system prompt (includes batch_instruction in context)
+        batch_instruction = "请翻译以下编号内容，保持相同的编号格式返回。"
+        batch_merged_context = (
+            f"{batch_instruction}\n\n{merged_context}"
+            if merged_context
+            else batch_instruction
+        )
+        batch_system_prompt = build_system_prompt(
+            glossary_hints=doc_glossary,
+            context=batch_merged_context,
+            few_shot_examples=self.few_shot_examples,
+            custom_system_prompt=self.custom_system_prompt,
+        )
+
+        self.provider._prebuilt_system_prompt = individual_system_prompt  # type: ignore[attr-defined]
+        self.provider._prebuilt_batch_prompt = batch_system_prompt  # type: ignore[attr-defined]
 
         SHORT_THRESHOLD = self.batch_short_threshold
         MAX_BATCH_CHARS = self.batch_max_chars
