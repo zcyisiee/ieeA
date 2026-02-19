@@ -76,12 +76,21 @@ def get_sdk_client(
         )
     elif sdk == "ark":
         return ArkProvider(model=model, api_key=key, base_url=endpoint, **kwargs)
+    elif sdk == "bailian":
+        from .bailian_provider import BailianProvider
+
+        return BailianProvider(
+            model=model,
+            api_key=key,
+            base_url=endpoint or "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            **kwargs,
+        )
     elif sdk is None:
         return DirectHTTPProvider(model=model, api_key=key, endpoint=endpoint, **kwargs)
     else:
         raise ValueError(
             "Unknown sdk: "
-            f"{sdk}. Supported: openai, openai-coding, anthropic, anthropic-coding, ark, None"
+            f"{sdk}. Supported: openai, openai-coding, anthropic, anthropic-coding, ark, bailian, None"
         )
 
 
@@ -93,5 +102,6 @@ __all__ = [
     "AnthropicCodingProvider",
     "DirectHTTPProvider",
     "ArkProvider",
+    "BailianProvider",
     "get_sdk_client",
 ]
