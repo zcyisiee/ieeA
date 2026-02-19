@@ -53,6 +53,7 @@ class TranslationPipeline:
         batch_max_chars: int = 2000,
         sequential_mode: bool = False,
         request_timeout: float = 120.0,
+        per_call_timeout: float = 150.0,
     ):
         self.provider = provider
         self.glossary = glossary or Glossary()
@@ -69,6 +70,7 @@ class TranslationPipeline:
         self.batch_max_chars = batch_max_chars
         self.sequential_mode = sequential_mode
         self.request_timeout = request_timeout
+        self.per_call_timeout = per_call_timeout
         self._started_at: Optional[str] = None
         self._last_provider_cache_meta: Optional[Dict[str, Any]] = None
 
@@ -200,7 +202,7 @@ class TranslationPipeline:
                         few_shot_examples=self.few_shot_examples,
                         custom_system_prompt=self.custom_system_prompt,
                     ),
-                    timeout=self.request_timeout,
+                    timeout=self.per_call_timeout,
                 )
                 self._last_provider_cache_meta = getattr(
                     self.provider, "_last_cache_meta", None
@@ -208,11 +210,11 @@ class TranslationPipeline:
                 return result
             except asyncio.TimeoutError:
                 last_error = TimeoutError(
-                    f"Request timed out after {self.request_timeout}s "
+                    f"Request timed out after {self.per_call_timeout}s "
                     f"(attempt {attempt + 1}/{self.max_retries})"
                 )
                 if attempt < self.max_retries - 1:
-                    delay = self.retry_delay * (2**attempt)
+                    delay = max(10.0, self.retry_delay * (2 ** (attempt + 1)))
                     await asyncio.sleep(delay)
             except Exception as e:
                 last_error = e
@@ -220,6 +222,13 @@ class TranslationPipeline:
                     error_str = str(e).lower()
                     if "429" in error_str or "rate limit" in error_str:
                         delay = max(5.0, self.retry_delay * (3**attempt))
+                    elif (
+                        "timeout" in error_str
+                        or "timed out" in error_str
+                        or isinstance(e, TimeoutError)
+                    ):
+                        # Timeout class errors: wait longer before retry
+                        delay = max(10.0, self.retry_delay * (2 ** (attempt + 1)))
                     else:
                         delay = self.retry_delay * (2**attempt)
                     await asyncio.sleep(delay)
@@ -646,67 +655,95 @@ class TranslationPipeline:
         ) -> List[TranslatedChunk]:
             nonlocal completed_count
             batch_id = f"batch_{batch_index}"
+            batch_results: List[TranslatedChunk] = []
+
             async with semaphore:
                 try:
                     batch_results = await self.translate_batch(
                         chunks=batch_chunks,
                         context=context,
                     )
-
-                    if not batch_results:
-                        fallback_results = []
-                        for chunk_data in batch_chunks:
-                            result = await self.translate_chunk(
-                                chunk=chunk_data["content"],
-                                chunk_id=chunk_data["chunk_id"],
-                                context=context,
-                            )
-                            fallback_results.append(result)
-                        batch_results = fallback_results
-
-                    for r in batch_results:
-                        r.metadata["batch_id"] = batch_id
-
-                    async with progress_lock:
-                        completed_count += len(batch_chunks)
-                        if progress_callback:
-                            try:
-                                progress_callback(completed_count, total_pending)
-                            except Exception:
-                                pass
-
-                    return batch_results
                 except Exception:
-                    fallback_results = []
-                    for chunk_data in batch_chunks:
-                        result = await self.translate_chunk(
-                            chunk=chunk_data["content"],
+                    batch_results = []
+
+            # Exit semaphore block before fallback to allow other tasks to proceed
+            if not batch_results:
+                # Fallback: translate each chunk individually, each acquiring semaphore
+                fallback_tasks = [
+                    translate_with_semaphore(chunk_data) for chunk_data in batch_chunks
+                ]
+                fallback_results = await asyncio.gather(
+                    *fallback_tasks, return_exceptions=True
+                )
+                # Convert exceptions to skipped chunks with original text
+                for i, result in enumerate(fallback_results):
+                    if isinstance(result, Exception):
+                        chunk_data = batch_chunks[i]
+                        skipped_chunk = TranslatedChunk(
+                            source=chunk_data["content"],
+                            translation=chunk_data[
+                                "content"
+                            ],  # Preserve original English
                             chunk_id=chunk_data["chunk_id"],
-                            context=context,
+                            metadata={
+                                "skipped": True,
+                                "skip_reason": str(result),
+                                "skipped_at": datetime.now().isoformat(),
+                                "batch_id": batch_id,
+                            },
                         )
-                        fallback_results.append(result)
+                        batch_results.append(skipped_chunk)
+                    else:
+                        batch_results.append(cast(TranslatedChunk, result))
 
-                    async with progress_lock:
-                        completed_count += len(batch_chunks)
-                        if progress_callback:
-                            try:
-                                progress_callback(completed_count, total_pending)
-                            except Exception:
-                                pass
+            # Mark all chunks with batch_id
+            for r in batch_results:
+                if "batch_id" not in r.metadata or not r.metadata["batch_id"]:
+                    r.metadata["batch_id"] = batch_id
 
-                    return fallback_results
+            async with progress_lock:
+                completed_count += len(batch_chunks)
+                if progress_callback:
+                    try:
+                        progress_callback(completed_count, total_pending)
+                    except Exception:
+                        pass
+
+            return batch_results
 
         async def translate_with_semaphore(
             chunk_data: Dict[str, str],
         ) -> TranslatedChunk:
-            async with semaphore:
-                result = await self.translate_chunk(
-                    chunk=chunk_data["content"],
-                    chunk_id=chunk_data["chunk_id"],
-                    context=context,
-                )
+            try:
+                async with semaphore:
+                    result = await self.translate_chunk(
+                        chunk=chunk_data["content"],
+                        chunk_id=chunk_data["chunk_id"],
+                        context=context,
+                    )
 
-                nonlocal completed_count
+                    nonlocal completed_count
+                    async with progress_lock:
+                        completed_count += 1
+                        if progress_callback:
+                            try:
+                                progress_callback(completed_count, total_pending)
+                            except Exception:
+                                pass
+
+                    return result
+            except Exception as e:
+                # Return skipped chunk with original text on any error
+                skipped_chunk = TranslatedChunk(
+                    source=chunk_data["content"],
+                    translation=chunk_data["content"],
+                    chunk_id=chunk_data["chunk_id"],
+                    metadata={
+                        "skipped": True,
+                        "skip_reason": str(e),
+                        "skipped_at": datetime.now().isoformat(),
+                    },
+                )
                 async with progress_lock:
                     completed_count += 1
                     if progress_callback:
@@ -714,8 +751,7 @@ class TranslationPipeline:
                             progress_callback(completed_count, total_pending)
                         except Exception:
                             pass
-
-                return result
+                return skipped_chunk
 
         batch_tasks = [
             translate_batch_with_semaphore(batch, i) for i, batch in enumerate(batches)
@@ -742,20 +778,45 @@ class TranslationPipeline:
         else:
             results = []
 
+        skipped_count = 0
         for i, result in enumerate(results):
             if isinstance(result, Exception):
+                # Convert exception to graceful skip with original text
                 if i < len(batches):
                     batch = batches[i]
-                    chunk_ids = [c["chunk_id"] for c in batch]
-                    raise RuntimeError(
-                        f"Batch translation failed for chunks {chunk_ids}: {result}"
-                    )
+                    for chunk_data in batch:
+                        skipped_chunk = TranslatedChunk(
+                            source=chunk_data["content"],
+                            translation=chunk_data["content"],
+                            chunk_id=chunk_data["chunk_id"],
+                            metadata={
+                                "skipped": True,
+                                "skip_reason": str(result),
+                                "skipped_at": datetime.now().isoformat(),
+                            },
+                        )
+                        results_map[chunk_data["chunk_id"]] = skipped_chunk
+                        state["completed"].append(chunk_data["chunk_id"])
+                        state["results"].append(skipped_chunk.model_dump())
+                        skipped_count += 1
                 else:
                     chunk_idx = i - len(batches)
-                    chunk_id = long_chunks[chunk_idx]["chunk_id"]
-                    raise RuntimeError(
-                        f"Translation failed for chunk {chunk_id}: {result}"
+                    chunk_data = long_chunks[chunk_idx]
+                    skipped_chunk = TranslatedChunk(
+                        source=chunk_data["content"],
+                        translation=chunk_data["content"],
+                        chunk_id=chunk_data["chunk_id"],
+                        metadata={
+                            "skipped": True,
+                            "skip_reason": str(result),
+                            "skipped_at": datetime.now().isoformat(),
+                        },
                     )
+                    results_map[chunk_data["chunk_id"]] = skipped_chunk
+                    state["completed"].append(chunk_data["chunk_id"])
+                    state["results"].append(skipped_chunk.model_dump())
+                    skipped_count += 1
+                continue
 
             if i < len(batches):
                 batch_results = cast(List[TranslatedChunk], result)
@@ -768,6 +829,12 @@ class TranslationPipeline:
                 results_map[success_result.chunk_id] = success_result
                 state["completed"].append(success_result.chunk_id)
                 state["results"].append(success_result.model_dump())
+
+        # Log warning if any chunks were skipped
+        if skipped_count > 0:
+            print(
+                f"[WARNING] {skipped_count} chunk(s) failed to translate and were skipped (original text preserved)."
+            )
 
         finished_at = datetime.now().isoformat()
         started_dt = datetime.fromisoformat(self._started_at)
