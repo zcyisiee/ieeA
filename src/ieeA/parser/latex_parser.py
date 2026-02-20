@@ -752,6 +752,14 @@ class LaTeXParser:
                         + "}"
                     )
                 pos = i
+                # If trailing body text exists on same line after section
+                # command's closing brace, insert newline so _chunk_paragraphs
+                # treats it as a separate translatable paragraph instead of
+                # part of the structural line.
+                next_nl = text.find("\n", i)
+                trailing_on_line = text[i:next_nl] if next_nl >= 0 else text[i:]
+                if trailing_on_line.strip():
+                    result.append("\n")
             else:
                 result.append(match.group(0))
                 pos = match.end()

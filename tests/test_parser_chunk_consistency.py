@@ -114,3 +114,93 @@ This is the paragraph body.
             )
         finally:
             Path(temp_path).unlink()
+
+    def test_paragraph_body_on_same_line_is_chunked(self):
+        """\paragraph{Title} Body text on same line - body should be translatable chunk."""
+        parser = LaTeXParser()
+        test_content = r"""
+\documentclass{article}
+\begin{document}
+\paragraph{\textbf{Title}} Body text on same line.
+\end{document}
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".tex", delete=False) as f:
+            f.write(test_content)
+            temp_path = f.name
+
+        try:
+            doc = parser.parse_file(temp_path)
+
+            # Find paragraph context chunks (title)
+            paragraph_chunks = [c for c in doc.chunks if c.context == "paragraph"]
+            assert len(paragraph_chunks) >= 1, (
+                "Paragraph command should create at least one chunk"
+            )
+
+            # Check that body text "Body text on same line" is in a translatable chunk
+            all_chunk_contents = [c.content for c in doc.chunks]
+            body_found = any(
+                "Body text on same line" in content for content in all_chunk_contents
+            )
+            assert body_found, (
+                f"Body text 'Body text on same line' should be in a translatable chunk. "
+                f"Found chunks: {all_chunk_contents}"
+            )
+        finally:
+            Path(temp_path).unlink()
+
+    def test_paragraph_body_on_next_line_still_works(self):
+        """\paragraph{Title}\nBody text - regression test for normal case."""
+        parser = LaTeXParser()
+        test_content = r"""
+\documentclass{article}
+\begin{document}
+\paragraph{\textbf{Title}}
+Body text on next line.
+\end{document}
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".tex", delete=False) as f:
+            f.write(test_content)
+            temp_path = f.name
+
+        try:
+            doc = parser.parse_file(temp_path)
+
+            # Check that body text is still found
+            all_chunk_contents = [c.content for c in doc.chunks]
+            body_found = any(
+                "Body text on next line" in content for content in all_chunk_contents
+            )
+            assert body_found, (
+                f"Body text 'Body text on next line' should be in a translatable chunk. "
+                f"Found chunks: {all_chunk_contents}"
+            )
+        finally:
+            Path(temp_path).unlink()
+
+    def test_paragraph_without_body_no_crash(self):
+        """\paragraph{Title} alone - no crash, title extracted."""
+        parser = LaTeXParser()
+        test_content = r"""
+\documentclass{article}
+\begin{document}
+\paragraph{\textbf{Title}}
+\end{document}
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".tex", delete=False) as f:
+            f.write(test_content)
+            temp_path = f.name
+
+        try:
+            doc = parser.parse_file(temp_path)
+
+            # Title should be extracted
+            paragraph_chunks = [c for c in doc.chunks if c.context == "paragraph"]
+            assert len(paragraph_chunks) >= 1, (
+                "Paragraph command should create at least one chunk"
+            )
+
+            title_found = any("textbf{Title}" in c.content for c in paragraph_chunks)
+            assert title_found, f"Title 'textbf{Title}' should be in paragraph chunks"
+        finally:
+            Path(temp_path).unlink()
