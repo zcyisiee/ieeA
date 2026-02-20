@@ -1108,6 +1108,68 @@ class LaTeXParser:
                 return path
         return None
 
+    def _resolve_bibliography(self, text: str, base_dir: str) -> str:
+        r"""Resolve bibliography commands to use .bbl files when .bib is absent.
+
+        If ALL bibliography names have only .bbl files (no .bib), replace
+        \bibliography{name} with \input{name.bbl} commands and remove
+        \bibliographystyle{} lines.
+
+        If ANY name has a .bib file, keep the original command unchanged.
+
+        Args:
+            text: LaTeX content containing bibliography commands
+            base_dir: Base directory to look for .bib and .bbl files
+
+        Returns:
+            Modified text with bibliography commands resolved
+        """
+
+        def process_bibliography_match(match):
+            """Process a single \bibliography{} match."""
+            full_match = match.group(0)
+            names_str = match.group(1)
+
+            # Split by comma and strip whitespace
+            names = [name.strip() for name in names_str.split(",") if name.strip()]
+
+            if not names:
+                return full_match
+
+            # Check file existence for each name
+            has_bib = False
+            has_bbl = False
+
+            for name in names:
+                bib_path = os.path.join(base_dir, f"{name}.bib")
+                bbl_path = os.path.join(base_dir, f"{name}.bbl")
+
+                if os.path.exists(bib_path):
+                    has_bib = True
+                if os.path.exists(bbl_path):
+                    has_bbl = True
+
+            # If any .bib exists, keep original
+            if has_bib:
+                return full_match
+
+            # If no .bib but has .bbl, replace with input commands
+            if has_bbl and not has_bib:
+                input_commands = [f"\\input{{{name}.bbl}}" for name in names]
+                return "\n".join(input_commands)
+
+            # Neither file exists: keep original (graceful fallback)
+            return full_match
+
+        # Process bibliography commands
+        result = re.sub(r"\\bibliography\{([^}]+)\}", process_bibliography_match, text)
+
+        # Remove \bibliographystyle{} lines only if we replaced bibliography commands
+        if result != text:
+            result = re.sub(r"\\bibliographystyle\{[^}]+\}\n?", "", result)
+
+        return result
+
     def _remove_comments(self, content: str) -> str:
         r"""精准删除LaTeX注释，保留必要的结构。
 
