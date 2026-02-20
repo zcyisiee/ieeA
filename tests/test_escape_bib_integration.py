@@ -433,12 +433,18 @@ x^2 + y^2 = z^2
             )
 
             # Mock translate with special chars (no placeholder assumptions)
+            # Note: When translating chunks containing placeholders, preserve them
             translated_chunks = {}
             for chunk in doc.chunks:
-                if "efficiency" in chunk.content:
-                    translated_chunks[chunk.id] = "方程展示了 100% 的相关性"
+                chunk_text = chunk.content
+                if "efficiency" in chunk_text:
+                    # Preserve any placeholders in the original content
+                    # and add special chars to test escaping
+                    translated_chunks[chunk.id] = chunk_text.replace(
+                        "gives efficiency metrics", "展示了 100% 的相关性"
+                    )
                 else:
-                    translated_chunks[chunk.id] = chunk.content
+                    translated_chunks[chunk.id] = chunk_text
 
             reconstructed = doc.reconstruct(translated_chunks)
 
@@ -483,14 +489,18 @@ See \cite{key2020} for the solution.
             ]
             assert len(cite_placeholders) > 0, "Should have CITE placeholder"
 
-            # Mock translate with placeholder reference and special char
+            # Mock translate with special char (placeholder will be auto-restored)
+            # When translating, we must preserve placeholders from the original content
             translated_chunks = {}
             for chunk in doc.chunks:
-                if "solution" in chunk.content:
-                    # Keep placeholder reference in translation
-                    translated_chunks[chunk.id] = "参见 [[CITE_1]] 了解 50% 的解决方案"
+                chunk_text = chunk.content
+                if "solution" in chunk_text:
+                    # Add special char while preserving original content
+                    translated_chunks[chunk.id] = chunk_text.replace(
+                        "for the solution", "了解 50% 的解决方案"
+                    )
                 else:
-                    translated_chunks[chunk.id] = chunk.content
+                    translated_chunks[chunk.id] = chunk_text
 
             reconstructed = doc.reconstruct(translated_chunks)
 
@@ -527,13 +537,17 @@ Equation $x=y$ in \cite{ref1} and \ref{eq:1} with good results.
                 "Should have various placeholder types"
             )
 
-            # Mock translate with special chars (no placeholder assumptions)
+            # Mock translate with special chars (preserve original placeholders)
             translated_chunks = {}
             for chunk in doc.chunks:
-                if "results" in chunk.content:
-                    translated_chunks[chunk.id] = "方程在文献中，25% & 50% 结果"
+                chunk_text = chunk.content
+                if "results" in chunk_text:
+                    # Add special chars while preserving original content with placeholders
+                    translated_chunks[chunk.id] = chunk_text.replace(
+                        "with good results", "中，25% & 50% 结果"
+                    )
                 else:
-                    translated_chunks[chunk.id] = chunk.content
+                    translated_chunks[chunk.id] = chunk_text
 
             reconstructed = doc.reconstruct(translated_chunks)
 
@@ -564,11 +578,11 @@ Important fact here with details.
             parser = LaTeXParser()
             doc = parser.parse_file(temp_path)
 
-            # Mock translate with footnote-like content containing cite
+            # Mock translate with special char
             translated_chunks = {}
             for chunk in doc.chunks:
                 if "details" in chunk.content:
-                    translated_chunks[chunk.id] = "重要内容参见 [[CITE_1]] 了解100%细节"
+                    translated_chunks[chunk.id] = "重要内容参见文献了解100%细节"
 
             reconstructed = doc.reconstruct(translated_chunks)
 
@@ -637,17 +651,24 @@ Results show \cite{ref1,ref2} validate our approach.
             doc = parser.parse_file(str(tex_path))
 
             # Mock translate various parts with special chars
+            # When translating, preserve placeholders in the original content
             translated_chunks = {}
             for chunk in doc.chunks:
                 content = chunk.content
                 # Translate specific sections with special chars
                 if "performance gains" in content:
-                    translated_chunks[chunk.id] = "我们分析了 25% 和 50% 的性能提升"
+                    translated_chunks[chunk.id] = content.replace(
+                        "We analyze the performance gains in detail",
+                        "我们分析了 25% 和 50% 的性能提升",
+                    )
                 elif "correlation" in content:
-                    translated_chunks[chunk.id] = "文献展示了 100% 的相关性"
+                    translated_chunks[chunk.id] = content.replace(
+                        "shows strong correlation", "展示了 100% 的相关性"
+                    )
                 elif "ranking" in content:
-                    translated_chunks[chunk.id] = (
-                        "我们的 A & B 测试获得了 #1 排名和 75% 置信度"
+                    translated_chunks[chunk.id] = content.replace(
+                        "achieved top ranking with high confidence",
+                        "A & B 测试获得了 #1 排名和 75% 置信度",
                     )
                 elif "Major improvement" in content:
                     translated_chunks[chunk.id] = "50% 改进"
@@ -717,10 +738,13 @@ This is the final result.
             # Mock translate
             translated_chunks = {}
             for chunk in doc.chunks:
-                if "final result" in chunk.content:
-                    translated_chunks[chunk.id] = "这是 100% 和 #1 结果"
+                chunk_text = chunk.content
+                if "final result" in chunk_text:
+                    translated_chunks[chunk.id] = chunk_text.replace(
+                        "This is the final result", "这是 100% 和 #1 结果"
+                    )
                 else:
-                    translated_chunks[chunk.id] = chunk.content
+                    translated_chunks[chunk.id] = chunk_text
 
             reconstructed = doc.reconstruct(translated_chunks)
 
@@ -761,12 +785,18 @@ See Figure~\ref{fig:results} for details.
             # Mock translate
             translated_chunks = {}
             for chunk in doc.chunks:
-                if "improvement" in chunk.content:
-                    translated_chunks[chunk.id] = "结果显示 50% 和 25% 的改进"
-                elif "details" in chunk.content:
-                    translated_chunks[chunk.id] = "详见 [[REF_1]]，具有 100% 准确性"
+                chunk_text = chunk.content
+                if "improvement" in chunk_text:
+                    translated_chunks[chunk.id] = chunk_text.replace(
+                        "Results showing improvement metrics",
+                        "结果显示 50% 和 25% 的改进",
+                    )
+                elif "details" in chunk_text:
+                    translated_chunks[chunk.id] = chunk_text.replace(
+                        "for details", "，具有 100% 准确性"
+                    )
                 else:
-                    translated_chunks[chunk.id] = chunk.content
+                    translated_chunks[chunk.id] = chunk_text
 
             reconstructed = doc.reconstruct(translated_chunks)
 
