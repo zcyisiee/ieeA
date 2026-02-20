@@ -107,6 +107,7 @@ class LaTeXParser:
             content = f.read()
 
         flattened_content = self._flatten_latex(content, base_dir)
+        flattened_content = self._resolve_bibliography(flattened_content, base_dir)
         flattened_content = self._remove_comments(flattened_content)
         abstract = self.extract_abstract(flattened_content)
         preamble, body_content = self._split_preamble_body(flattened_content)
