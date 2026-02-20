@@ -28,7 +28,11 @@ class Chunk:
         """
         text = translated_text if translated_text is not None else self.content
 
-        # Restore preserved elements
+        # 1. Escape special characters FIRST (only for translated text, not protected)
+        if translated_text is not None and self.context != "protected":
+            text = escape_latex_special_chars(text)
+
+        # 2. THEN restore preserved elements
         # We need to be careful about order if nested, but usually they are flat per chunk
         # If text is translated, the placeholders should still be there.
         result = text

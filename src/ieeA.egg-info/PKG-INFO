@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: ieeA
-Version: 1.0.4.dev1+g270935e8b.d20260212
+Version: 1.2.0.post21
 Summary: arXiv 论文翻译工具 - 将英文 LaTeX 论文翻译成中文，保留数学公式和文档结构
 Author: ieeA Team
 License: GPL-3.0-or-later
@@ -24,8 +24,11 @@ Requires-Dist: pyyaml
 Requires-Dist: pydantic
 Requires-Dist: requests
 Requires-Dist: openai>=1.0.0
+Provides-Extra: ark
+Requires-Dist: volcengine-python-sdk[ark]>=1.0.116; extra == "ark"
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-asyncio; extra == "dev"
 Requires-Dist: ruff; extra == "dev"
 Requires-Dist: mypy; extra == "dev"
 Requires-Dist: build; extra == "dev"
@@ -45,18 +48,13 @@ pip install -e .
 ieeA translate https://arxiv.org/abs/2301.07041 --output-dir output/
 ```
 
+### 主观体验
+gemini3-pro和opus4.6难分伯仲。gemini的翻译效果是最好的：语言风格简洁，意译得很地道，不愧是wmt的常胜将军；相比之下，opus4.6稍微啰嗦一点点，但是语言风格更自然。gpt-5.2-chat次之，主要问题在于有轻微的过度意译，会出现一些原文中没有的描述，不过只有一点点，也还算切题。
+
+御三家之下，国产模型还需努力：Qwen系列全部机器人；kimi是国模中效果最好的，可惜幻觉稍微有点大；doubao的文风是最好的，甚至比御三家还要好：但是过度意译太严重，出现了大量原文中没有的描述。这可能是因为目前火山引擎提供的doubao-2.0-pro将温度定死为1，后续如果doubao开放了温度选项，我还是会试试的；deepseek鉴定为拉完了：幻觉满天飞，格式上出了一堆问题。
+
+谷歌我日你祖宗，一个文件翻译花了老子3.64，走的openrouter，fucku！
 ### 高级选项
-
-#### 详细日志模式
-使用 `--verbose/-v` 标志启用详细控制台输出：
-```bash
-ieeA translate https://arxiv.org/abs/2301.07041 --verbose
-```
-
-#### 日志文件
-每次翻译会自动生成结构化日志文件：
-- 位置: `output/<arxiv_id>/translation_log_<timestamp>.json`
-- 包含: 翻译配置、chunk 详情、批量信息、跳过的内容、耗时统计
 
 #### 批量翻译优化
 - 短内容（< 100 字符）会自动批量翻译，减少 API 调用
@@ -98,7 +96,8 @@ ieeA translate https://arxiv.org/abs/2301.07041 --verbose
 
 ### 3. 翻译 (Translator)
 - 并发调用 LLM API 翻译各 Chunk
-- 支持术语表 (Glossary) 保持术语一致性
+- 支持术语表 (Glossary) 保持术语一致性，使用词边界匹配避免误匹配
+- 文档级术语表过滤：翻译前一次性扫描全文，构建稳定的 system prompt 以命中 LLM 提供商的前缀缓存
 - 自动重试和断点续传
 
 ### 4. 重组 (Reconstructor)
@@ -115,7 +114,7 @@ ieeA translate https://arxiv.org/abs/2301.07041 --verbose
 
 ```yaml
 llm:
-  # SDK: openai | anthropic | null（null 表示直连 HTTP）
+  # SDK: openai | openai-coding | anthropic | ark | null（null 表示直连 HTTP）
   sdk: null
   # 模型名或列表（列表时取第一个）
   models: openai/gpt-5-mini
@@ -161,6 +160,92 @@ parser:
   extra_translatable_environments: []
 ```
 
+### 迭代发送模式 (`openai-coding`)
+
+将 `llm.sdk` 设为 `openai-coding` 即可启用迭代发送模式。该模式下，翻译请求按顺序逐条发送，每次请求携带之前所有请求的完整对话历史，利用 LLM 提供商的 KV cache 前缀匹配来降低延迟和成本。
+
+```yaml
+# ~/.ieeA/config.yaml
+llm:
+  sdk: openai-coding
+  models: gpt-4o
+  key: "sk-xxx"
+  endpoint: https://api.openai.com/v1/chat/completions   # 接口仍为标准 v1/chat/completions
+```
+
+也可通过命令行参数指定：
+
+```bash
+ieeA translate https://arxiv.org/abs/2301.07041 --sdk openai-coding
+```
+
+**与默认模式的区别：**
+
+| | 默认模式 (`openai`) | 迭代模式 (`openai-coding`) |
+|---|---|---|
+| 并发 | 多请求并发 | 严格顺序，逐条发送 |
+| 上下文 | 每个 chunk 独立翻译 | 携带全部历史对话，术语用词自动保持一致 |
+| 术语表 | 按 chunk 内容过滤后发送 | 发送完整术语表（保证 system prompt 不变以命中缓存） |
+| 系统提示词 | 标准提示词 | 额外追加"保持专业名词一致性"指令 |
+| Few-shot | 注入 | 始终注入，且位置固定 |
+| 断点续传 | 支持 | 支持（对话历史随 state file 一同保存） |
+
+**适用场景：** 使用支持 KV cache 前缀匹配的提供商（如 OpenAI、DeepSeek）时，推荐使用此模式以获得更好的术语一致性和更低的推理成本。
+
+### 缓存命中优化
+
+默认模式（`openai`、`anthropic`、直连 HTTP）下，系统会自动优化缓存命中：
+
+1. **文档级术语表过滤**：翻译开始前扫描全文，一次性筛选出文档实际用到的术语，避免每个 chunk 产生不同的 system prompt
+2. **稳定 System Prompt**：为 individual 请求和 batch 请求分别预构建固定的 system prompt，整个文档翻译过程中保持不变
+3. **Provider 适配**：
+   - OpenAI / 通用 HTTP：保持 prompt 稳定即可自动命中前缀缓存（零配置）
+   - Anthropic：使用 system blocks 格式并标记 `cache_control: {"type": "ephemeral"}`，显式触发缓存
+   - 百炼平台 (Bailian)：使用 system blocks 格式并标记 `cache_control`，显式触发缓存
+   - 火山引擎 (Ark)：使用 Context API 缓存 system prompt，5 分钟 TTL，过期自动重建
+
+无需额外配置，选择对应的 `sdk` 即可生效。
+
+### 火山引擎 (Ark)
+
+将 `llm.sdk` 设为 `ark` 使用火山引擎的大模型服务，通过 Context API 实现 system prompt 缓存：
+
+```yaml
+llm:
+  sdk: ark
+  models: ep-xxxxxxxx  # 火山引擎模型接入点 ID
+  key: "your-api-key"
+  endpoint: https://ark.cn-beijing.volces.com/api/v3
+```
+
+需要额外安装依赖：
+
+```bash
+pip install -e ".[ark]"
+```
+
+### 百炼平台 (Bailian)
+
+将 `llm.sdk` 设为 `bailian` 使用阿里百炼平台的大模型服务，自动启用显式缓存：
+
+```yaml
+llm:
+  sdk: bailian
+  models: qwen3.5-plus  # 或其他支持显式缓存的模型
+  key: "your-dashscope-api-key"
+  # endpoint 可选，默认为 https://dashscope.aliyuncs.com/compatible-mode/v1
+```
+
+**显式缓存优势**：
+- **确定性命中**：首次请求创建缓存后，5 分钟内后续请求确定性命中
+- **成本节省**：命中缓存的 Token 按 10% 计费，创建缓存按 125% 计费
+- **延迟降低**：命中缓存时响应速度显著提升
+
+**支持的模型**：qwen3.5-plus、qwen-plus、qwen3-max、qwen-flash、qwen3-coder-plus 等
+
+**工作原理**：
+BailianProvider 自动将 system message 转换为数组格式并添加 `cache_control: {"type": "ephemeral"}` 标记，触发百炼平台的显式缓存机制。缓存有效期 5 分钟，命中后自动续期。
+
 ### 术语表
 
 术语表位置：`~/.ieeA/glossary.yaml`
@@ -179,14 +264,15 @@ parser:
 
 ## 支持的 LLM
 
-| 提供商 | 模型示例 | 环境变量 |
-|--------|----------|----------|
-| OpenAI | gpt-4o, gpt-4o-mini | `OPENAI_API_KEY` |
-| Claude | claude-3-opus, claude-3-sonnet | `ANTHROPIC_API_KEY` |
-| Qwen | qwen-turbo, qwen-max | `DASHSCOPE_API_KEY` |
-| Doubao | doubao-pro-* | `VOLCENGINE_API_KEY` |
+| 提供商 | SDK | 模型示例 | 缓存机制 |
+|--------|-----|----------|----------|
+| OpenAI | `openai` | gpt-4o, gpt-4o-mini | 自动前缀缓存 |
+| Claude | `anthropic` | claude-3-opus, claude-3-sonnet | 显式 cache_control |
+| 火山引擎 | `ark` | doubao-pro-* | Context API |
+| 百炼平台 | `bailian` | qwen3.5-plus, qwen-plus | 显式 cache_control |
+| 通用 HTTP | `null` | 任意 OpenAI 兼容接口 | 服务端隐式缓存 |
 
-**提示**：可通过 `base_url` 配置使用 OpenRouter 等代理服务。
+**提示**：可通过 `endpoint` 配置使用 OpenRouter 等代理服务。
 
 ## 项目结构
 

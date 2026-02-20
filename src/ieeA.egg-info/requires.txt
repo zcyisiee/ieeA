@@ -6,8 +6,12 @@ pydantic
 requests
 openai>=1.0.0
 
+[ark]
+volcengine-python-sdk[ark]>=1.0.116
+
 [dev]
 pytest
+pytest-asyncio
 ruff
 mypy
 build

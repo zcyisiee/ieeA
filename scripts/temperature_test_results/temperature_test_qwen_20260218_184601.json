@@ -1,0 +1,98 @@
+{
+  "config": {
+    "endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "model": "qwen3.5-plus",
+    "temperatures": [
+      0.0,
+      1.0
+    ],
+    "repeats": 3,
+    "prompt": "请用一句话描述\"人工智能\"这个概念。每次回答尽量使用不同的表达方式。",
+    "max_tokens": 200,
+    "timestamp": "20260218_184601"
+  },
+  "experiments": [
+    {
+      "temperature": 0.0,
+      "texts": [
+        "人工智能是指由机器展现出的智能，它能够通过算法从数据中学习并完成通常需要人类智慧才能胜任的任务。",
+        "人工智能是通过算法使机器具备感知、学习及决策能力，从而模拟人类智能行为的技术体系。",
+        "人工智能是通过算法与数据赋予机器模拟人类认知过程，以实现自主学习与复杂问题解决能力的技术领域。"
+      ],
+      "metrics": {
+        "total_responses": 3,
+        "valid_responses": 3,
+        "unique_texts": 3,
+        "exact_match_ratio": 0.3333,
+        "most_common_count": 1,
+        "length": {
+          "min": 41,
+          "max": 48,
+          "avg": 45.33,
+          "std": 3.09
+        },
+        "vocabulary": {
+          "total_tokens": 130,
+          "unique_tokens": 72,
+          "type_token_ratio": 0.5538,
+          "avg_char_overlap": 0.331
+        }
+      }
+    },
+    {
+      "temperature": 1.0,
+      "texts": [
+        "人工智能是赋予机器模拟人类思维、学习及决策能力的技术领域。",
+        "人工智能是通过算法赋予机器模拟人类认知功能，从而自主解决复杂问题的技术领域。",
+        "人工智能是通过数据驱动算法让机器模拟人类认知过程，以实现自主决策的技术领域。"
+      ],
+      "metrics": {
+        "total_responses": 3,
+        "valid_responses": 3,
+        "unique_texts": 3,
+        "exact_match_ratio": 0.3333,
+        "most_common_count": 1,
+        "length": {
+          "min": 29,
+          "max": 38,
+          "avg": 35.0,
+          "std": 4.24
+        },
+        "vocabulary": {
+          "total_tokens": 100,
+          "unique_tokens": 51,
+          "type_token_ratio": 0.51,
+          "avg_char_overlap": 0.4565
+        }
+      }
+    }
+  ],
+  "analysis": {
+    "conclusion": "TEMPERATURE_IGNORED",
+    "evidence": [
+      "Correlation (temp vs diversity): 0.0000",
+      "Low temp (0.0) exact match: 0.3333",
+      "High temp (1.0) exact match: 0.3333",
+      "Consistency decreases with temp: True",
+      "Diversity increases with temp: False"
+    ],
+    "metrics_by_temperature": [
+      {
+        "temperature": 0.0,
+        "exact_match_ratio": 0.3333,
+        "length_std": 3.09,
+        "type_token_ratio": 0.5538,
+        "unique_texts": 3
+      },
+      {
+        "temperature": 1.0,
+        "exact_match_ratio": 0.3333,
+        "length_std": 4.24,
+        "type_token_ratio": 0.51,
+        "unique_texts": 3
+      }
+    ],
+    "correlation": 0,
+    "summary": "Temperature parameter appears to be IGNORED by the endpoint. Outputs show similar diversity across all temperatures."
+  }
+}

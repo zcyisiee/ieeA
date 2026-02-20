@@ -11,7 +11,7 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from ieeA.parser.structure import escape_latex_special_chars
+from ieeA.parser.structure import escape_latex_special_chars, Chunk
 
 
 class TestBasicEscaping:
@@ -176,6 +176,82 @@ class TestSpecialCharsNotEscaped:
     def test_caret_not_escaped(self):
         """Caret should NOT be escaped"""
         assert escape_latex_special_chars("x^2") == "x^2"
+
+
+class TestReconstructEscapingIntegration:
+    """Test that escaping happens during Chunk.reconstruct() for translated text."""
+
+    def test_reconstruct_escapes_translated_text(self):
+        """When translated_text is provided, special chars should be escaped."""
+        chunk = Chunk(
+            id="test-1",
+            content="Original text",
+            latex_wrapper="%s",
+            context="paragraph",
+        )
+        translated = "50% of users & 100# items"
+        result = chunk.reconstruct(translated)
+        assert result == "50\\% of users \\& 100\\# items"
+
+    def test_reconstruct_does_not_escape_original_text(self):
+        """When translated_text is None, original content should NOT be escaped."""
+        chunk = Chunk(
+            id="test-2",
+            content="Original has % & # chars",
+            latex_wrapper="%s",
+            context="paragraph",
+        )
+        result = chunk.reconstruct(None)
+        assert result == "Original has % & # chars"
+
+    def test_reconstruct_does_not_escape_protected_chunks(self):
+        """When context is 'protected', even translated text should NOT be escaped."""
+        chunk = Chunk(
+            id="test-3", content="Author block", latex_wrapper="%s", context="protected"
+        )
+        translated = "50% of users & 100# items"
+        result = chunk.reconstruct(translated)
+        assert result == "50% of users & 100# items"
+
+    def test_reconstruct_escapes_before_placeholder_restoration(self):
+        """Escaping should happen BEFORE placeholders are restored."""
+        chunk = Chunk(
+            id="test-4",
+            content="Text with math",
+            latex_wrapper="%s",
+            context="paragraph",
+            preserved_elements={"[[MATH_1]]": "$x^2$"},
+        )
+        translated = "50% of [[MATH_1]] & more"
+        result = chunk.reconstruct(translated)
+        # Placeholder should be restored after escaping
+        assert result == "50\\% of $x^2$ \\& more"
+        assert "[[MATH_1]]" not in result
+
+    def test_reconstruct_preserves_placeholders_in_translated(self):
+        """Placeholders in translated text should not be escaped."""
+        chunk = Chunk(
+            id="test-5",
+            content="Text",
+            latex_wrapper="%s",
+            context="paragraph",
+            preserved_elements={"[[MATH_1]]": "$E=mc^2$"},
+        )
+        translated = "Equation [[MATH_1]] appears at 50%"
+        result = chunk.reconstruct(translated)
+        assert result == "Equation $E=mc^2$ appears at 50\\%"
+
+    def test_reconstruct_with_latex_wrapper(self):
+        """Escaping should work with latex_wrapper formatting."""
+        chunk = Chunk(
+            id="test-6",
+            content="Section title",
+            latex_wrapper=r"\section{%s}",
+            context="section_title",
+        )
+        translated = "50% progress & results"
+        result = chunk.reconstruct(translated)
+        assert result == r"\section{50\% progress \& results}"
 
 
 if __name__ == "__main__":
