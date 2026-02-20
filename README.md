@@ -164,6 +164,7 @@ ieeA translate https://arxiv.org/abs/2301.07041 --sdk openai-coding
 3. **Provider 适配**：
    - OpenAI / 通用 HTTP：保持 prompt 稳定即可自动命中前缀缓存（零配置）
    - Anthropic：使用 system blocks 格式并标记 `cache_control: {"type": "ephemeral"}`，显式触发缓存
+   - 百炼平台 (Bailian)：使用 system blocks 格式并标记 `cache_control`，显式触发缓存
    - 火山引擎 (Ark)：使用 Context API 缓存 system prompt，5 分钟 TTL，过期自动重建
 
 无需额外配置，选择对应的 `sdk` 即可生效。
@@ -185,6 +186,28 @@ llm:
 ```bash
 pip install -e ".[ark]"
 ```
+
+### 百炼平台 (Bailian)
+
+将 `llm.sdk` 设为 `bailian` 使用阿里百炼平台的大模型服务，自动启用显式缓存：
+
+```yaml
+llm:
+  sdk: bailian
+  models: qwen3.5-plus  # 或其他支持显式缓存的模型
+  key: "your-dashscope-api-key"
+  # endpoint 可选，默认为 https://dashscope.aliyuncs.com/compatible-mode/v1
+```
+
+**显式缓存优势**：
+- **确定性命中**：首次请求创建缓存后，5 分钟内后续请求确定性命中
+- **成本节省**：命中缓存的 Token 按 10% 计费，创建缓存按 125% 计费
+- **延迟降低**：命中缓存时响应速度显著提升
+
+**支持的模型**：qwen3.5-plus、qwen-plus、qwen3-max、qwen-flash、qwen3-coder-plus 等
+
+**工作原理**：
+BailianProvider 自动将 system message 转换为数组格式并添加 `cache_control: {"type": "ephemeral"}` 标记，触发百炼平台的显式缓存机制。缓存有效期 5 分钟，命中后自动续期。
 
 ### 术语表
 
@@ -209,6 +232,7 @@ pip install -e ".[ark]"
 | OpenAI | `openai` | gpt-4o, gpt-4o-mini | 自动前缀缓存 |
 | Claude | `anthropic` | claude-3-opus, claude-3-sonnet | 显式 cache_control |
 | 火山引擎 | `ark` | doubao-pro-* | Context API |
+| 百炼平台 | `bailian` | qwen3.5-plus, qwen-plus | 显式 cache_control |
 | 通用 HTTP | `null` | 任意 OpenAI 兼容接口 | 服务端隐式缓存 |
 
 **提示**：可通过 `endpoint` 配置使用 OpenRouter 等代理服务。

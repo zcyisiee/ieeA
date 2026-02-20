@@ -18,7 +18,9 @@ class DirectHTTPProvider(LLMProvider):
         if endpoint is None:
             raise ValueError("endpoint is required for DirectHTTPProvider")
         self.endpoint = endpoint
-        self.client = httpx.AsyncClient()
+        self.client = httpx.AsyncClient(
+            timeout=httpx.Timeout(connect=60.0, read=300.0, write=60.0, pool=60.0)
+        )
         self._prebuilt_system_prompt: Optional[str] = None
         self._prebuilt_batch_prompt: Optional[str] = None
 

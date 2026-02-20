@@ -23,10 +23,11 @@ class LLMConfig(BaseModel):
             "anthropic",
             "anthropic-coding",
             "ark",
+            "bailian",
         ):
             raise ValueError(
                 "sdk must be 'openai', 'openai-coding', 'anthropic', "
-                f"'anthropic-coding', 'ark', or None, got '{v}'"
+                f"'anthropic-coding', 'ark', 'bailian', or None, got '{v}'"
             )
         return v
 
