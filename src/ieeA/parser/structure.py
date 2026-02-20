@@ -189,6 +189,38 @@ def _levenshtein_distance(s1: str, s2: str) -> int:
     return prev_row[-1]
 
 
+def escape_latex_special_chars(text: str) -> str:
+    r"""
+    Escape LaTeX special characters in translated text.
+
+    Escapes: % -> \%, & -> \&, # -> \#
+    Does NOT double-escape already escaped characters.
+    Preserves placeholders like [[MATH_1]] and {{CHUNK_uuid}}.
+
+    Args:
+        text: The translated text that may contain special characters
+
+    Returns:
+        Text with special characters properly escaped
+    """
+    # Regex to match placeholders: [[...]] or {{CHUNK_...}}
+    placeholder_pattern = r"(\[\[[^\]]+\]\]|\{\{CHUNK_[a-f0-9-]+\}\})"
+
+    # Split text into alternating segments: text/placeholder/text/placeholder...
+    segments = re.split(placeholder_pattern, text)
+
+    # Escape only even-indexed segments (text parts), skip odd-indexed (placeholders)
+    escaped_segments = []
+    for i, segment in enumerate(segments):
+        if i % 2 == 0:
+            segment = re.sub(r"(?<!\\)%", r"\\%", segment)
+            segment = re.sub(r"(?<!\\)&", r"\\&", segment)
+            segment = re.sub(r"(?<!\\)#", r"\\#", segment)
+        escaped_segments.append(segment)
+
+    return "".join(escaped_segments)
+
+
 def validate_translated_placeholders(
     translated_chunks: Dict[str, str],
     doc: "LaTeXDocument",
