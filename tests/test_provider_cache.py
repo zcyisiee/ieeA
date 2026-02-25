@@ -402,17 +402,21 @@ class TestArkProviderCache:
             f"(expected <0.3s for concurrent, got {elapsed:.2f}s)"
         )
 
-    async def test_ark_extracts_cached_tokens_and_prints(self, capsys):
-        """ArkProvider should parse cached_tokens and print cache telemetry."""
+    async def test_ark_extracts_cached_tokens_and_summarizes_without_per_request_print(
+        self, capsys
+    ):
+        """ArkProvider should parse cached_tokens but stay quiet by default."""
         from ieeA.translator.ark_provider import ArkProvider
 
         provider = ArkProvider.__new__(ArkProvider)
         provider.model = "test-model"
         provider.api_key = "test"
         provider.kwargs = {"temperature": 0.0}
+        provider._cache_log_verbose = False
         provider._prebuilt_system_prompt = "FIXED_PROMPT"
         provider._prebuilt_batch_prompt = None
         provider._context_id = "ctx-123"
+        provider._context_ids = {"individual": "ctx-123"}
 
         mock_client = MagicMock()
         mock_response = MagicMock()
@@ -437,9 +441,101 @@ class TestArkProviderCache:
         assert provider._last_cache_meta["prompt_tokens"] == 2551
 
         out = capsys.readouterr().out
-        assert "[ARK CACHE]" in out
-        assert "cached_tokens=2535" in out
-        assert "hit=True" in out
+        assert out == ""
+
+        summary = provider.get_cache_stats_summary()
+        assert summary["request_count"] == 1
+        assert summary["cache_hit_count"] == 1
+        assert summary["cache_miss_count"] == 0
+        assert summary["cached_tokens_total"] == 2535
+        assert summary["total_tokens_total"] == 2684
+
+        lines = provider.format_cache_stats_summary()
+        assert isinstance(lines, list)
+        assert any("[ARK CACHE SUMMARY]" in line for line in lines)
+        assert any("[ARK CACHE TOKENS]" in line and "total=2684" in line for line in lines)
+
+    async def test_ark_cache_stats_aggregate_hit_miss_and_tokens(self):
+        """ArkProvider should aggregate cache hit/miss counts and token totals."""
+        from ieeA.translator.ark_provider import ArkProvider
+
+        provider = ArkProvider.__new__(ArkProvider)
+        provider.model = "test-model"
+        provider.api_key = "test"
+        provider.kwargs = {"temperature": 0.0}
+        provider._cache_log_verbose = False
+        provider._prebuilt_system_prompt = None
+        provider._prebuilt_batch_prompt = None
+        provider._context_id = None
+        provider._context_ids = {}
+
+        mock_client = MagicMock()
+        hit_response = MagicMock()
+        hit_response.choices = [MagicMock()]
+        hit_response.choices[0].message.content = "hit"
+        hit_response.usage = {
+            "prompt_tokens": 100,
+            "completion_tokens": 20,
+            "total_tokens": 120,
+            "prompt_tokens_details": {"cached_tokens": 80},
+        }
+        miss_response = MagicMock()
+        miss_response.choices = [MagicMock()]
+        miss_response.choices[0].message.content = "miss"
+        miss_response.usage = {
+            "prompt_tokens": 90,
+            "completion_tokens": 30,
+            "total_tokens": 120,
+            "prompt_tokens_details": {"cached_tokens": 0},
+        }
+        mock_client.chat.completions.create = AsyncMock(
+            side_effect=[hit_response, miss_response]
+        )
+        provider.client = mock_client
+
+        assert await provider.translate("a") == "hit"
+        assert await provider.translate("b") == "miss"
+
+        summary = provider.get_cache_stats_summary()
+        assert summary["request_count"] == 2
+        assert summary["cache_hit_count"] == 1
+        assert summary["cache_miss_count"] == 1
+        assert summary["cached_tokens_total"] == 80
+        assert summary["prompt_tokens_total"] == 190
+        assert summary["completion_tokens_total"] == 50
+        assert summary["total_tokens_total"] == 240
+
+    async def test_ark_cache_stats_track_missing_usage_without_polluting_totals(self):
+        """Responses without usage should not affect token totals and should be counted separately."""
+        from ieeA.translator.ark_provider import ArkProvider
+
+        provider = ArkProvider.__new__(ArkProvider)
+        provider.model = "test-model"
+        provider.api_key = "test"
+        provider.kwargs = {"temperature": 0.0}
+        provider._cache_log_verbose = False
+        provider._prebuilt_system_prompt = None
+        provider._prebuilt_batch_prompt = None
+        provider._context_id = None
+        provider._context_ids = {}
+
+        mock_client = MagicMock()
+        no_usage_response = MagicMock()
+        no_usage_response.choices = [MagicMock()]
+        no_usage_response.choices[0].message.content = "ok"
+        no_usage_response.usage = None
+        mock_client.chat.completions.create = AsyncMock(return_value=no_usage_response)
+        provider.client = mock_client
+
+        assert await provider.translate("hello") == "ok"
+
+        summary = provider.get_cache_stats_summary()
+        assert summary["request_count"] == 0
+        assert summary["cache_hit_count"] == 0
+        assert summary["cache_miss_count"] == 0
+        assert summary["cached_tokens_total"] == 0
+        assert summary["total_tokens_total"] == 0
+        assert summary["missing_usage_count"] == 1
 
     async def test_pipeline_captures_provider_cache_meta(self):
         """Pipeline metadata should include provider_cache_meta from provider side-channel."""

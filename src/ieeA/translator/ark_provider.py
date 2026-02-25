@@ -48,6 +48,8 @@ class ArkProvider(LLMProvider):
         self._context_setup_locks: Dict[str, asyncio.Lock] = {}
         self._prebuilt_system_prompt: Optional[str] = None
         self._prebuilt_batch_prompt: Optional[str] = None
+        self._cache_log_verbose = bool(self.kwargs.get("ark_cache_log_verbose", False))
+        self.reset_cache_stats()
 
     @staticmethod
     def _get_field(obj: Any, key: str, default: Any = None) -> Any:
@@ -71,6 +73,145 @@ class ArkProvider(LLMProvider):
         legacy_context_id = getattr(self, "_context_id", None)
         if legacy_context_id and "individual" not in self._context_ids:
             self._context_ids["individual"] = legacy_context_id
+
+    def _ensure_cache_stats_state(self) -> None:
+        if not hasattr(self, "_cache_log_verbose"):
+            self._cache_log_verbose = False
+        if not hasattr(self, "_cache_stats") or not isinstance(
+            self._cache_stats, dict  # type: ignore[attr-defined]
+        ):
+            self.reset_cache_stats()
+
+    def reset_cache_stats(self) -> None:
+        self._cache_stats = {
+            "request_count": 0,
+            "cache_hit_count": 0,
+            "cache_miss_count": 0,
+            "cached_tokens_total": 0,
+            "prompt_tokens_total": 0,
+            "completion_tokens_total": 0,
+            "total_tokens_total": 0,
+            "missing_usage_count": 0,
+            "mode_counts": {"context": 0, "chat": 0},
+            "variant_counts": {},
+        }
+
+    @staticmethod
+    def _stat_int(value: Any) -> int:
+        try:
+            if isinstance(value, bool):
+                return int(value)
+            if isinstance(value, (int, float, str)):
+                return int(value)
+        except (TypeError, ValueError):
+            pass
+        return 0
+
+    def _record_cache_meta(self, cache_meta: Optional[Dict[str, Any]]) -> None:
+        self._ensure_cache_stats_state()
+        if cache_meta is None:
+            self._cache_stats["missing_usage_count"] += 1
+            return
+
+        self._cache_stats["request_count"] += 1
+        if bool(cache_meta.get("cache_hit")):
+            self._cache_stats["cache_hit_count"] += 1
+        else:
+            self._cache_stats["cache_miss_count"] += 1
+
+        self._cache_stats["cached_tokens_total"] += self._stat_int(
+            cache_meta.get("cached_tokens", 0)
+        )
+        self._cache_stats["prompt_tokens_total"] += self._stat_int(
+            cache_meta.get("prompt_tokens", 0)
+        )
+        self._cache_stats["completion_tokens_total"] += self._stat_int(
+            cache_meta.get("completion_tokens", 0)
+        )
+        self._cache_stats["total_tokens_total"] += self._stat_int(
+            cache_meta.get("total_tokens", 0)
+        )
+
+        mode = str(cache_meta.get("mode") or "")
+        if mode:
+            mode_counts = self._cache_stats.setdefault("mode_counts", {})
+            mode_counts[mode] = self._stat_int(mode_counts.get(mode, 0)) + 1
+
+        variant = str(cache_meta.get("variant") or "")
+        if variant:
+            variant_counts = self._cache_stats.setdefault("variant_counts", {})
+            variant_counts[variant] = self._stat_int(variant_counts.get(variant, 0)) + 1
+
+    def get_cache_stats_summary(self) -> Dict[str, Any]:
+        self._ensure_cache_stats_state()
+        request_count = self._stat_int(self._cache_stats.get("request_count", 0))
+        cache_hit_count = self._stat_int(self._cache_stats.get("cache_hit_count", 0))
+        cache_miss_count = self._stat_int(self._cache_stats.get("cache_miss_count", 0))
+        cache_hit_rate = round((cache_hit_count / request_count) * 100, 1) if request_count else 0.0
+
+        return {
+            "provider": "ark",
+            "request_count": request_count,
+            "cache_hit_count": cache_hit_count,
+            "cache_miss_count": cache_miss_count,
+            "cache_hit_rate": cache_hit_rate,
+            "cached_tokens_total": self._stat_int(
+                self._cache_stats.get("cached_tokens_total", 0)
+            ),
+            "prompt_tokens_total": self._stat_int(
+                self._cache_stats.get("prompt_tokens_total", 0)
+            ),
+            "completion_tokens_total": self._stat_int(
+                self._cache_stats.get("completion_tokens_total", 0)
+            ),
+            "total_tokens_total": self._stat_int(
+                self._cache_stats.get("total_tokens_total", 0)
+            ),
+            "missing_usage_count": self._stat_int(
+                self._cache_stats.get("missing_usage_count", 0)
+            ),
+            "mode_counts": dict(self._cache_stats.get("mode_counts", {})),
+            "variant_counts": dict(self._cache_stats.get("variant_counts", {})),
+        }
+
+    def format_cache_stats_summary(self) -> List[str]:
+        summary = self.get_cache_stats_summary()
+        request_count = self._stat_int(summary.get("request_count", 0))
+        missing_usage_count = self._stat_int(summary.get("missing_usage_count", 0))
+        if request_count <= 0 and missing_usage_count <= 0:
+            return []
+
+        lines = [
+            "[ARK CACHE SUMMARY] "
+            f"requests={summary['request_count']} "
+            f"hit={summary['cache_hit_count']} "
+            f"miss={summary['cache_miss_count']} "
+            f"hit_rate={summary['cache_hit_rate']}% "
+            f"cached_tokens={summary['cached_tokens_total']}",
+            "[ARK CACHE TOKENS] "
+            f"prompt={summary['prompt_tokens_total']} "
+            f"completion={summary['completion_tokens_total']} "
+            f"total={summary['total_tokens_total']}",
+        ]
+
+        mode_counts = summary.get("mode_counts", {})
+        if isinstance(mode_counts, dict) and mode_counts:
+            mode_parts = " ".join(
+                f"{k}={self._stat_int(v)}" for k, v in sorted(mode_counts.items())
+            )
+            lines.append(f"[ARK CACHE MODES] {mode_parts}")
+
+        variant_counts = summary.get("variant_counts", {})
+        if isinstance(variant_counts, dict) and variant_counts:
+            variant_parts = " ".join(
+                f"{k}={self._stat_int(v)}" for k, v in sorted(variant_counts.items())
+            )
+            lines.append(f"[ARK CACHE VARIANTS] {variant_parts}")
+
+        if missing_usage_count > 0:
+            lines.append(f"[ARK CACHE NOTE] missing_usage={missing_usage_count}")
+
+        return lines
 
     def _get_context_id_for_variant(self, prompt_variant: str) -> Optional[str]:
         self._ensure_context_state()
@@ -354,7 +495,8 @@ class ArkProvider(LLMProvider):
                 context_id=active_context_id,
             )
             self._last_cache_meta = cache_meta
-            if cache_meta is not None:
+            self._record_cache_meta(cache_meta)
+            if cache_meta is not None and self._cache_log_verbose:
                 self._print_cache_meta(cache_meta)
 
             content = response.choices[0].message.content or ""

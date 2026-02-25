@@ -53,6 +53,48 @@ def ensure_config_dir():
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def _print_provider_cache_summary(provider: Any) -> None:
+    get_summary = getattr(provider, "get_cache_stats_summary", None)
+    if not callable(get_summary):
+        return
+
+    try:
+        summary = get_summary()
+    except Exception as e:
+        console.print(f"[yellow]Cache summary unavailable: {e}[/yellow]")
+        return
+
+    if not isinstance(summary, dict):
+        return
+    if int(summary.get("request_count", 0) or 0) <= 0:
+        return
+
+    formatter = getattr(provider, "format_cache_stats_summary", None)
+    lines: list[str] = []
+    if callable(formatter):
+        try:
+            formatted = formatter()
+            if isinstance(formatted, str):
+                lines = [formatted]
+            elif isinstance(formatted, list):
+                lines = [str(line) for line in formatted if str(line).strip()]
+        except Exception as e:
+            console.print(f"[yellow]Cache summary format failed: {e}[/yellow]")
+
+    if not lines:
+        lines = [
+            "[CACHE SUMMARY] "
+            f"requests={summary.get('request_count', 0)} "
+            f"hit={summary.get('cache_hit_count', 0)} "
+            f"miss={summary.get('cache_miss_count', 0)} "
+            f"cached_tokens={summary.get('cached_tokens_total', 0)} "
+            f"total_tokens={summary.get('total_tokens_total', 0)}"
+        ]
+
+    for line in lines:
+        console.print(line, style="cyan", markup=False)
+
+
 @app.command()
 def translate(
     arxiv_url: str = typer.Argument(..., help="arXiv ID or URL to translate"),
@@ -174,6 +216,14 @@ def translate(
                 endpoint=endpoint_val,
                 **provider_kwargs,
             )
+            reset_cache_stats = getattr(provider, "reset_cache_stats", None)
+            if callable(reset_cache_stats):
+                try:
+                    reset_cache_stats()
+                except Exception as e:
+                    console.print(
+                        f"[yellow]Cache stats reset skipped: {e}[/yellow]"
+                    )
 
             # Prepare high-quality mode parameters
             abstract_text = None
@@ -251,6 +301,7 @@ def translate(
 
             results = [tc.model_dump() for tc in translated_chunks]
             console.print(f"[green]Translation complete: {len(results)} chunks[/green]")
+            _print_provider_cache_summary(provider)
 
             # Reconstruct
             translated_map = {r["chunk_id"]: r["translation"] for r in results}
