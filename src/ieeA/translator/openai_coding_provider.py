@@ -82,7 +82,9 @@ class OpenAICodingProvider(LLMProvider):
         glossary_hints: Optional[Dict[str, str]] = None,
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
         custom_system_prompt: Optional[str] = None,
+        prompt_variant: str = "individual",
     ) -> str:
+        _ = prompt_variant
         # Cache first-call params for subsequent calls
         if few_shot_examples is not None:
             self._few_shot_examples = few_shot_examples

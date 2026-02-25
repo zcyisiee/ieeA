@@ -24,6 +24,7 @@ class LLMProvider(ABC):
         glossary_hints: Optional[Dict[str, str]] = None,
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
         custom_system_prompt: Optional[str] = None,
+        prompt_variant: str = "individual",
     ) -> str:
         """
         Translate the given text.
@@ -38,6 +39,24 @@ class LLMProvider(ABC):
             The translated text.
         """
         pass
+
+    def _get_prebuilt_prompt(self, prompt_variant: str = "individual") -> Optional[str]:
+        """Return the prebuilt prompt for the requested variant, if available."""
+        if prompt_variant == "batch":
+            batch_prompt = getattr(self, "_prebuilt_batch_prompt", None)
+            if batch_prompt is not None:
+                return batch_prompt
+        return getattr(self, "_prebuilt_system_prompt", None)
+
+    async def prepare_prompt_cache_variants(
+        self,
+        prompt_variants: List[str],
+        few_shot_examples: Optional[List[Dict[str, str]]] = None,
+    ) -> None:
+        """Optional provider hook to prewarm prompt/prefix caches."""
+        _ = prompt_variants
+        _ = few_shot_examples
+        return None
 
     async def ping(self) -> str:
         return await self.translate("Hi", context=None)

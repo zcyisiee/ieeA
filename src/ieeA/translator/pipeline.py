@@ -175,6 +175,7 @@ class TranslationPipeline:
         text: str,
         context: Optional[str] = None,
         glossary_hints: Optional[Dict[str, str]] = None,
+        prompt_variant: str = "individual",
     ) -> str:
         """
         Call the LLM provider with exponential backoff retry.
@@ -201,6 +202,7 @@ class TranslationPipeline:
                         glossary_hints=glossary_hints,
                         few_shot_examples=self.few_shot_examples,
                         custom_system_prompt=self.custom_system_prompt,
+                        prompt_variant=prompt_variant,
                     ),
                     timeout=self.per_call_timeout,
                 )
@@ -271,6 +273,7 @@ class TranslationPipeline:
             text=encoded_text,
             context=merged_context,
             glossary_hints=None,
+            prompt_variant="individual",
         )
         provider_cache_meta = self._last_provider_cache_meta
 
@@ -337,23 +340,13 @@ class TranslationPipeline:
         else:
             merged_context = batch_instruction
 
-        # Use batch prompt for batch requests
-        original_prompt = getattr(self.provider, "_prebuilt_system_prompt", None)
-        if (
-            hasattr(self.provider, "_prebuilt_batch_prompt")
-            and self.provider._prebuilt_batch_prompt  # type: ignore[attr-defined]
-        ):
-            self.provider._prebuilt_system_prompt = self.provider._prebuilt_batch_prompt  # type: ignore[attr-defined]
-
         raw_response = await self._call_with_retry(
             text=batch_text,
             context=merged_context,
             glossary_hints=None,
+            prompt_variant="batch",
         )
         provider_cache_meta = self._last_provider_cache_meta
-
-        if original_prompt is not None:
-            self.provider._prebuilt_system_prompt = original_prompt  # type: ignore[attr-defined]
 
         pattern = r"\[(\d+)\]\s*(.+?)(?=\[\d+\]|$)"
         matches = re.findall(pattern, raw_response, re.DOTALL)
@@ -563,6 +556,20 @@ class TranslationPipeline:
 
         if current_batch:
             batches.append(current_batch)
+
+        prompt_variants_to_warm: List[str] = []
+        if batches:
+            prompt_variants_to_warm.append("batch")
+        if long_chunks:
+            prompt_variants_to_warm.append("individual")
+        if prompt_variants_to_warm:
+            try:
+                await self.provider.prepare_prompt_cache_variants(
+                    prompt_variants=prompt_variants_to_warm,
+                    few_shot_examples=self.few_shot_examples,
+                )
+            except Exception as e:
+                print(f"[CACHE WARMUP] skipped due to error: {e}")
 
         total_api_calls = len(batches) + len(long_chunks)
         if batch_stats_callback:

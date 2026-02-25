@@ -467,3 +467,167 @@ class TestArkProviderCache:
         assert isinstance(cache_meta, dict)
         assert cache_meta["cache_hit"] is True
         assert cache_meta["cached_tokens"] == 120
+
+    async def test_pipeline_translate_batch_passes_prompt_variant_without_mutating_shared_prompt(
+        self,
+    ):
+        """Batch path should use explicit prompt_variant, not swap provider shared prompt."""
+        from ieeA.translator.pipeline import TranslationPipeline
+
+        provider = AsyncMock()
+        provider._prebuilt_system_prompt = "INDIVIDUAL_PROMPT"
+        provider._prebuilt_batch_prompt = "BATCH_PROMPT"
+        provider._last_cache_meta = None
+
+        async def translate_side_effect(**kwargs):
+            assert kwargs["prompt_variant"] == "batch"
+            assert provider._prebuilt_system_prompt == "INDIVIDUAL_PROMPT"
+            return "[1] 你好"
+
+        provider.translate = AsyncMock(side_effect=translate_side_effect)
+
+        pipeline = TranslationPipeline(provider=provider)
+        results = await pipeline.translate_batch(
+            [{"chunk_id": "c1", "content": "hello"}],
+            context="Academic Paper",
+        )
+
+        assert len(results) == 1
+        assert results[0].translation == "你好"
+
+    async def test_pipeline_warms_required_prompt_variants_before_translation(self):
+        """Pipeline should prewarm both batch and individual prompt variants when both are used."""
+        from ieeA.translator.pipeline import TranslationPipeline
+
+        provider = AsyncMock()
+        provider._last_cache_meta = None
+        provider.prepare_prompt_cache_variants = AsyncMock()
+
+        async def translate_side_effect(**kwargs):
+            if kwargs.get("prompt_variant") == "batch":
+                return "[1] 一"
+            return "一"
+
+        provider.translate = AsyncMock(side_effect=translate_side_effect)
+
+        pipeline = TranslationPipeline(
+            provider=provider,
+            batch_short_threshold=10,
+            batch_max_chars=100,
+            sequential_mode=True,
+        )
+
+        chunks = [
+            {"chunk_id": "short-1", "content": "hi"},
+            {"chunk_id": "long-1", "content": "x" * 20},
+        ]
+
+        await pipeline.translate_document(chunks=chunks, context="Academic Paper")
+
+        provider.prepare_prompt_cache_variants.assert_awaited_once()
+        call_kwargs = provider.prepare_prompt_cache_variants.call_args.kwargs
+        assert call_kwargs["prompt_variants"] == ["batch", "individual"]
+
+    async def test_ark_translate_uses_variant_specific_context_id(self):
+        """ArkProvider should choose context_id by prompt_variant."""
+        from ieeA.translator.ark_provider import ArkProvider
+
+        provider = ArkProvider.__new__(ArkProvider)
+        provider.model = "test-model"
+        provider.api_key = "test"
+        provider.kwargs = {"temperature": 0.0}
+        provider._prebuilt_system_prompt = "INDIVIDUAL_PROMPT"
+        provider._prebuilt_batch_prompt = "BATCH_PROMPT"
+        provider._context_ids = {"individual": "ctx-ind", "batch": "ctx-batch"}
+        provider._context_id = "ctx-ind"
+
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "translated"
+        mock_response.usage = None
+        mock_client.context.completions.create = AsyncMock(return_value=mock_response)
+        provider.client = mock_client
+
+        result = await provider.translate(
+            "hello",
+            glossary_hints=None,
+            prompt_variant="batch",
+        )
+
+        assert result == "translated"
+        call_kwargs = mock_client.context.completions.create.call_args.kwargs
+        assert call_kwargs["context_id"] == "ctx-batch"
+
+    async def test_ark_setup_context_caches_few_shot_prefix(self):
+        """ArkProvider setup_context should cache system + few-shot messages as prefix."""
+        from ieeA.translator.ark_provider import ArkProvider
+
+        provider = ArkProvider.__new__(ArkProvider)
+        provider.model = "test-model"
+        provider.api_key = "test"
+        provider.kwargs = {"temperature": 0.0}
+        provider._prebuilt_system_prompt = "INDIVIDUAL_PROMPT"
+        provider._prebuilt_batch_prompt = "BATCH_PROMPT"
+        provider._context_ids = {}
+        provider._context_id = None
+
+        mock_client = MagicMock()
+        mock_context = MagicMock()
+        mock_context.id = "ctx-ind"
+        mock_client.context.create = AsyncMock(return_value=mock_context)
+        provider.client = mock_client
+
+        few_shot = [{"source": "A", "target": "甲"}]
+        await provider.setup_context(prompt_variant="individual", few_shot_examples=few_shot)
+
+        create_kwargs = mock_client.context.create.call_args.kwargs
+        messages = create_kwargs["messages"]
+        assert messages[0] == {"role": "system", "content": "INDIVIDUAL_PROMPT"}
+        assert messages[1] == {"role": "user", "content": "A"}
+        assert messages[2] == {"role": "assistant", "content": "甲"}
+
+    async def test_ark_batch_context_rebuild_does_not_overwrite_individual_context(self):
+        """Rebuilding expired batch context should keep individual context_id intact."""
+        from ieeA.translator.ark_provider import ArkProvider
+
+        provider = ArkProvider.__new__(ArkProvider)
+        provider.model = "test-model"
+        provider.api_key = "test"
+        provider.kwargs = {"temperature": 0.0}
+        provider._prebuilt_system_prompt = "INDIVIDUAL_PROMPT"
+        provider._prebuilt_batch_prompt = "BATCH_PROMPT"
+        provider._context_ids = {"individual": "ctx-ind", "batch": "ctx-batch-old"}
+        provider._context_prefix_keys = {}
+        provider._context_setup_locks = {}
+        provider._context_id = "ctx-ind"
+
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "translated"
+        mock_response.usage = None
+
+        async def context_completion_side_effect(**kwargs):
+            if kwargs["context_id"] == "ctx-batch-old":
+                raise RuntimeError("expired")
+            return mock_response
+
+        mock_client.context.completions.create = AsyncMock(
+            side_effect=context_completion_side_effect
+        )
+        new_context = MagicMock()
+        new_context.id = "ctx-batch-new"
+        mock_client.context.create = AsyncMock(return_value=new_context)
+        provider.client = mock_client
+
+        result = await provider.translate(
+            "hello",
+            glossary_hints=None,
+            prompt_variant="batch",
+        )
+
+        assert result == "translated"
+        assert provider._context_ids["batch"] == "ctx-batch-new"
+        assert provider._context_ids["individual"] == "ctx-ind"
+        assert provider._context_id == "ctx-ind"

@@ -31,11 +31,13 @@ class DirectHTTPProvider(LLMProvider):
         glossary_hints: Optional[Dict[str, str]] = None,
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
         custom_system_prompt: Optional[str] = None,
+        prompt_variant: str = "individual",
     ) -> str:
         messages = []
 
-        if self._prebuilt_system_prompt is not None and glossary_hints is None:
-            system_content = self._prebuilt_system_prompt
+        prebuilt_prompt = self._get_prebuilt_prompt(prompt_variant)
+        if prebuilt_prompt is not None and glossary_hints is None:
+            system_content = prebuilt_prompt
         else:
             system_content = build_system_prompt(
                 glossary_hints=glossary_hints,

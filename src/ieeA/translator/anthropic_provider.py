@@ -37,13 +37,15 @@ class AnthropicProvider(LLMProvider):
         glossary_hints: Optional[Dict[str, str]] = None,
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
         custom_system_prompt: Optional[str] = None,
+        prompt_variant: str = "individual",
     ) -> str:
         system_param: Union[str, List[Dict[str, Union[str, Dict]]]]
-        if self._prebuilt_system_prompt is not None and glossary_hints is None:
+        prebuilt_prompt = self._get_prebuilt_prompt(prompt_variant)
+        if prebuilt_prompt is not None and glossary_hints is None:
             system_param = [
                 {
                     "type": "text",
-                    "text": self._prebuilt_system_prompt,
+                    "text": prebuilt_prompt,
                     "cache_control": {"type": "ephemeral"},
                 }
             ]
@@ -56,6 +58,7 @@ class AnthropicProvider(LLMProvider):
             )
 
         messages = []
+        _ = prompt_variant
 
         # Few-shot examples
         if few_shot_examples:
